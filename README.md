@@ -1,6 +1,6 @@
 # Stickman Auto Brawl
 
-A dependency-free HTML5 Canvas spectator auto-battler. Eight procedural stick fighters fight in a depth-sorted 2.5D courtyard with four attacks: Dash, JumpKick, Uppercut, and Grab.
+A dependency-free HTML5 Canvas spectator auto-battler. Eight procedural stick fighters fight in a depth-sorted 2.5D courtyard with four unarmed attack families (Dash, JumpKick, Uppercut, Grab) plus randomized weapon strikes.
 
 ## Run
 
@@ -47,7 +47,7 @@ The ink outlines, colored torso strokes, round heads, fluttering headbands, and 
 
 ## Validation
 
-`npm test` uses Node's built-in test runner with no dependencies. The 45 tests cover all four attacks, exact crit thresholds and multipliers, stat bounds, retreat/corner behavior, seeded replay, airborne domino chains, swept collision misses, duplicate-hit prevention, mine arming and splash, dash/landing triggers, healing caps, KO exclusions, hazard lifetime/caps, the demo opening, and camera framing/replay isolation. A simulation test also runs 32 complete random matches, checks finite state and HP bounds, and confirms all four chaos events occur naturally across those rounds.
+`npm test` uses Node's built-in test runner with no dependencies. The 53 tests cover the four unarmed moves and weapon strikes, exact crit thresholds and multipliers, stat bounds, retreat/corner behavior, seeded replay, airborne domino chains, swept collision misses, duplicate-hit prevention, mine arming and splash, dash/landing triggers, healing caps, KO exclusions, hazard lifetime/caps, the demo opening, and camera framing/replay isolation. A simulation test also runs 32 complete random matches, checks finite state and HP bounds, and confirms all four chaos events occur naturally across those rounds.
 
 The project is intentionally local-only. No backend, remote assets, multiplayer service, or build step is required.
 
@@ -83,4 +83,18 @@ The animation architecture follows the ideas visible in `computePose`, `sampleKe
 
 Each fighter rolls Walker, Runner, or Sprinter movement, a favored attack, and attack tempo. Running uses a longer stride, higher knees, opposing arm swings, a forward lean, dust, and headband drag. Sprint stamina has separate exhaustion/recovery thresholds to avoid frame-by-frame gait flicker. Aggressive fighters chase, Cowardly fighters sprint away until cornered, Brawlers close for grabs, and Tricksters circle during recovery and favor jumping kicks. Close-range specialists close the gap instead of selecting Dash whenever it first enters range.
 
-The simulation regression runs 32 complete random rounds and verifies all four attack types occur naturally, alongside the existing physics and chaos checks. The motion checks cover IK lengths, distinct continuous attack poses, gait differences, diagonal dash timing, lift-before-throw, and interrupted-grab release.
+The simulation regression runs 32 complete random rounds and verifies all four unarmed attack types and all three weapon types occur naturally, alongside the existing physics and chaos checks. The motion checks cover IK lengths, distinct continuous attack poses, gait differences, diagonal dash timing, lift-before-throw, and interrupted-grab release.
+
+## Random weapons and combat follow-ups
+
+Each spawn rolls Unarmed, Sword, Staff, or Hammer from the match RNG. Weapon silhouettes are drawn procedurally and move with the hand, arm IK, and weapon-angle keyframes. Weapons stow during grabs so the hands can lift and throw. Fighter details show each loadout.
+
+| Loadout | Base damage | Reach | Attack duration | Behavior |
+| --- | ---: | ---: | ---: | --- |
+| Sword | 16 | 92 | 0.52s | Quick slash; a connected slash has a 35% chance to allow one short dash follow-up. |
+| Staff | 13 | 122 | 0.78s | Broad sweep; up to two distinct victims, once each. |
+| Hammer | 24 | 88 | 1.03s | Long windup and recovery; heavy 480 horizontal / 390 vertical launch. |
+
+Power and critical multipliers apply to these base values. A cleaving attack shares one 10% critical roll across its victims. Swing reach, depth width, active window, and per-attack victim IDs constrain contact; targets are not repeatedly damaged while remaining in range. Weapon attacks can be interrupted during windup. Armed fighters still mix in kicks, dashes, uppercuts, and grabs according to personality and range.
+
+Cowardly fighters can occasionally jump away while fleeing. The sprint/evade cadence and finite sword follow-up add variation without creating unlimited attack chains. Automated tests cover loadout replay, each weapon's mechanics, staff cleave limits, shared critical rolls, windup interruption, sword follow-ups, and fleeing jumps. Integration tests verify natural use of all weapon types across complete seeded rounds.

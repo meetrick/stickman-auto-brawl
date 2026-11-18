@@ -178,3 +178,6 @@ footer { display: flex; justify-content: space-between; gap: 20px; border-top: 1
   .controls > button, .tools > summary { min-height: 44px; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+
+.loadout { font: normal 9px monospace; color: var(--green); display: block; margin-top: 2px; }
+.fighter-card { min-height: 67px; }

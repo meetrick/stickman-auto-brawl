@@ -1,10 +1,12 @@
 import { clamp, range } from './random.js';
+import { WEAPONS } from './weapons.js';
 
 export const MOVES = Object.freeze({
   Dash: { damage: 10, knockback: 300, lift: 170, reach: 54, engage: 240, windup: .12, duration: .62 },
   JumpKick: { damage: 14, knockback: 370, lift: 240, reach: 83, engage: 155, windup: .24, activeEnd: .5, duration: .68 },
   Uppercut: { damage: 12, knockback: 195, lift: 460, reach: 62, engage: 62, windup: .23, duration: .58 },
   Grab: { damage: 16, knockback: 470, lift: 340, reach: 55, engage: 55, windup: .16, duration: .86 },
+  WeaponStrike: WEAPONS.Sword.strike,
 });
 export const COLORS = ['#bf473b', '#438477', '#b98935', '#697ea0', '#95618a', '#5e7443', '#c27443', '#577f8b'];
 export const NAMES = ['EMBER', 'JADE', 'GOLD', 'COBALT', 'IRIS', 'MOSS', 'RUST', 'TIDE'];
@@ -23,17 +25,20 @@ export class Fighter {
     this.speed = range(rng, 90, 155); this.power = range(rng, .8, 1.25);
     this.personality = PERSONALITIES[Math.floor(rng() * PERSONALITIES.length)];
     this.gait = GAITS[Math.floor(rng() * GAITS.length)];
-    this.favoriteMove = MOVE_NAMES[Math.floor(rng() * MOVE_NAMES.length)];
+    this.weapon = Object.keys(WEAPONS)[Math.floor(rng() * Object.keys(WEAPONS).length)];
+    const moves = MOVE_NAMES.filter(name => name !== 'WeaponStrike' || this.weapon !== 'None');
+    this.favoriteMove = this.weapon !== 'None' && rng() < .55 ? 'WeaponStrike' : moves[Math.floor(rng() * moves.length)];
     this.tempo = range(rng, .8, 1.3);
     this.collateralActive = false; this.flightHits = new Set();
   }
   get alive() { return this.hp > 0; }
   get standing() { return this.alive && this.heldBy == null && this.z <= 1 && this.stun <= 0; }
+  getMove(name) { return name === 'WeaponStrike' ? WEAPONS[this.weapon]?.strike || MOVES.WeaponStrike : MOVES[name]; }
   startAttack(name, target) {
-    if (!this.standing || this.attack || this.cooldown > 0 || target.heldBy != null) return false;
+    if (!this.standing || this.attack || this.cooldown > 0 || target.heldBy != null || (name === 'WeaponStrike' && this.weapon === 'None')) return false;
     const dx = target.x - this.x, dy = target.y - this.y, length = Math.hypot(dx, dy) || 1;
     this.facing = dx >= 0 ? 1 : -1;
-    this.attack = { name, targetId: target.id, elapsed: 0, duration: MOVES[name].duration, resolved: false, dx: dx / length, dy: dy / length };
+    this.attack = { name, targetId: target.id, elapsed: 0, duration: this.getMove(name).duration, resolved: false, hitIds: [], dx: dx / length, dy: dy / length };
     this.state = 'attack'; this.vx = this.vy = 0;
     if (name === 'JumpKick') this.vz = 305;
     return true;
@@ -55,14 +60,20 @@ export class Fighter {
     this.holdingId = null;
   }
   hit(target, world, name) {
+    if (name === 'WeaponStrike' && this.weapon === 'None') return false;
     if (world.arena && !world.arena.attackClear(this, target)) return false;
-    const move = MOVES[name], dx = target.x - this.x, dy = target.y - this.y, length = Math.hypot(dx, dy) || 1;
-    const crit = world.rng() < .1, knockback = move.knockback * (crit ? 2 : 1), lift = move.lift * (crit ? 2 : 1);
+    const move = this.getMove(name), dx = target.x - this.x, dy = target.y - this.y, length = Math.hypot(dx, dy) || 1;
+    const crit = this.attack?.name === name ? (this.attack.crit ??= world.rng() < .1) : world.rng() < .1;
+    const knockback = move.knockback * (crit ? 2 : 1), lift = move.lift * (crit ? 2 : 1);
     if (!target.receiveHit(move.damage * this.power * (crit ? 3 : 1), dx / length * knockback, dy / length * knockback, lift)) return false;
     if (crit) { world.stats.crits++; target.flash = .3; }
-    const text = { Dash: 'DASH CRASH!', JumpKick: 'FLYING KICK!', Uppercut: 'UPPERCUT!', Grab: 'THROWN!' }[name];
-    world.stats.moves ||= { Dash: 0, JumpKick: 0, Uppercut: 0, Grab: 0 }; world.stats.moves[name]++;
-    world.emit('hit', target, { text: crit ? 'CRIT!' : text, move: name, source: this.id, crit }); return true;
+    const text = name === 'WeaponStrike' ? { Sword: 'SLASH!', Staff: 'STAFF SWEEP!', Hammer: 'HAMMER SMASH!' }[this.weapon]
+      : { Dash: 'DASH CRASH!', JumpKick: 'FLYING KICK!', Uppercut: 'UPPERCUT!', Grab: 'THROWN!' }[name];
+    world.stats.moves ||= { Dash: 0, JumpKick: 0, Uppercut: 0, Grab: 0, WeaponStrike: 0 }; world.stats.moves[name]++;
+    if (name === 'WeaponStrike') {
+      world.stats.weaponHits ||= { Sword: 0, Staff: 0, Hammer: 0 }; world.stats.weaponHits[this.weapon]++;
+    }
+    world.emit('hit', target, { text: crit ? 'CRIT!' : text, move: name, weapon: this.weapon, source: this.id, crit }); return true;
   }
   moveToward(goal, world, hurry = false) {
     const waypoint = world.arena?.waypoint(this, goal, world) || goal;
@@ -85,7 +96,12 @@ export class Fighter {
     if (cornered) this.courageUntil = world.time + 2.5;
     if (this.personality === 'Cowardly' && distance < 210 && !cornered && world.time >= (this.courageUntil || 0)) {
       this.intent = 'flee';
-      this.moveToward({ x: clamp(this.x - dx / distance * 150, b.left + 18, b.right - 18), y: clamp(this.y - dy / distance * 150, b.top + 18, b.bottom - 18) }, world, true); return;
+      this.moveToward({ x: clamp(this.x - dx / distance * 150, b.left + 18, b.right - 18), y: clamp(this.y - dy / distance * 150, b.top + 18, b.bottom - 18) }, world, true);
+      if (world.time >= (this.evadeAt || 0)) {
+        this.evadeAt = world.time + range(world.rng, 1, 2);
+        if (distance < 145 && world.rng() < .3) { this.vz = 320; this.state = 'evade'; }
+      }
+      return;
     }
     if (world.time >= (this.decisionAt || 0)) {
       this.decisionAt = world.time + range(world.rng, .55, 1.1);
@@ -93,11 +109,15 @@ export class Fighter {
       this.flank = this.personality === 'Trickster' && world.rng() < .55;
     }
     if (this.cooldown <= 0 && target.z < 65) {
-      let choices = MOVE_NAMES.filter(name => distance <= MOVES[name].engage && (name !== 'Grab' || target.standing));
+      if (this.followUp && world.time < this.followUpUntil && distance < MOVES[this.followUp].engage) {
+        const name = this.followUp; this.followUp = null;
+        if (this.startAttack(name, target)) { this.intent = 'combo'; return; }
+      }
+      let choices = MOVE_NAMES.filter(name => distance <= this.getMove(name).engage && (name !== 'Grab' || target.standing) && (name !== 'WeaponStrike' || this.weapon !== 'None'));
       const preferred = this.personality === 'Brawler' ? 'Grab' : this.personality === 'Trickster' ? 'JumpKick' : this.favoriteMove;
       // Close-range specialists must actually close in, rather than selecting
       // Dash as soon as it becomes the first available move every encounter.
-      if (distance > MOVES[preferred].engage) choices = [];
+      if (distance > this.getMove(preferred).engage) choices = [];
       if (choices.length) {
         const name = choices.includes(preferred) && world.rng() < (this.personality === 'Brawler' ? .85 : .6) ? preferred : choices[Math.floor(world.rng() * choices.length)];
         if (this.startAttack(name, target)) { this.intent = 'attack'; return; }
@@ -109,9 +129,13 @@ export class Fighter {
     } else if (distance > 37) { this.intent = 'chase'; this.moveToward(target, world, (this.personality === 'Aggressive' && distance > 170) || (this.personality === 'Brawler' && distance > 70)); }
   }
   updateAttack(dt, world) {
-    const a = this.attack, move = MOVES[a.name]; a.elapsed += dt;
+    const a = this.attack, move = this.getMove(a.name); a.elapsed += dt;
     if (a.name === 'Dash') { const speed = a.elapsed >= move.windup && a.elapsed < .5 ? 560 : 30; this.vx = a.dx * speed; this.vy = a.dy * speed; }
     if (a.name === 'JumpKick' && a.elapsed > .09 && a.elapsed < .5) { this.vx = a.dx * 270; this.vy = a.dy * 270; }
+    if (a.name === 'WeaponStrike') {
+      const lunge = a.elapsed >= move.windup * .7 && a.elapsed < move.windup + .09 ? (this.weapon === 'Hammer' ? 110 : 190) : 0;
+      this.vx = a.dx * lunge; this.vy = a.dy * lunge;
+    }
     if (a.name === 'Grab') {
       this.vx = a.attempted ? 0 : a.dx * 160; this.vy = a.attempted ? 0 : a.dy * 160;
       const target = world.fighters.find(f => f.id === a.targetId);
@@ -132,12 +156,21 @@ export class Fighter {
       } else if (this.holdingId != null) this.holdingId = null;
     } else if (!a.resolved && a.elapsed >= move.windup && a.elapsed < (move.activeEnd || move.duration - .05)) {
       const candidates = world.fighters.filter(f => f !== this && f.alive && f.heldBy == null
+        && !a.hitIds.includes(f.id)
         && Math.hypot(f.x - this.x, f.y - this.y) <= move.reach + 12 && Math.abs(f.z - this.z) < 85
+        && (a.name !== 'WeaponStrike' || Math.abs((f.x - this.x) * a.dy - (f.y - this.y) * a.dx) < move.arcWidth)
         && (f.x - this.x) * a.dx + (f.y - this.y) * a.dy > (a.name === 'JumpKick' ? -28 : -15));
       candidates.sort((f, g) => Math.hypot(f.x - this.x, f.y - this.y) - Math.hypot(g.x - this.x, g.y - this.y));
-      if (candidates[0] && this.hit(candidates[0], world, a.name)) a.resolved = true;
+      if (candidates[0] && this.hit(candidates[0], world, a.name)) {
+        a.hitIds.push(candidates[0].id); a.resolved = a.hitIds.length >= (move.cleave || 1);
+      }
     }
-    if (a.elapsed >= move.duration) { this.releaseGrab(world); this.attack = null; this.cooldown = range(world.rng, .4, .9) * this.tempo; }
+    if (a.elapsed >= move.duration) {
+      this.releaseGrab(world); this.attack = null; this.cooldown = range(world.rng, .4, .9) * this.tempo;
+      if (a.name === 'WeaponStrike' && this.weapon === 'Sword' && a.hitIds.length && world.rng() < .35) {
+        this.followUp = 'Dash'; this.followUpUntil = world.time + 1; this.cooldown = .12;
+      }
+    }
   }
   update(dt, world) {
     this.previous = { x: this.x, y: this.y, z: this.z };

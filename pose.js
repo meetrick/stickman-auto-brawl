@@ -34,6 +34,14 @@ export const TRACKS = {
     [.82, .55, 4, 37, 14, 29, 13, 31, 0, -21, 0],
     [1, .05, 2, 19, -9, -14, 7, 15, 0, -14, 0],
   ],
+  WeaponStrike: [
+    [0, .04, 3, 20, -10, -9, 8, 15, 0, -15, 0],
+    [.22, -.35, 12, -20, -30, 18, -15, 20, 0, -23, 0],
+    [.33, -.3, 14, -14, -34, 15, -18, 20, 0, -24, 0],
+    [.41, .65, 0, 42, 0, -23, 16, 31, 0, -24, -5],
+    [.64, .6, 7, 34, 20, -18, 18, 32, 0, -23, 0],
+    [1, .04, 3, 20, -10, -9, 8, 15, 0, -15, 0],
+  ],
 };
 export function sampleTrack(keys, time) {
   if (time <= keys[0][0]) return keys[0].slice(1);
@@ -68,6 +76,13 @@ export function computePose(f) {
     const k = sampleTrack(TRACKS[f.attack.name], f.attack.elapsed / f.attack.duration);
     [lean, crouch] = k; main = k.slice(2, 4); off = k.slice(4, 6); front = k.slice(6, 8); back = k.slice(8, 10);
   }
+  let weaponAngle = moving ? -.65 + wave * .18 : -.75;
+  if (f.attack?.name === 'WeaponStrike') {
+    const progress = f.attack.elapsed / f.attack.duration;
+    weaponAngle = sampleTrack([[0, -.75], [.22, -2.55], [.33, -2.4], [.41, .2], [.64, 1.2], [1, -.75]], progress)[0];
+    if (f.weapon === 'Hammer') { crouch += 4 * Math.sin(Math.PI * progress); lean -= .08; }
+  }
+  if (f.weapon === 'Staff' && f.attack?.name === 'WeaponStrike') off = [main[0] - Math.cos(weaponAngle) * 19, main[1] - Math.sin(weaponAngle) * 19];
   let rotation = f.tumble || 0;
   if (f.state === 'held') { rotation = -1.5; main = [20, 19]; off = [-23, 16]; front = [24, -14]; back = [-22, -7]; }
   else if (!f.alive || f.stun > 0) {
@@ -80,5 +95,5 @@ export function computePose(f) {
   const head = [shoulder[0] + Math.sin(lean) * 16, shoulder[1] - Math.cos(lean) * 16];
   const arm = target => solveLimb(shoulder, [shoulder[0] + target[0], shoulder[1] + target[1]], 23, 23, 1);
   const leg = foot => solveLimb(hip, foot, 29, 29, -1);
-  return { hip, shoulder, head, main: arm(main), off: arm(off), front: leg(front), back: leg(back), rotation };
+  return { hip, shoulder, head, main: arm(main), off: arm(off), front: leg(front), back: leg(back), rotation, weaponAngle };
 }

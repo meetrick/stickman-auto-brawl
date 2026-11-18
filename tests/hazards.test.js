@@ -60,6 +60,7 @@ test('chaos demo produces real dominoes and explosions in its first two seconds'
 test('many complete random matches stay finite and produce unscripted chaos', () => {
   const totals = { dominoes: 0, explosions: 0, heals: 0, crits: 0 };
   const moves = { Dash: 0, JumpKick: 0, Uppercut: 0, Grab: 0 };
+  const weaponHits = { Sword: 0, Staff: 0, Hammer: 0 };
   for (let seed = 0; seed < 32; seed++) {
     const w = new Match(seed);
     for (let tick = 0; tick < 10810 && !w.finished; tick++) w.update();
@@ -70,7 +71,9 @@ test('many complete random matches stay finite and produce unscripted chaos', ()
     }
     for (const key of Object.keys(totals)) totals[key] += w.stats[key];
     for (const key of Object.keys(moves)) moves[key] += w.stats.moves?.[key] || 0;
+    for (const key of Object.keys(weaponHits)) weaponHits[key] += w.stats.weaponHits?.[key] || 0;
   }
   for (const [key, total] of Object.entries(totals)) assert.ok(total > 0, `${key} occurred naturally`);
   for (const [key, total] of Object.entries(moves)) assert.ok(total > 5, `${key} is used naturally across seeded rounds`);
+  for (const [key, total] of Object.entries(weaponHits)) assert.ok(total > 0, `${key} is used naturally across seeded rounds`);
 });

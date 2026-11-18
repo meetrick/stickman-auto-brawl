@@ -24,7 +24,7 @@ test('keyframed attacks preserve limb lengths and have distinct evolving silhoue
     }
     assert.ok(poses.size > 30, `${name} is continuously animated`);
   }
-  assert.equal(strikes.size, 4);
+  assert.equal(strikes.size, Object.keys(MOVES).length);
 });
 test('run cycle has a wider stride and higher foot lift than walking', () => {
   const f = new Fighter(0, 400, 400); f.stridePhase = Math.PI / 4;

@@ -14,7 +14,7 @@ for (const name of Object.keys(MOVES)) {
   test(`${name} damages and launches a target once`, () => {
     const w = new Match(5, 2, { terrain: false }), [a, b] = w.fighters;
     a.x = 500; a.y = 400; b.x = 530; b.y = 400;
-    a.cooldown = 0; b.cooldown = 10; b.readyAt = 10;
+    a.weapon = 'Sword'; a.cooldown = 0; b.cooldown = 10; b.readyAt = 10;
     assert.ok(a.startAttack(name, b));
     for (let i = 0; i < 85; i++) w.update(STEP);
     assert.ok(b.hp < b.maxHp);
@@ -44,7 +44,7 @@ test('spawn rolls HP, speed, attack power and varied personality traits', () => 
 for (const name of Object.keys(MOVES)) {
   test(`${name}: 10% crit threshold triples damage and doubles all knockback`, () => {
     const w = new Match(8, 2, { terrain: false }), [a, b] = w.fighters;
-    a.x = 500; a.y = 400; b.x = 530; b.y = 400; b.hp = b.maxHp = 500;
+    a.weapon = 'Sword'; a.x = 500; a.y = 400; b.x = 530; b.y = 400; b.hp = b.maxHp = 500;
     w.rng = () => .099999; a.hit(b, w, name);
     assert.ok(Math.abs(500 - b.hp - MOVES[name].damage * a.power * 3) < 1e-9);
     assert.equal(b.vx, MOVES[name].knockback * 2);

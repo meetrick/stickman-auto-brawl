@@ -2,6 +2,7 @@ import { SpectatorCamera } from './camera.js';
 import { clamp } from './random.js';
 import { barPoint } from './arena.js';
 import { computePose } from './pose.js';
+import { WEAPONS } from './weapons.js';
 const INK = '#292b27';
 export class Renderer {
   constructor(canvas) {
@@ -126,6 +127,36 @@ export class Renderer {
     c.font = `bold ${e.crit || e.type === 'explosion' ? 26 : 15}px monospace`;
     c.fillText(e.text || e.type, e.x, e.y - e.z - 95 - progress * 45); c.restore();
   }
+  weapon(p, f) {
+    if (!f.weapon || f.weapon === 'None') return;
+    const c = this.ctx, stowed = f.attack?.name === 'Grab';
+    c.save(); c.translate(...(stowed ? p.shoulder : p.main.tip)); c.rotate(stowed ? -2.1 : p.weaponAngle);
+    const length = WEAPONS[f.weapon].length;
+    if (f.weapon === 'Sword') {
+      this.line([[-9, 0], [0, 0]], '#695035', 5);
+      c.fillStyle = '#d9dfd1'; c.strokeStyle = '#687361'; c.lineWidth = 1.3;
+      c.beginPath(); c.moveTo(3, -4); c.lineTo(length - 8, -3); c.lineTo(length, 0); c.lineTo(length - 8, 4); c.lineTo(3, 4); c.closePath(); c.fill(); c.stroke();
+      this.line([[2, -9], [2, 9]], '#bd9b51', 3);
+    } else if (f.weapon === 'Staff') {
+      this.line([[-22, 0], [length, 0]], '#70523c', 6);
+      this.line([[-22, -1], [length, -1]], '#c1a06a', 2);
+      this.line([[length - 11, 0], [length, 0]], f.color, 7);
+      this.line([[-22, 0], [-12, 0]], f.color, 7);
+    } else {
+      this.line([[-9, 0], [length, 0]], '#8c6744', 5);
+      c.fillStyle = '#8b9b91'; c.strokeStyle = '#4a5c51'; c.lineWidth = 2;
+      c.beginPath(); c.roundRect(length - 10, -17, 19, 34, 3); c.fill(); c.stroke();
+      this.line([[length - 7, -12], [length + 5, -12]], '#d4dcce', 2);
+    }
+    c.restore();
+    if (!stowed && f.attack?.name === 'WeaponStrike') {
+      const progress = f.attack.elapsed / f.attack.duration;
+      if (progress > .33 && progress < .65) {
+        c.save(); c.globalAlpha *= .35; c.strokeStyle = f.color; c.lineWidth = f.weapon === 'Hammer' ? 10 : 5;
+        c.beginPath(); c.arc(p.main.tip[0], p.main.tip[1], length * .9, p.weaponAngle - 1.25, p.weaponAngle); c.stroke(); c.restore();
+      }
+    }
+  }
   skeleton(p, f, ink) {
     this.line([p.shoulder, p.off.joint, p.off.tip], ink, 4);
     this.line([p.hip, p.back.joint, p.back.tip], ink, 4.5);
@@ -136,6 +167,7 @@ export class Renderer {
     const c = this.ctx, [hx, hy] = p.head;
     c.fillStyle = '#f4efdd'; c.strokeStyle = ink; c.lineWidth = 3;
     c.beginPath(); c.arc(hx, hy, 11, 0, Math.PI * 2); c.fill(); c.stroke();
+    this.weapon(p, f);
     this.line([p.shoulder, p.main.joint, p.main.tip], ink, 4.5);
     c.fillStyle = ink; c.beginPath(); c.arc(...p.main.tip, 3, 0, Math.PI * 2); c.fill();
     this.line([[hx - 10, hy - 4], [hx + 10, hy - 4]], f.color, 3.8);
