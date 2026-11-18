@@ -108,7 +108,7 @@ export class Renderer {
   }
   weapon(p, f) {
     if (!f.weapon || f.weapon === 'None') return;
-    const c = this.ctx, stowed = f.attack?.name === 'Grab';
+    const c = this.ctx, stowed = ['Grab', 'Punch', 'Kick'].includes(f.attack?.name);
     c.save(); c.translate(...(stowed ? p.shoulder : p.main.tip)); c.rotate(stowed ? -2.1 : p.weaponAngle);
     const length = WEAPONS[f.weapon].length;
     if (f.weapon === 'Sword') {
@@ -149,6 +149,18 @@ export class Renderer {
     [...inner].reverse().forEach(([x, y]) => c.lineTo(x, y)); c.closePath(); c.fill();
     c.globalAlpha = .45; this.line(outer, '#fdf8da', 2.5); c.restore();
   }
+  strikeTrail(f) {
+    if (this.reducedMotion.matches || !['Punch', 'Kick'].includes(f.attack?.name)) return;
+    const a = f.attack, move = f.getMove(a.name);
+    if (a.elapsed < move.windup * .7 || a.elapsed > move.activeEnd + .04) return;
+    const points = [];
+    for (let i = 0; i <= 6; i++) {
+      const pose = computePose({ ...f, attack: { ...a, elapsed: Math.max(0, a.elapsed - .045 * (1 - i / 6)) } });
+      points.push(a.name === 'Kick' ? pose.front.tip : a.variant === 1 ? pose.off.tip : pose.main.tip);
+    }
+    const c = this.ctx; c.save(); c.globalAlpha *= .28;
+    this.line(points, f.color, a.name === 'Kick' ? 8 : 6); c.restore();
+  }
   skeleton(p, f, ink) {
     this.line([p.shoulder, p.off.joint, p.off.tip], ink, 4);
     this.line([p.hip, p.back.joint, p.back.tip], ink, 4.5);
@@ -183,12 +195,12 @@ export class Renderer {
       c.restore();
     }
     const dashTrail = f.attack?.name === 'Dash' && f.attack.elapsed > .12 && f.attack.elapsed < .5;
-    const spinTrail = f.attack?.name === 'JumpKick' && f.attack.variant === 1 && f.attack.elapsed > .05 && f.attack.elapsed < .35;
-    if (!this.reducedMotion.matches && (dashTrail || spinTrail)) {
+    const hopTrail = f.attack?.name === 'JumpKick' && f.attack.elapsed > .05 && f.attack.elapsed < .28;
+    if (!this.reducedMotion.matches && (dashTrail || hopTrail)) {
       for (const lag of [.085, .045]) {
         const pose = computePose({ ...f, attack: { ...f.attack, elapsed: Math.max(0, f.attack.elapsed - lag) } });
         c.save(); c.globalAlpha = lag > .06 ? .08 : .18;
-        c.translate(f.x - f.vx * lag, sy - f.vy * lag + (spinTrail ? f.vz * lag : 0)); c.scale(scale * f.facing, scale);
+        c.translate(f.x - f.vx * lag, sy - f.vy * lag + (hopTrail ? f.vz * lag : 0)); c.scale(scale * f.facing, scale);
         c.translate(...pose.hip); c.rotate(pose.rotation); c.translate(-pose.hip[0], -pose.hip[1]);
         c.lineCap = 'round'; c.lineJoin = 'round'; this.skeleton(pose, f, INK); c.restore();
       }
@@ -197,6 +209,7 @@ export class Renderer {
     if (!f.alive && f.z === 0) c.translate(0, 37);
     c.translate(...p.hip); c.rotate(p.rotation); c.translate(-p.hip[0], -p.hip[1]);
     this.weaponTrail(f);
+    this.strikeTrail(f);
     this.skeleton(p, f, f.flash > 0 ? '#b54c37' : INK);
     if (f.attack && f.attack.elapsed > .16 && f.attack.elapsed < .46) {
       c.save(); c.strokeStyle = `${f.color}88`; c.lineWidth = 3;

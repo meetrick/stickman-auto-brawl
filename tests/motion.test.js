@@ -99,3 +99,27 @@ test('short jump kicks stay upright throughout both variants', () => {
     assert.ok(Math.abs(computePose(f).rotation) <= .25);
   }
 });
+
+test('jab and cross extend opposite hands while the supporting feet remain planted', () => {
+  const f = new Fighter(0, 0, 0, seededRandom(1)); f.weapon = 'None';
+  const duration = MOVES.Punch.duration;
+  f.attack = { name: 'Punch', duration, elapsed: duration * .36, variant: 0 };
+  const jab = computePose(f); f.attack.variant = 1; const cross = computePose(f);
+  assert.ok(jab.main.tip[0] > jab.off.tip[0] + 20);
+  assert.ok(cross.off.tip[0] > cross.main.tip[0] + 20);
+  for (const p of [jab, cross]) {
+    assert.ok(Math.abs(p.front.tip[1]) < 1e-8); assert.ok(Math.abs(p.back.tip[1]) < 1e-8);
+    assert.equal(p.rotation, 0);
+  }
+});
+test('ground recoil and landing compress the body without flailing or lifting planted feet', () => {
+  const f = new Fighter(0, 0, 0, seededRandom(1)); f.weapon = 'None';
+  f.receiveHit(1, -80, 0, 0); f.stun = .10;
+  const recoil = computePose(f); assert.equal(recoil.rotation, 0);
+  assert.ok(recoil.head[0] < recoil.hip[0]);
+  for (const leg of [recoil.front, recoil.back]) assert.ok(Math.abs(leg.tip[1]) < 1e-8);
+  f.stun = 0; f.state = 'idle'; const idle = computePose(f);
+  f.landing = .05; const landed = computePose(f);
+  assert.ok(landed.hip[1] > idle.hip[1] + 8);
+  for (const leg of [landed.front, landed.back]) assert.ok(Math.abs(leg.tip[1]) < 1e-8);
+});

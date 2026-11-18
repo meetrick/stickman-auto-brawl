@@ -113,6 +113,7 @@ export class Fighter {
     if (this.personality === 'Cowardly' && distance < 210 && !cornered && world.time >= (this.courageUntil || 0)) {
       this.intent = 'flee';
       this.moveToward({ x: clamp(this.x - dx / distance * 150, b.left + 18, b.right - 18), y: clamp(this.y - dy / distance * 150, b.top + 18, b.bottom - 18) }, world, true);
+      this.facing = dx >= 0 ? 1 : -1;
       if (world.time >= (this.evadeAt || 0)) {
         this.evadeAt = world.time + range(world.rng, 1, 2);
         if (distance < 145 && world.rng() < .3) { this.vx *= 1.3; this.vy *= 1.3; this.state = 'evade'; }

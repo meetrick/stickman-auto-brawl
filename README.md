@@ -61,6 +61,10 @@ Browser checks include phone portrait/landscape and desktop layouts, a scrollabl
 
 Each weapon has independent hand/foot keyframes and angle tracks aligned to its active hit window: alternating descending/rising sword cuts, a full-turn staff sweep with a second-hand grip, and a two-handed overhead hammer slam with a deep follow-through. Jump kicks stay upright, use a low ballistic hop, and have a 3.5-second reuse delay plus landing recovery. The grab lift aligns the victim more closely with the holder's hands.
 
+Jabs and rear-hand crosses alternate with different torso loading and extension, then finish with a planted side kick. Short end-effector trails follow the actual fist/foot path. Grounded victims recoil through their chest and head while keeping their feet planted; landing bends the knees before recovery. Weapons are stowed during punches, kicks, and grabs. The timing-focused grounded exchanges requested with the [Stickman Fighter Epic Battle reference](https://poki.com/kr/g/stickman-fighter-epic-battle) are implemented with original procedural poses, without copying its assets or source.
+
+A 32-seed simulation sample (seeds 1–32, default eight fighters) reduced living fighter time above 12 height units from about 42% to 6%. This is a regression measure for excessive airtime, not a claim about perceived entertainment.
+
 Weapon ribbons are sampled from the actual recent hand and weapon-tip path, rather than a generic circular arc. Dash and short-hop afterimages sample earlier poses and travel direction; hammer contacts kick up a brief dust burst. These effects are presentation-only and are suppressed by reduced-motion preference where appropriate. Ordinary hits use sparks instead of large floating attack labels, keeping fighters legible; critical and major-event callouts remain.
 
 Motion tests verify distinct sword directions, a continuous staff revolution, hammer overhead-to-floor travel, stable IK lengths for every weapon and variant, upright short hops, bounded jump height, combo interruption, and a grounded-combat budget over 32 full seeded rounds.

@@ -29,8 +29,8 @@ export const TRACKS = {
   JumpKick: [
     [0, -.15, 12, 20, -7, -12, 5, 15, -9, -18, 0],
     [.22, -.35, 0, 23, -13, -26, 2, 21, -40, -24, -27],
-    [.42, -.6, 0, -2, -22, -32, 12, 55, -62, -29, -22],
-    [.66, -.48, 0, 12, -16, -28, 14, 54, -57, -31, -18],
+    [.30, -.6, 0, -2, -22, -32, 12, 55, -62, -29, -22],
+    [.58, -.48, 0, 12, -16, -28, 14, 54, -57, -31, -18],
     [.85, .12, 5, 22, -8, -16, 6, 26, -18, -15, -13],
     [1, .05, 4, 19, -9, -14, 7, 15, 0, -14, 0],
   ],
@@ -97,6 +97,13 @@ const SWORD_RISING = [
   [.8, .12, 3, 22, -16, -15, 8, 22, 0, -18, 0],
   [1, .04, 2, 18, -8, -12, 9, 15, 0, -16, 0],
 ];
+const CROSS = [
+  [0, .04, 5, 13, -18, -5, -14, 21, 0, -20, 0],
+  [.24, -.30, 9, 16, -17, -18, -8, 22, 0, -24, 0],
+  [.36, .58, 4, 9, -20, 45, -5, 31, 0, -24, 0],
+  [.55, .42, 4, 10, -17, 37, 3, 31, 0, -22, 0],
+  [1, .06, 4, 15, -18, -5, -14, 21, 0, -20, 0],
+];
 const WEAPON_ANGLES = {
   Sword: [[0, -.75], [.22, -2.6], [.34, -2.45], [.405, .35], [.56, 1.3], [.8, -.1], [1, -.75]],
   Staff: [[0, -.7], [.16, -2.4], [.3, -4.55], [.405, -6.15], [.6, -7.9], [.8, -7.5], [1, -Math.PI * 2 - .7]],
@@ -120,13 +127,13 @@ export function solveLimb(root, target, upper, lower, bend = 1) {
     tip: [root[0] + Math.cos(angle) * distance, root[1] + Math.sin(angle) * distance] };
 }
 export function computePose(f) {
-  const moving = f.alive && (f.state === 'walk' || f.state === 'run'), running = f.alive && f.state === 'run';
+  const moving = f.alive && ['walk', 'run', 'evade'].includes(f.state), running = f.alive && ['run', 'evade'].includes(f.state);
   const phase = f.stridePhase || 0, wave = Math.sin(phase), other = Math.sin(phase + Math.PI);
   let lean = moving ? running ? .35 : .1 : Math.sin(f.age * 2.8 + f.id) * .025;
   let crouch = moving ? -Math.abs(Math.sin(phase)) * (running ? 5 : 2) : 2 + Math.sin(f.age * 2.8 + f.id) * 1.2;
-  let main = [18 + (moving ? other * 17 : 0), -7 + (moving ? wave * 10 : 0)];
-  let off = [-10 + (moving ? wave * 18 : 0), 9 + (moving ? other * 10 : 0)];
-  let front = [14, 0], back = [-14, 0];
+  let main = [16 + (moving ? other * 17 : 0), -17 + (moving ? wave * 10 : 0)];
+  let off = [-5 + (moving ? wave * 18 : 0), -12 + (moving ? other * 10 : 0)];
+  let front = [21, 0], back = [-20, 0];
   if (moving) {
     const stride = running ? 31 : 18, lift = running ? 23 : 8;
     front = [wave * stride, -Math.max(0, Math.cos(phase)) * lift];
@@ -134,7 +141,8 @@ export function computePose(f) {
   } else if (f.z > 1) { front = [19, -18]; back = [-18, -8]; }
   if (f.attack) {
     const weaponKeys = f.weapon === 'Sword' && f.attack.variant === 1 ? SWORD_RISING : WEAPON_TRACKS[f.weapon];
-    const keys = f.attack.name === 'WeaponStrike' ? weaponKeys || TRACKS.WeaponStrike : TRACKS[f.attack.name];
+    const keys = f.attack.name === 'WeaponStrike' ? weaponKeys || TRACKS.WeaponStrike
+      : f.attack.name === 'Punch' && f.attack.variant === 1 ? CROSS : TRACKS[f.attack.name];
     const k = sampleTrack(keys, f.attack.elapsed / f.attack.duration);
     [lean, crouch] = k; main = k.slice(2, 4); off = k.slice(4, 6); front = k.slice(6, 8); back = k.slice(8, 10);
   }
@@ -155,6 +163,11 @@ export function computePose(f) {
     const grip = f.weapon === 'Staff' ? 19 : 13;
     off = [main[0] - Math.cos(weaponAngle) * grip, main[1] - Math.sin(weaponAngle) * grip];
   }
+  // Absorb a landing with bent knees while both feet stay on the floor.
+  if (f.alive && f.landing > 0 && f.z === 0) {
+    crouch += Math.sin(clamp(f.landing / .10, 0, 1) * Math.PI) * 11;
+    front = [22, 0]; back = [-21, 0];
+  }
   let rotation = f.tumble || 0;
   if (f.alive && f.attack?.name === 'JumpKick') {
     const progress = f.attack.elapsed / f.attack.duration;
@@ -166,7 +179,12 @@ export function computePose(f) {
     main = [21, 19]; off = [-21, 11]; front = [24, -2]; back = [-18, 1];
     rotation = f.z > 0 ? f.tumble || 0 : -Math.PI / 2;
   } else if (f.state === 'held') { rotation = -1.5; main = [20, 19]; off = [-23, 16]; front = [24, -14]; back = [-22, -7]; }
-  else if (f.stun > 0) {
+  else if (f.stun > 0 && f.state === 'hit' && f.z === 0) {
+    // A short chest/head recoil, not a knockdown or airborne flail.
+    const recoil = Math.sin(clamp(f.stun / .16, 0, 1) * Math.PI * .8);
+    lean = -.42 * recoil; crouch = 5 + 4 * recoil; rotation = 0;
+    main = [10, -17]; off = [-10, -9]; front = [23, 0]; back = [-22, 0];
+  } else if (f.stun > 0) {
     const flail = Math.sin(f.age * 15 + f.id);
     main = [18, 12 + flail * 20]; off = [-24, -4 - flail * 17]; front = [23, -8 - flail * 12]; back = [-23, -12 + flail * 8];
     lean = -.2;
