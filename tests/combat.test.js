@@ -33,3 +33,33 @@ test('PRNG stays in [0,1) for a long run', () => {
   const rng = seededRandom(0);
   for (let i = 0; i < 10000; i++) { const n = rng(); assert.ok(n >= 0 && n < 1); }
 });
+
+test('spawn rolls HP, speed, attack power and both personality traits', () => {
+  const fighters = Array.from({ length: 1000 }, (_, i) => new Fighter(i, 400, 400, seededRandom(i)));
+  assert.ok(fighters.every(f => f.hp === f.maxHp && f.maxHp >= 80 && f.maxHp <= 130));
+  assert.ok(fighters.every(f => f.speed >= 90 && f.speed < 155 && f.power >= .8 && f.power < 1.25));
+  assert.equal(new Set(fighters.map(f => f.personality)).size, 2);
+  assert.ok(new Set(fighters.map(f => f.maxHp)).size > 40);
+});
+for (const name of Object.keys(MOVES)) {
+  test(`${name}: 10% crit threshold triples damage and doubles all knockback`, () => {
+    const w = new Match(8, 2), [a, b] = w.fighters;
+    a.x = 500; a.y = 400; b.x = 530; b.y = 400; b.hp = b.maxHp = 500;
+    w.rng = () => .099999; a.hit(b, w, name);
+    assert.ok(Math.abs(500 - b.hp - MOVES[name].damage * a.power * 3) < 1e-9);
+    assert.equal(b.vx, MOVES[name].knockback * 2);
+    assert.equal(b.vz, MOVES[name].lift * 2);
+    assert.equal(w.stats.crits, 1); assert.equal(w.events[0].text, 'CRIT!');
+    b.hp = 500; w.rng = () => .1; a.hit(b, w, name);
+    assert.ok(Math.abs(500 - b.hp - MOVES[name].damage * a.power) < 1e-9);
+    assert.equal(w.stats.crits, 1);
+  });
+}
+test('coward flees in open space and fights when cornered; aggressive closes in', () => {
+  const w = new Match(5, 2), [a, b] = w.fighters;
+  a.x = 500; a.y = 400; b.x = 600; b.y = 400;
+  a.personality = 'Cowardly'; a.think(STEP, w); assert.ok(a.vx < 0);
+  a.personality = 'Aggressive'; a.think(STEP, w); assert.ok(a.vx > 0);
+  a.personality = 'Cowardly'; a.x = w.bounds.left + 5; b.x = a.x + 30;
+  a.cooldown = 0; a.think(STEP, w); assert.ok(a.attack);
+});

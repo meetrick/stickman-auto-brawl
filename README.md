@@ -31,6 +31,6 @@ The ink outlines, colored torso strokes, round heads, fluttering headbands, and 
 ## Implementation chunks
 
 1. Working combat foundation with deterministic simulation and automated checks.
-2. Fighter RNG and personalities (next).
+2. Fighter RNG: HP 80–130, speed 90–155 floor units/s, attack power 0.8–1.25×; Aggressive or Cowardly AI. Every successful attack has a 10% crit roll: 3× damage and 2× horizontal/depth/vertical knockback, with CRIT! text and a hit flash. Cowards retreat within 210 units and fight when trapped by an arena edge.
 3. Swept domino collisions (next).
 4. Dynamic landmines and health potions (next).

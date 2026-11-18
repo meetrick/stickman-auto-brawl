@@ -8,6 +8,7 @@ export const MOVES = Object.freeze({
 });
 export const COLORS = ['#bf473b', '#438477', '#b98935', '#697ea0', '#95618a', '#5e7443', '#c27443', '#577f8b'];
 export const NAMES = ['EMBER', 'JADE', 'GOLD', 'COBALT', 'IRIS', 'MOSS', 'RUST', 'TIDE'];
+export const PERSONALITIES = ['Aggressive', 'Cowardly'];
 
 export class Fighter {
   constructor(id, x, y, rng = Math.random) {
@@ -15,6 +16,11 @@ export class Fighter {
       maxHp: 100, hp: 100, speed: 115, power: 1, personality: 'Aggressive',
       state: 'idle', stun: 0, attack: null, cooldown: range(rng, .1, .8),
       flash: 0, age: 0, color: COLORS[id % COLORS.length], name: NAMES[id % NAMES.length] });
+    this.maxHp = 80 + Math.floor(rng() * 51);
+    this.hp = this.maxHp;
+    this.speed = range(rng, 90, 155);
+    this.power = range(rng, .8, 1.25);
+    this.personality = PERSONALITIES[Math.floor(rng() * PERSONALITIES.length)];
   }
   get alive() { return this.hp > 0; }
   get standing() { return this.alive && this.z <= 1 && this.stun <= 0; }
@@ -39,9 +45,13 @@ export class Fighter {
     const move = MOVES[name];
     const dx = target.x - this.x, dy = target.y - this.y;
     const length = Math.hypot(dx, dy) || 1;
-    if (!target.receiveHit(move.damage * this.power, dx / length * move.knockback,
-      dy / length * move.knockback, move.lift)) return;
-    world.emit('hit', target, { text: name.toUpperCase(), source: this.id });
+    const crit = world.rng() < .1;
+    const knockback = move.knockback * (crit ? 2 : 1);
+    const lift = move.lift * (crit ? 2 : 1);
+    if (!target.receiveHit(move.damage * this.power * (crit ? 3 : 1), dx / length * knockback,
+      dy / length * knockback, lift)) return;
+    if (crit) { world.stats.crits++; target.flash = .3; }
+    world.emit('hit', target, { text: crit ? 'CRIT!' : name.toUpperCase(), source: this.id, crit });
   }
   think(dt, world) {
     if (!this.standing || this.attack) return;
@@ -51,6 +61,13 @@ export class Fighter {
     const dx = target.x - this.x, dy = target.y - this.y;
     const distance = Math.hypot(dx, dy) || 1;
     this.facing = dx >= 0 ? 1 : -1;
+    const b = world.bounds;
+    const cornered = (this.x < b.left + 60 && dx > 0) || (this.x > b.right - 60 && dx < 0)
+      || (this.y < b.top + 45 && dy > 0) || (this.y > b.bottom - 45 && dy < 0);
+    if (this.personality === 'Cowardly' && distance < 210 && !cornered) {
+      this.vx = -dx / distance * this.speed; this.vy = -dy / distance * this.speed;
+      this.state = 'walk'; return;
+    }
     if (distance < 70 && this.cooldown <= 0 && target.z < 70) {
       const choices = Object.keys(MOVES).filter(name => MOVES[name].reach >= distance);
       if (choices.length) this.startAttack(choices[Math.floor(world.rng() * choices.length)], target);
