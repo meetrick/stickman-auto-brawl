@@ -49,6 +49,48 @@ canvas { display: block; width: 100%; aspect-ratio: 1200 / 680; }
 .result h2 { margin: 0 0 12px; font: 38px Georgia, serif; }
 .result p, .result h2, .result > span { max-width: 100%; overflow-wrap: anywhere; }
 .result > span { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.result > strong { font-size: 14px; color: #994b39; margin-top: 16px; max-width: 100%; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.result > button { pointer-events: auto; margin-top: 16px; border-radius: 6px; background: var(--green); color: white; min-height: 48px; }
+.elimination-strip { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--line); background: #ede9dc; }
+.elimination-strip > div { min-width: 0; }
+.elimination-strip span { display: block; font: 9px monospace; letter-spacing: .4px; color: #985640; }
+.elimination-strip strong { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-size: 13px; margin-top: 5px; overflow-wrap: anywhere; }
+.elimination-strip button { flex-shrink: 0; border-radius: 6px; background: var(--paper); min-height: 48px; }
+.rankings-panel { margin-top: 18px; border: 1px solid #bfc7b4; border-radius: 9px; padding: 0 16px; scroll-margin-top: 12px; }
+.rankings-panel > summary { border: 0; }
+.rankings-panel > summary h2 { flex: 1; }
+.ranking-rule { margin: 4px 0 16px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.rankings-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding-bottom: 16px; }
+.rankings-columns section { min-width: 0; }
+.rankings-columns h3 { font-size: 12px; font-weight: 600; margin: 0 0 10px; }
+.rank-list, .elimination-log { list-style: none; padding: 0; margin: 0; }
+.rank-row { display: grid; grid-template-columns: 65px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 12px 8px; border-bottom: 1px solid var(--line); min-height: 62px; }
+.rank-place { font: 600 12px monospace; color: var(--green); }
+.rank-name strong, .elimination-log strong { display: block; font-size: 13px; overflow-wrap: anywhere; }
+.rank-name small, .elimination-log small { display: block; color: var(--muted); font-size: 11px; margin-top: 5px; }
+.rank-time { font: 11px monospace; color: var(--muted); white-space: nowrap; }
+.rank-top { background: #dce7d04d; }
+.rank-last { border-left: 3px solid #ae6c50; }
+.elimination-log li { display: grid; grid-template-columns: 105px minmax(0, 1fr); gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.out-order { font: 11px/1.5 monospace; color: #985640; }
+.rank-empty { color: var(--muted); font-size: 12px; }
+.moment[data-kind="elimination"] { border-color: #985640; color: #874431; }
+@media (max-width: 600px) {
+  .rankings-panel { padding-inline: 12px; }
+  .rankings-panel .section-label { flex-wrap: wrap; padding-block: 10px; }
+  .rankings-columns { grid-template-columns: 1fr; gap: 22px; }
+  .rank-row { grid-template-columns: 59px minmax(0, 1fr) auto; gap: 7px; padding-inline: 5px; }
+  .elimination-strip { padding-inline: 10px; }
+  .elimination-strip button { font-size: 11px; padding-inline: 9px; }
+}
+@media (max-width: 800px), (max-width: 950px) and (max-height: 500px) and (orientation: landscape) {
+  .result { padding: 14px; }
+  .result h2 { font-size: 30px; line-height: 1.08; margin-bottom: 8px; }
+  .result p { margin-bottom: 8px; }
+  .result > strong { font-size: 12px; margin-top: 8px; }
+  .result > button { margin-top: 10px; min-height: 44px; }
+  .result[data-finished="true"] #result-hint { display: none; }
+}
 .moment { position: absolute; bottom: 31px; left: 12px; max-width: calc(100% - 24px); padding: 9px 12px; background: #f5f3e9ef; border-left: 3px solid var(--green); border-radius: 0 5px 5px 0; font: 600 12px monospace; pointer-events: none; }
 .moment[data-kind="explosion"], .moment[data-kind="crit"] { border-color: #bd4a3a; color: #a13e2e; }
 .metrics { display: grid; grid-template-columns: repeat(4, 1fr); padding: 15px 0; }

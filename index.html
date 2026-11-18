@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f5f3e9">
-  <meta name="description" content="Eight stick fighters. Unlikely outcomes. A mobile-first auto-brawler made for watching.">
+  <meta name="description" content="Name your friends. Watch an unarmed stickman brawl. See who wins and who goes out first.">
   <title>Stickman — Auto Brawl</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -30,16 +30,17 @@
           <canvas aria-label="Live auto-battler arena. Fighters battle automatically; no gameplay input is needed."></canvas>
           <span class="arena-label" id="mode">THE COURTYARD</span>
           <button id="camera" class="camera-button" aria-pressed="false" title="Toggle full arena view">⊞ Overview</button>
-          <div id="result" class="result" hidden><p id="result-caption"></p><h2 id="result-title"></h2><span id="result-hint"></span></div>
+          <div id="result" class="result" hidden><p id="result-caption"></p><h2 id="result-title"></h2><span id="result-hint"></span><strong id="result-first-out"></strong><button id="result-rankings" data-i18n="viewStandings">View standings</button></div>
           <div id="moment" class="moment" aria-hidden="true" hidden></div>
           <p class="watch-hint" data-i18n="noControls">NO CONTROLS. JUST CHAOS.</p>
         </div>
         <div class="metrics" aria-label="Live chaos counts">
           <div><b id="crits">0</b><span data-i18n="crits">CRITS</span></div>
           <div><b id="dominoes">0</b><span data-i18n="dominoes">DOMINOES</span></div>
-          <div><b id="weapon-hits">0</b><span data-i18n="weaponHits">WEAPON HITS</span></div>
+          <div><b id="hits">0</b><span data-i18n="hits">HITS</span></div>
           <div><b id="heals">0</b><span data-i18n="heals">HEALS</span></div>
         </div>
+        <div class="elimination-strip"><div role="status"><span data-i18n="firstOut">FIRST OUT · LAST PLACE</span><strong id="first-out-names"></strong></div><button id="view-rankings" data-i18n="viewStandings">View standings</button></div>
         <nav class="controls" aria-label="Match controls">
           <button id="new-match" class="primary"><span data-i18n="newMatch">New match</span> <span aria-hidden="true">↗</span></button>
           <button id="pause" aria-pressed="false">Ⅱ Pause</button>
@@ -56,8 +57,16 @@
         <p class="roster-note" data-i18n="rosterNote">Fresh stats. Different personalities. Every round.</p>
       </details>
     </div>
+    <details id="rankings-panel" class="rankings-panel">
+      <summary class="section-label"><h2 id="rankings-title">Eliminations & standings</h2><span id="rankings-count"></span><i class="chevron" aria-hidden="true">⌄</i></summary>
+      <p id="ranking-rule" class="ranking-rule"></p>
+      <div class="rankings-columns">
+        <section aria-labelledby="standings-heading"><h3 id="standings-heading" data-i18n="standingsHeading">Standings</h3><ol id="standings-list" class="rank-list"></ol></section>
+        <section aria-labelledby="eliminations-heading"><h3 id="eliminations-heading" data-i18n="eliminationOrder">Elimination order</h3><ol id="elimination-log" class="elimination-log"></ol></section>
+      </div>
+    </details>
     <section class="below">
-      <div class="field-guide"><h2 data-i18n="guide">Expect the unexpected.</h2><p id="map-info"></p><p><span class="item-dot red"></span> <span data-i18n="poles">Rotating poles redirect the fight.</span> <span class="item-dot green"></span> <span data-i18n="potions">Potions heal.</span></p><span data-i18n="odds">10% crit chance · 3× damage · flying bodies hit back.</span></div>
+      <div class="field-guide"><h2 data-i18n="guide">Expect the unexpected.</h2><p id="map-info"></p><p><span data-i18n="bareKnuckle">Just fists, kicks, and throws. No weapons or poles.</span> <span data-i18n="potions">Potions heal.</span></p><span data-i18n="odds">10% crit chance · 3× damage · flying bodies hit back.</span></div>
       <details class="event-panel"><summary class="section-label"><h2 data-i18n="notes">Ringside notes</h2><span><span data-i18n="recent">Recent action</span> <i class="chevron" aria-hidden="true">⌄</i></span></summary><ul id="events" aria-label="Recent combat events"></ul></details>
     </section>
   </main>

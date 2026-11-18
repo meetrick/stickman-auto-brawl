@@ -57,7 +57,8 @@ for (const name of Object.keys(MOVES)) {
   });
 }
 test('coward flees in open space and fights when cornered; aggressive closes in', () => {
-  const w = new Match(5, 2, { terrain: false }), [a, b] = w.fighters;
+  const w = new Match(5, 3, { terrain: false }), [a, b, c] = w.fighters;
+  c.x = 1000; c.y = 550;
   a.x = 500; a.y = 400; b.x = 600; b.y = 400;
   a.personality = 'Cowardly'; a.think(STEP, w); assert.ok(a.vx < 0);
   a.personality = 'Aggressive'; a.think(STEP, w); assert.ok(a.vx > 0);

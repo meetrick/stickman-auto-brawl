@@ -3,6 +3,7 @@ import { Renderer } from './renderer.js';
 import { COLORS } from './fighter.js';
 import { MIN_FIGHTERS, MAX_FIGHTERS, SETTINGS_KEY, normalizePreferences, loadPreferences, savePreferences, escapeHTML } from './settings.js';
 import { t, eventText, setLanguage, getLanguage } from './i18n.js';
+import { firstOutNames, standingsMarkup, eliminationMarkup } from './results.js';
 
 export function boot() {
   const $ = selector => document.querySelector(selector), renderer = new Renderer($('canvas'));
@@ -13,6 +14,7 @@ export function boot() {
   const mobile = matchMedia('(max-width: 800px), (max-width: 950px) and (max-height: 500px) and (orientation: landscape)');
   const rosterPanel = $('#fighters-panel'), tools = $('#tools'), dialog = $('#setup-dialog'), cards = new Map();
   let match, paused = false, speed = 1, accumulator = 0, last = 0, uiClock = 0, lastEvent = null;
+  let lastRankingKey = null, resultsShown = false;
   const text = (node, value) => { if (node.textContent !== String(value)) node.textContent = value; };
   const persist = () => savePreferences(storage, preferences);
   const newSeed = () => crypto.getRandomValues(new Uint32Array(1))[0];
@@ -35,10 +37,25 @@ export function boot() {
   function start(seed, showcase = false, setup = preferences) {
     match = new Match(seed, setup.count, { showcase, names: setup.names }); paused = false; accumulator = 0;
     renderer.camera.reset(); renderer.dirty = true; renderer.nameLabels?.clear(); lastEvent = null; tools.open = false;
+    lastRankingKey = null; resultsShown = false; $('#rankings-panel').open = false;
     text($('#seed'), String(match.seed).padStart(6, '0')); $('#pause').setAttribute('aria-pressed', 'false');
     renderRoster(); updateCameraLabel(); updateUI();
   }
+  function updateRankings() {
+    const key = `${match.eliminations.length}:${match.finished}:${getLanguage()}`;
+    if (key === lastRankingKey) return;
+    lastRankingKey = key;
+    const first = firstOutNames(match);
+    text($('#first-out-names'), first || t('noEliminations'));
+    text($('#rankings-title'), t(match.finished ? 'finalStandings' : 'liveStandings'));
+    text($('#rankings-count'), t('outCount', { count: match.eliminations.length, total: match.fighters.length }));
+    text($('#ranking-rule'), t(match.timedOut ? 'timeoutRule' : 'rankingRule'));
+    $('#standings-list').innerHTML = standingsMarkup(match);
+    $('#elimination-log').innerHTML = eliminationMarkup(match);
+    if (match.finished && !resultsShown) { $('#rankings-panel').open = true; resultsShown = true; }
+  }
   function updateUI() {
+    updateRankings();
     text($('#clock'), `${Math.floor(match.time / 60).toString().padStart(2, '0')}:${Math.floor(match.time % 60).toString().padStart(2, '0')}`);
     const alive = match.fighters.filter(f => f.alive).length;
     text($('#alive'), `${alive} / ${match.fighters.length}`); text($('#arena-alive'), t('alive', { count: alive }));
@@ -58,15 +75,19 @@ export function boot() {
     text($('#pause'), t(paused ? 'resume' : 'pause')); $('#pause').disabled = match.finished;
     text($('#speed'), t('speed', { speed })); $('#speed').setAttribute('aria-label', t('speedLabel', { speed }));
     $('#result').hidden = !match.finished && !paused;
+    $('#result').dataset.finished = String(match.finished);
     if (match.finished || paused) {
-      text($('#result-caption'), t(match.finished ? match.winner ? 'lastStanding' : 'noWinner' : 'breather'));
+      text($('#result-caption'), t(match.finished ? match.winner ? 'lastStanding' : match.timedOut ? 'timeLimit' : 'noWinner' : 'breather'));
       text($('#result-title'), paused ? t('pauseTitle') : match.winner ? t('winner', { name: match.winner.name }) : t('draw'));
       text($('#result-hint'), t(paused ? 'resumeHint' : 'newMatchHint'));
+      $('#result-first-out').hidden = !match.finished || !match.eliminations.length;
+      text($('#result-first-out'), t('firstOutResult', { names: firstOutNames(match) }));
+      $('#result-rankings').hidden = !match.finished;
     }
-    const moment = match.events.find(e => e.crit || ['domino', 'heal', 'wall', 'bar'].includes(e.type));
+    const moment = match.events.find(e => match.time - e.time < 1.8 && (e.crit || ['domino', 'heal', 'elimination'].includes(e.type)));
     $('#moment').hidden = paused || match.finished || !moment || match.time - moment.time > 1.8;
     if (moment) { text($('#moment'), `${match.fighters[moment.fighter].name} · ${eventText(moment)}`); $('#moment').dataset.kind = moment.crit ? 'crit' : moment.type; }
-    text($('#weapon-hits'), match.stats.moves?.WeaponStrike || 0);
+    text($('#hits'), match.stats.hits);
     for (const key of ['crits', 'dominoes', 'heals']) text($(`#${key}`), match.stats[key]);
   }
   function translatePage() {
@@ -113,6 +134,11 @@ export function boot() {
   $('#pause').onclick = () => { if (match.finished) return; paused = !paused; renderer.dirty = true; $('#pause').setAttribute('aria-pressed', String(paused)); updateUI(); };
   $('#speed').onclick = () => { speed = speed === 1 ? 2 : speed === 2 ? .5 : 1; updateUI(); };
   $('#camera').onclick = () => { renderer.overview = !renderer.overview; renderer.dirty = true; updateCameraLabel(); };
+  $('#view-rankings').onclick = $('#result-rankings').onclick = () => {
+    const panel = $('#rankings-panel'); panel.open = true;
+    panel.querySelector('summary').focus({ preventScroll: true });
+    panel.scrollIntoView({ behavior: renderer.reducedMotion.matches ? 'instant' : 'smooth', block: 'start' });
+  };
   document.addEventListener('pointerdown', event => { if (!tools.contains(event.target)) tools.open = false; });
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && tools.open) { tools.open = false; tools.querySelector('summary').focus(); } });
   document.addEventListener('visibilitychange', () => { last = 0; accumulator = 0; });

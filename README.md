@@ -25,8 +25,8 @@ English is the first-visit default. The header language button and setup selecto
 
 - HP 80–130, base speed 90–155, power 0.8–1.25×, random favored attacks and tempo.
 - Aggressive, Cowardly, Brawler, and Trickster personalities; Walker, Runner, and stamina-limited Sprinter movement.
-- Grounded jab/cross Punch chains into Kick, a braking Dash, a short-hop JumpKick, Uppercut, and a physical lift-and-throw Grab, plus weapon-specific strikes.
-- All fighters start and remain unarmed. Cowards backstep instead of repeatedly jumping. Ordinary hits recoil on the floor; uppercuts and throws retain launch physics.
+- Grounded jab/cross Punch chains into Kick, a braking Dash, a short-hop JumpKick, Uppercut, and a physical lift-and-throw Grab, with no weapon attacks in normal matches.
+- All fighters start and remain unarmed. Cowards backstep instead of repeatedly jumping, then commit to fighting when only two participants remain. Ordinary hits recoil on the floor; uppercuts and throws retain launch physics.
 - Each attack has a 10% critical roll: 3× damage and 2× knockback. Cleave victims share the attack's critical roll.
 - Thrown and knocked bodies can bowl over standing fighters, including airborne KO bodies. Swept collision checks prevent tunneling and repeated damage to the same victim during one flight.
 - Open floor: no rotating poles or walls interrupt the fight.
@@ -37,7 +37,7 @@ Legacy wall, pole, and weapon code is retained for isolated regression tests. Th
 
 ## Mobile spectator UI
 
-The arena and live crit/domino/weapon-hit/heal counters take priority. The bottom dock uses 48px phone touch targets and safe-area padding. Roster and combat notes collapse on phones. **More** contains setup, seed replay, and the demo. Automatic close-up framing enlarges the active fight; **Overview** shows the complete arena without stretching. Edge markers identify fighters outside the close-up. Reduced-motion preference defaults to Overview and suppresses continuous panning.
+The arena and live crit/domino/hit/heal counters take priority. A compact first-out strip identifies last place; View standings opens the rank and elimination lists. The bottom dock uses 48px phone touch targets and safe-area padding. Roster and combat notes collapse on phones. **More** contains setup, seed replay, and the demo. Automatic close-up framing enlarges the active fight; **Overview** shows the complete arena without stretching. Edge markers identify fighters outside the close-up. Reduced-motion preference defaults to Overview and suppresses continuous panning.
 
 Pause, 0.5× / 1× / 2× speed, and camera selection affect presentation only. Physics runs at a fixed 120 Hz. A round ends with one survivor, simultaneous KO, or a 90-second draw. Hidden tabs avoid catch-up bursts; paused/finished rounds stop continuous drawing. Canvas resizing uses ResizeObserver and roster health values update in place.
 
@@ -45,7 +45,8 @@ Pause, 0.5× / 1× / 2× speed, and camera selection affect presentation only. P
 
 - `app.js`: deterministic match simulation. `fighter.js`: combat, AI, movement, and defeat.
 - `pose.js`: keyframed hand/foot targets and two-bone IK. `renderer.js`: articulated drawing, trails, effects, and depth sorting.
-- `arena.js`: rotating poles and swept collisions. `hazards.js`: potion spawning and floor pickup contact.
+- `arena.js`: legacy obstacle physics for isolated tests. `hazards.js`: potion spawning and floor pickup contact.
+- `results.js`: localized, escaped standings and elimination timeline markup.
 - `ui.js`: spectator controls and setup. `settings.js`: preference validation/storage. `i18n.js`: English/Korean messages.
 - `x/y` are floor coordinates, `z` is height, `vz` is vertical velocity; projection is `(x, y - z)`.
 
@@ -53,21 +54,23 @@ The paper palette, ink outlines, fluttering headbands, and keyframed end-effecto
 
 ## Validation
 
-Node's built-in tests cover attacks/crit boundaries, IK limb lengths, attack silhouettes, grabs and interruption, weapon differences/cleave limits, sprint/evade behavior, swept body/pole collisions, trap absence, potion limits, permanent defeat, preference persistence and safe names, translations, seeded replay, and complete 2-/6-/12-player rounds. Integration checks run 32 full random matches and verify natural use of all attack and weapon types without damaging floor traps.
+Node's built-in tests cover attacks/crit boundaries, IK limb lengths, attack silhouettes, grabs and interruption, weapon differences/cleave limits, sprint/evade behavior, swept body/pole collisions, trap absence, potion limits, permanent defeat, preference persistence and safe names, translations, seeded replay, and complete 2-/6-/12-player rounds. Integration checks run 32 full random matches and verify natural use of unarmed attacks without weapons, poles, walls, or damaging floor traps. Ranking tests cover KO-time recording, shared places, timeout survivors, event-log truncation, duplicate/unsafe names, replay reset, and deterministic complete rounds.
 
 Browser checks include phone portrait/landscape and desktop layouts, a scrollable 12-player setup at 320×568, language/name restoration, and published GitHub Pages execution. These are browser viewport checks, not physical-device certification.
 
 ## Combat choreography
 
-Each weapon has independent hand/foot keyframes and angle tracks aligned to its active hit window: alternating descending/rising sword cuts, a full-turn staff sweep with a second-hand grip, and a two-handed overhead hammer slam with a deep follow-through. Jump kicks stay upright, use a low ballistic hop, and have a 3.5-second reuse delay plus landing recovery. The grab lift aligns the victim more closely with the holder's hands.
+Normal matches use original procedural jab/cross, side-kick, dash, short-hop kick, uppercut, and lift-and-throw poses. Jabs and rear-hand crosses alternate torso loading and extension, then finish with a planted side kick. End-effector trails follow the fist/foot path. Grounded victims recoil through their chest and head while keeping their feet planted; landing bends the knees before recovery. Jump kicks stay upright, use a low ballistic hop, and have a 3.5-second reuse delay plus landing recovery.
 
-Jabs and rear-hand crosses alternate with different torso loading and extension, then finish with a planted side kick. Short end-effector trails follow the actual fist/foot path. Grounded victims recoil through their chest and head while keeping their feet planted; landing bends the knees before recovery. Weapons are stowed during punches, kicks, and grabs. The timing-focused grounded exchanges requested with the [Stickman Fighter Epic Battle reference](https://poki.com/kr/g/stickman-fighter-epic-battle) are implemented with original procedural poses, without copying its assets or source.
+The grounded exchange direction was requested with the [Stickman Fighter Epic Battle reference](https://poki.com/kr/g/stickman-fighter-epic-battle). No assets or source were copied. Legacy weapon choreography remains in isolated regression tests, but weapons never spawn in browser matches.
 
-A 32-seed simulation sample (seeds 1–32, default eight fighters) reduced living fighter time above 12 height units from about 42% to 6%. This is a regression measure for excessive airtime, not a claim about perceived entertainment.
+## Elimination order and standings
 
-Weapon ribbons are sampled from the actual recent hand and weapon-tip path, rather than a generic circular arc. Dash and short-hop afterimages sample earlier poses and travel direction; hammer contacts kick up a brief dust burst. These effects are presentation-only and are suppressed by reduced-motion preference where appropriate. Ordinary hits use sparks instead of large floating attack labels, keeping fighters legible; critical and major-event callouts remain.
+Each knockout is recorded when HP reaches zero at the end of a fixed 120 Hz physics step, even if the body is still airborne. The elimination ledger is independent of the bounded combat-event feed. First out is last place; the survivor is first. Same-step knockouts share a place and an elimination position, using competition ranking (for example, 1, 2, 2, 4). Participant IDs only order display rows inside a tie; they do not decide a winner.
 
-Motion tests verify distinct sword directions, a continuous staff revolution, hammer overhead-to-floor travel, stable IK lengths for every weapon and variant, upright short hops, bounded jump height, combo interruption, and a grounded-combat budget over 32 full seeded rounds.
+During a round, surviving fighters have no assigned place. At the 90-second limit, any remaining survivors share first place, without an HP tiebreak or a fabricated elimination. If everyone is knocked out, there is no surviving winner, and the last simultaneous KO group shares first place. The UI explains ties and timeout results in English and Korean.
+
+The first-out strip stays visible below the arena. Final standings open automatically at round end; View standings scrolls to all participants and the chronological elimination log, with participant numbers and times shown to 0.01 seconds. Long summary names are limited to two lines; full names remain in the lists. Results belong to the current round and reset on a new match, replay, or page reload; match history is not persisted. Names and participant/language preferences remain saved separately.
 
 ## Copyright and license
 

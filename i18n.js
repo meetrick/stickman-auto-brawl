@@ -8,12 +8,27 @@ export const MESSAGES = {
   demo: ['✳ Chaos demo', '✳ 혼돈 시연'], demoHint: ['Demo opens with a staged collision.', '시연은 연쇄 충돌 장면으로 시작합니다.'],
   fighters: ['The fighters', '참가자'], remaining: ['remaining', '생존'], rosterNote: ['Fresh stats. Different personalities. Every round.', '능력치와 성격은 경기마다 새로 정해집니다.'],
   guide: ['Expect the unexpected.', '어떤 일이 벌어질지 모릅니다.'], poles: ['Rotating poles redirect the fight.', '회전봉이 전투의 흐름을 바꿉니다.'],
+  bareKnuckle: ['Just fists, kicks, and throws. No weapons or poles.', '무기·회전봉 없이 펀치, 발차기, 던지기로 승부합니다.'],
   potions: ['Potions heal.', '포션으로 체력 회복.'], odds: ['10% crit chance · 3× damage · flying bodies hit back.', '치명타 확률 10% · 피해 3배 · 날아온 몸도 무기가 됩니다.'],
   notes: ['Ringside notes', '전투 기록'], recent: ['Recent action', '최근 상황'], quiet: ['The arena is holding its breath.', '곧 격투가 시작됩니다.'],
   footer: ['BUILT FROM STICKS & UNLIKELY OUTCOMES.', '작은 스틱맨들이 만들어내는 예측 불가의 격투.'],
   footerTech: ['2.5D PHYSICS / ZERO PLAYER INPUT', '2.5D 물리 / 자동 전투'],
   noControls: ['NO CONTROLS. JUST CHAOS.', '조작 없이 즐기는 예측 불가의 격투.'],
   crits: ['CRITS', '치명타'], dominoes: ['DOMINOES', '연쇄 충돌'], weaponHits: ['WEAPON HITS', '무기 타격'], heals: ['HEALS', '회복'],
+  hits: ['HITS', '타격'], firstOut: ['FIRST OUT · LAST PLACE', '첫 탈락 · 꼴찌'],
+  noEliminations: ['No eliminations yet.', '아직 탈락자가 없습니다.'],
+  viewStandings: ['View standings', '순위 보기'], liveStandings: ['Eliminations & standings', '탈락 기록 · 순위'],
+  finalStandings: ['Final standings', '최종 순위'], standingsHeading: ['Standings', '순위표'],
+  eliminationOrder: ['Elimination order · earliest first', '탈락 순서 · 먼저 탈락한 순'],
+  outCount: ['{count} / {total} out', '{total}명 중 {count}명 탈락'],
+  place: ['#{rank}', '{rank}위'], tiedPlace: ['Tied #{rank}', '공동 {rank}위'],
+  stillFighting: ['Still fighting', '전투 중'], survived: ['Survived', '생존'],
+  outOrder: ['Out {order}', '{order}번째 탈락'], tiedOutOrder: ['Out {order} · simultaneous', '{order}번째 동시 탈락'],
+  elapsedSeconds: ['{seconds}s', '{seconds}초'], timeLimit: ['TIME LIMIT · SHARED PLACES', '시간 종료 · 공동 순위'],
+  rankingRule: ['First out is last place. Same-step KOs share a place; no participant-number tiebreak.', '먼저 탈락할수록 낮은 순위입니다. 동시 탈락은 공동 순위로 처리합니다.'],
+  timeoutRule: ['90-second limit. Remaining fighters share first place; HP does not break the tie.', '90초 종료. 남은 참가자는 공동 1위이며 체력으로 순위를 가르지 않습니다.'],
+  firstOutResult: ['First out · {names}', '첫 탈락 · {names}'],
+  eliminationEvent: ['Out · #{rank}', '탈락 · {rank}위'], tiedEliminationEvent: ['Out · tied #{rank}', '탈락 · 공동 {rank}위'],
   live: ['LIVE MATCH', '경기 진행 중'], paused: ['PAUSED', '일시정지'], roundOver: ['ROUND OVER', '경기 종료'],
   alive: ['{count} left', '{count}명 생존'], ko: ['KO', '탈락'], seed: ['SEED', '시드'],
   overview: ['⊞ Overview', '⊞ 전체 보기'], autoCameraButton: ['◎ Auto camera', '◎ 자동 카메라'],
@@ -58,6 +73,7 @@ export function t(key, values = {}, locale = language) {
   return message.replace(/\{(\w+)\}/g, (_, name) => String(values[name] ?? ''));
 }
 export function eventText(event) {
+  if (event.type === 'elimination') return t(event.tied ? 'tiedEliminationEvent' : 'eliminationEvent', { rank: event.rank });
   const heal = /^\+(\d+) HP$/.exec(event.text || '');
   return heal ? t('healText', { amount: heal[1] }) : t(event.text || event.type);
 }

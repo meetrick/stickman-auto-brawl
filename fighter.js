@@ -110,7 +110,7 @@ export class Fighter {
     const cornered = (this.x < b.left + 60 && dx > 0) || (this.x > b.right - 60 && dx < 0)
       || (this.y < b.top + 45 && dy > 0) || (this.y > b.bottom - 45 && dy < 0);
     if (cornered) this.courageUntil = world.time + 2.5;
-    if (this.personality === 'Cowardly' && distance < 210 && !cornered && world.time >= (this.courageUntil || 0)) {
+    if (this.personality === 'Cowardly' && enemies.length > 1 && distance < 210 && !cornered && world.time >= (this.courageUntil || 0)) {
       this.intent = 'flee';
       this.moveToward({ x: clamp(this.x - dx / distance * 150, b.left + 18, b.right - 18), y: clamp(this.y - dy / distance * 150, b.top + 18, b.bottom - 18) }, world, true);
       this.facing = dx >= 0 ? 1 : -1;

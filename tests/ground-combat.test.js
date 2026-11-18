@@ -51,3 +51,12 @@ test('seeded rounds favor grounded exchanges while keeping every special move', 
   assert.ok(moves.Punch + moves.Kick > moves.JumpKick * 4);
   for (const name of ['Dash', 'JumpKick', 'Uppercut', 'Grab']) assert.ok(moves[name] > 5, name);
 });
+
+test('the final two commit to fighting instead of fleeing around an empty arena', () => {
+  const w = new Match(8, 3), [a, b, c] = w.fighters;
+  Object.assign(a, { x: 500, y: 400, personality: 'Cowardly', cooldown: 1 });
+  Object.assign(b, { x: 600, y: 400 }); Object.assign(c, { x: 1000, y: 550 });
+  a.think(STEP, w); assert.equal(a.intent, 'flee'); assert.ok(a.vx < 0);
+  c.receiveHit(999, 0, 0, 0);
+  a.think(STEP, w); assert.equal(a.intent, 'chase'); assert.ok(a.vx > 0);
+});
