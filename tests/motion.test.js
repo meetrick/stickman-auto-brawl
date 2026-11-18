@@ -63,3 +63,39 @@ test('dash has a windup followed by a locked diagonal burst; all gait styles spa
   const styles = new Set(Array.from({ length: 300 }, (_, i) => new Fighter(i, 0, 0, seededRandom(i)).gait));
   assert.equal(styles.size, GAITS.length);
 });
+
+test('sword cuts alternate direction, staff completes a turn, and hammer follows an overhead-to-floor arc', () => {
+  const f = new Fighter(0, 400, 400, seededRandom(1));
+  const at = (weapon, progress, variant = 0) => {
+    f.weapon = weapon; const duration = f.getMove('WeaponStrike').duration;
+    f.attack = { name: 'WeaponStrike', duration, elapsed: duration * progress, variant }; return computePose(f);
+  };
+  const down = at('Sword', .405), rising = at('Sword', .405, 1);
+  assert.ok(down.main.tip[1] > rising.main.tip[1]); assert.ok(down.weaponAngle > rising.weaponAngle);
+  const begin = at('Staff', 0), end = at('Staff', 1);
+  assert.ok(Math.abs((begin.weaponAngle - end.weaponAngle) - Math.PI * 2) < 1e-8);
+  const raised = at('Hammer', .34), slam = at('Hammer', .49);
+  const headY = p => p.main.tip[1] + Math.sin(p.weaponAngle) * 43;
+  assert.ok(headY(slam) - headY(raised) > 100);
+  assert.equal(new Set(['Sword', 'Staff', 'Hammer'].map(w => JSON.stringify(at(w, .405)))).size, 3);
+});
+test('weapon-specific choreography keeps IK bone lengths through both attack variants', () => {
+  const f = new Fighter(0, 0, 0, seededRandom(1));
+  for (const weapon of ['Sword', 'Staff', 'Hammer']) for (const variant of [0, 1]) for (let i = 0; i <= 100; i++) {
+    f.weapon = weapon; const duration = f.getMove('WeaponStrike').duration;
+    f.attack = { name: 'WeaponStrike', duration, elapsed: duration * i / 100, variant };
+    const p = computePose(f);
+    for (const arm of [p.main, p.off]) {
+      assert.ok(Math.abs(distance(p.shoulder, arm.joint) - 23) < 1e-6);
+      assert.ok(Math.abs(distance(arm.joint, arm.tip) - 23) < 1e-6);
+    }
+    for (const leg of [p.front, p.back]) assert.ok(Math.abs(distance(leg.joint, leg.tip) - 29) < 1e-6);
+  }
+});
+test('spin kicks finish their rotation before the active hit window', () => {
+  const f = new Fighter(0, 0, 0, seededRandom(1)), move = MOVES.JumpKick;
+  f.attack = { name: 'JumpKick', duration: move.duration, elapsed: move.duration * .25, variant: 1 };
+  assert.ok(Math.abs(computePose(f).rotation) > Math.PI);
+  f.attack.elapsed = move.windup;
+  assert.ok(Math.abs(computePose(f).rotation + Math.PI * 2) < 1e-8);
+});

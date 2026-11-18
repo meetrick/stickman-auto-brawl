@@ -43,6 +43,51 @@ export const TRACKS = {
     [1, .04, 3, 20, -10, -9, 8, 15, 0, -15, 0],
   ],
 };
+// Individual weapon choreography. Contact aligns near 40% of each move.
+export const WEAPON_TRACKS = {
+  Sword: [
+    [0, .04, 2, 18, -8, -12, 9, 15, 0, -16, 0],
+    [.2, -.3, 10, -22, -22, 19, -14, 20, 0, -24, 0],
+    [.34, -.42, 12, -15, -34, 17, -17, 20, 0, -26, 0],
+    [.405, .62, -2, 43, 1, -26, 12, 34, 0, -26, -7],
+    [.53, .75, 6, 29, 26, -20, 16, 36, 0, -27, 0],
+    [.76, .22, 4, 23, 6, -14, 6, 23, 0, -20, 0],
+    [1, .04, 2, 18, -8, -12, 9, 15, 0, -16, 0],
+  ],
+  Staff: [
+    [0, .08, 3, 17, 2, -8, 6, 19, 0, -19, 0],
+    [.16, -.25, 10, -22, 8, -9, 7, 24, 0, -25, 0],
+    [.3, -.4, 7, -11, -24, -6, -13, 27, -5, -27, 0],
+    [.405, .5, 0, 33, 3, 6, -2, 34, 0, -25, -7],
+    [.6, .62, 8, 29, 19, 4, 14, 30, 0, -30, 0],
+    [.78, -.12, 4, 15, -15, -9, -9, 22, 0, -22, 0],
+    [1, .08, 3, 17, 2, -8, 6, 19, 0, -19, 0],
+  ],
+  Hammer: [
+    [0, -.08, 5, 12, -12, 1, -9, 17, 0, -19, 0],
+    [.2, -.3, 16, -8, -34, -13, -25, 22, 0, -24, 0],
+    [.34, -.52, 20, -10, -42, -13, -31, 24, 0, -29, 0],
+    [.405, .65, 7, 32, 22, 15, 9, 36, 0, -28, -4],
+    [.49, .82, 22, 28, 32, 14, 21, 37, 0, -30, 0],
+    [.68, .55, 18, 31, 23, 15, 15, 32, 0, -26, 0],
+    [1, -.08, 5, 12, -12, 1, -9, 17, 0, -19, 0],
+  ],
+};
+const SWORD_RISING = [
+  [0, .04, 2, 18, -8, -12, 9, 15, 0, -16, 0],
+  [.22, -.35, 17, -17, 28, 18, -17, 22, 0, -24, 0],
+  [.34, -.38, 19, -14, 27, 19, -15, 22, 0, -25, 0],
+  [.405, .48, -5, 31, -26, -22, 12, 32, 0, -25, -9],
+  [.57, .18, -4, 14, -40, -23, 9, 29, 0, -22, -6],
+  [.8, .12, 3, 22, -16, -15, 8, 22, 0, -18, 0],
+  [1, .04, 2, 18, -8, -12, 9, 15, 0, -16, 0],
+];
+const WEAPON_ANGLES = {
+  Sword: [[0, -.75], [.22, -2.6], [.34, -2.45], [.405, .35], [.56, 1.3], [.8, -.1], [1, -.75]],
+  Staff: [[0, -.7], [.16, -2.4], [.3, -4.55], [.405, -6.15], [.6, -7.9], [.8, -7.5], [1, -Math.PI * 2 - .7]],
+  Hammer: [[0, -1.05], [.2, -1.9], [.34, -1.85], [.405, .85], [.49, 1.4], [.68, 1.25], [1, -1.05]],
+};
+
 export function sampleTrack(keys, time) {
   if (time <= keys[0][0]) return keys[0].slice(1);
   for (let i = 1; i < keys.length; i++) if (time <= keys[i][0]) {
@@ -73,17 +118,34 @@ export function computePose(f) {
     back = [-wave * stride, -Math.max(0, -Math.cos(phase)) * lift];
   } else if (f.z > 1) { front = [19, -18]; back = [-18, -8]; }
   if (f.attack) {
-    const k = sampleTrack(TRACKS[f.attack.name], f.attack.elapsed / f.attack.duration);
+    const weaponKeys = f.weapon === 'Sword' && f.attack.variant === 1 ? SWORD_RISING : WEAPON_TRACKS[f.weapon];
+    const keys = f.attack.name === 'WeaponStrike' ? weaponKeys || TRACKS.WeaponStrike : TRACKS[f.attack.name];
+    const k = sampleTrack(keys, f.attack.elapsed / f.attack.duration);
     [lean, crouch] = k; main = k.slice(2, 4); off = k.slice(4, 6); front = k.slice(6, 8); back = k.slice(8, 10);
   }
-  let weaponAngle = moving ? -.65 + wave * .18 : -.75;
+  if (!moving && !f.attack) {
+    if (f.weapon === 'Hammer') { main = [12, -12]; off = [2, -8]; }
+    if (f.weapon === 'Staff') main = [17, 2];
+  }
+  let weaponAngle = moving ? -.65 + wave * .18 : f.weapon === 'Hammer' ? -1.05 : f.weapon === 'Staff' ? -.7 : -.75;
+  if (f.attack?.name === 'Dash' && f.attack.elapsed > .12 && f.attack.elapsed < .5) weaponAngle = .05;
   if (f.attack?.name === 'WeaponStrike') {
     const progress = f.attack.elapsed / f.attack.duration;
-    weaponAngle = sampleTrack([[0, -.75], [.22, -2.55], [.33, -2.4], [.41, .2], [.64, 1.2], [1, -.75]], progress)[0];
-    if (f.weapon === 'Hammer') { crouch += 4 * Math.sin(Math.PI * progress); lean -= .08; }
+    const angles = f.weapon === 'Sword' && f.attack.variant === 1
+      ? [[0, -.75], [.22, 2], [.34, 1.9], [.405, -1.05], [.57, -2], [.8, -1.5], [1, -.75]]
+      : WEAPON_ANGLES[f.weapon] || WEAPON_ANGLES.Sword;
+    weaponAngle = sampleTrack(angles, progress)[0];
   }
-  if (f.weapon === 'Staff' && f.attack?.name === 'WeaponStrike') off = [main[0] - Math.cos(weaponAngle) * 19, main[1] - Math.sin(weaponAngle) * 19];
+  if (['Staff', 'Hammer'].includes(f.weapon) && f.attack?.name === 'WeaponStrike') {
+    const grip = f.weapon === 'Staff' ? 19 : 13;
+    off = [main[0] - Math.cos(weaponAngle) * grip, main[1] - Math.sin(weaponAngle) * grip];
+  }
   let rotation = f.tumble || 0;
+  if (f.alive && f.attack?.name === 'JumpKick') {
+    const progress = f.attack.elapsed / f.attack.duration;
+    if (f.attack.variant === 1) rotation = -Math.PI * 2 * clamp((progress - .06) / .29, 0, 1);
+    else rotation = sampleTrack([[0, 0], [.25, -.25], [.42, -.38], [.7, -.15], [1, 0]], progress)[0];
+  }
   if (!f.alive) {
     // One inert pose: no breathing, flailing, or recovery cycle after defeat.
     lean = -.08; crouch = 0; weaponAngle = .35;

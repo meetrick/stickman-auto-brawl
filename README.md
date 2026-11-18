@@ -25,7 +25,7 @@ English is the first-visit default. The header language button and setup selecto
 
 - HP 80–130, base speed 90–155, power 0.8–1.25×, random favored attacks and tempo.
 - Aggressive, Cowardly, Brawler, and Trickster personalities; Walker, Runner, and stamina-limited Sprinter movement.
-- Dash, JumpKick, Uppercut, and a physical lift-and-throw Grab, plus weapon-specific strikes.
+- Dash, alternating flying/spin JumpKick, Uppercut, and a physical lift-and-throw Grab, plus weapon-specific strikes.
 - Unarmed, Sword (fast slash), Staff (long sweep, two victims maximum), or Hammer (slow heavy launch) loadouts. Sword hits can open one short dash follow-up; cowards occasionally leap away.
 - Each attack has a 10% critical roll: 3× damage and 2× knockback. Cleave victims share the attack's critical roll.
 - Thrown and knocked bodies can bowl over standing fighters, including airborne KO bodies. Swept collision checks prevent tunneling and repeated damage to the same victim during one flight.
@@ -56,3 +56,11 @@ The paper palette, ink outlines, fluttering headbands, and keyframed end-effecto
 Node's built-in tests cover attacks/crit boundaries, IK limb lengths, attack silhouettes, grabs and interruption, weapon differences/cleave limits, sprint/evade behavior, swept body/pole collisions, trap absence, potion limits, permanent defeat, preference persistence and safe names, translations, seeded replay, and complete 2-/6-/12-player rounds. Integration checks run 32 full random matches and verify natural use of all attack and weapon types without damaging floor traps.
 
 Browser checks include phone portrait/landscape and desktop layouts, a scrollable 12-player setup at 320×568, language/name restoration, and published GitHub Pages execution. These are browser viewport checks, not physical-device certification.
+
+## Combat choreography
+
+Each weapon has independent hand/foot keyframes and angle tracks aligned to its active hit window: alternating descending/rising sword cuts, a full-turn staff sweep with a second-hand grip, and a two-handed overhead hammer slam with a deep follow-through. Jump kicks alternate a flying side kick and a full spin that completes before contact. The grab lift aligns the victim more closely with the holder's hands.
+
+Weapon ribbons are sampled from the actual recent hand and weapon-tip path, rather than a generic circular arc. Dash and spin afterimages sample earlier poses and travel direction; hammer contacts kick up a brief dust burst. These effects are presentation-only and are suppressed by reduced-motion preference where appropriate. Ordinary hits use sparks instead of large floating attack labels, keeping fighters legible; critical and major-event callouts remain.
+
+Motion tests verify distinct sword directions, a continuous staff revolution, hammer overhead-to-floor travel, stable IK lengths for every weapon and variant, and spin completion before the active kick window.

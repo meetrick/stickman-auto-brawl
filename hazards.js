@@ -47,10 +47,10 @@ export class HazardManager {
       if (world.time < item.armAt) continue;
       for (const f of world.fighters) {
         if (!f.alive || !touchesFloorItem(f, item)) continue;
-          if (f.hp >= f.maxHp) continue;
-          const heal = Math.min(30, f.maxHp - f.hp); f.hp += heal;
-          world.stats.heals++;
-          world.emit('heal', f, { text: `+${Math.ceil(heal)} HP` });
+        if (f.hp >= f.maxHp) continue;
+        const heal = Math.min(30, f.maxHp - f.hp); f.hp += heal;
+        world.stats.heals++;
+        world.emit('heal', f, { text: `+${Math.ceil(heal)} HP` });
         consumed.add(item.id); break;
       }
     }

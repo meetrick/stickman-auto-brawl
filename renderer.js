@@ -77,6 +77,15 @@ export class Renderer {
   effect(e) {
     const c = this.ctx, progress = 1 - e.ttl / e.life;
     c.save(); c.globalAlpha = 1 - progress;
+    if (e.move === 'WeaponStrike' && e.weapon === 'Hammer' && progress < .5) {
+      for (let i = 0; i < 8; i++) {
+        const direction = i * Math.PI / 4, spread = progress * 100 + 8;
+        c.fillStyle = '#a1a082'; c.globalAlpha = (1 - progress * 2) * .25;
+        c.beginPath(); c.ellipse(e.x + Math.cos(direction) * spread, e.y + Math.sin(direction) * spread * .35,
+          4 + progress * 10, 2 + progress * 4, 0, 0, Math.PI * 2); c.fill();
+      }
+      c.globalAlpha = 1 - progress;
+    }
     if (e.type === 'hit' && progress < .4) {
       const x = e.x, y = e.y - e.z - 55;
       for (let i = 0; i < 6; i++) {
@@ -94,7 +103,8 @@ export class Renderer {
     }
     c.textAlign = 'center'; c.fillStyle = e.type === 'heal' ? '#43845b' : e.crit ? '#ba7c1d' : '#a44735';
     c.font = `bold ${e.crit ? 26 : 15}px monospace`;
-    c.fillText(eventText(e), e.x, e.y - e.z - 95 - progress * 45); c.restore();
+    if (e.type !== 'hit' || e.crit) c.fillText(eventText(e), e.x, e.y - e.z - 95 - progress * 45);
+    c.restore();
   }
   weapon(p, f) {
     if (!f.weapon || f.weapon === 'None') return;
@@ -118,13 +128,26 @@ export class Renderer {
       this.line([[length - 7, -12], [length + 5, -12]], '#d4dcce', 2);
     }
     c.restore();
-    if (!stowed && f.attack?.name === 'WeaponStrike') {
-      const progress = f.attack.elapsed / f.attack.duration;
-      if (progress > .33 && progress < .65) {
-        c.save(); c.globalAlpha *= .35; c.strokeStyle = f.color; c.lineWidth = f.weapon === 'Hammer' ? 10 : 5;
-        c.beginPath(); c.arc(p.main.tip[0], p.main.tip[1], length * .9, p.weaponAngle - 1.25, p.weaponAngle); c.stroke(); c.restore();
-      }
+  }
+  weaponTrail(f) {
+    if (this.reducedMotion.matches || f.attack?.name !== 'WeaponStrike') return;
+    const progress = f.attack.elapsed / f.attack.duration;
+    if (progress < .28 || progress > .74) return;
+    const c = this.ctx, length = WEAPONS[f.weapon]?.length || 0;
+    if (!length) return;
+    const window = f.weapon === 'Sword' ? .065 : f.weapon === 'Staff' ? .11 : .12;
+    const outer = [], inner = [];
+    for (let i = 0; i <= 9; i++) {
+      const elapsed = Math.max(0, f.attack.elapsed - window * (1 - i / 9));
+      const pose = computePose({ ...f, attack: { ...f.attack, elapsed } });
+      const [x, y] = pose.main.tip, angle = pose.weaponAngle;
+      outer.push([x + Math.cos(angle) * length, y + Math.sin(angle) * length]);
+      inner.push([x + Math.cos(angle) * length * .52, y + Math.sin(angle) * length * .52]);
     }
+    c.save(); c.fillStyle = f.color; c.globalAlpha *= .17;
+    c.beginPath(); outer.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y));
+    [...inner].reverse().forEach(([x, y]) => c.lineTo(x, y)); c.closePath(); c.fill();
+    c.globalAlpha = .45; this.line(outer, '#fdf8da', 2.5); c.restore();
   }
   skeleton(p, f, ink) {
     this.line([p.shoulder, p.off.joint, p.off.tip], ink, 4);
@@ -159,14 +182,21 @@ export class Renderer {
       }
       c.restore();
     }
+    const dashTrail = f.attack?.name === 'Dash' && f.attack.elapsed > .12 && f.attack.elapsed < .5;
+    const spinTrail = f.attack?.name === 'JumpKick' && f.attack.variant === 1 && f.attack.elapsed > .05 && f.attack.elapsed < .35;
+    if (!this.reducedMotion.matches && (dashTrail || spinTrail)) {
+      for (const lag of [.085, .045]) {
+        const pose = computePose({ ...f, attack: { ...f.attack, elapsed: Math.max(0, f.attack.elapsed - lag) } });
+        c.save(); c.globalAlpha = lag > .06 ? .08 : .18;
+        c.translate(f.x - f.vx * lag, sy - f.vy * lag + (spinTrail ? f.vz * lag : 0)); c.scale(scale * f.facing, scale);
+        c.translate(...pose.hip); c.rotate(pose.rotation); c.translate(-pose.hip[0], -pose.hip[1]);
+        c.lineCap = 'round'; c.lineJoin = 'round'; this.skeleton(pose, f, INK); c.restore();
+      }
+    }
     c.save(); c.translate(f.x, sy); c.scale(scale * f.facing, scale); c.lineCap = 'round'; c.lineJoin = 'round';
     if (!f.alive && f.z === 0) c.translate(0, 37);
     c.translate(...p.hip); c.rotate(p.rotation); c.translate(-p.hip[0], -p.hip[1]);
-    if (f.attack?.name === 'Dash' && f.attack.elapsed > .12 && f.attack.elapsed < .5) {
-      for (const offset of [35, 70]) {
-        c.save(); c.globalAlpha = offset === 35 ? .18 : .08; c.translate(-offset, 0); this.skeleton(p, f, INK); c.restore();
-      }
-    }
+    this.weaponTrail(f);
     this.skeleton(p, f, f.flash > 0 ? '#b54c37' : INK);
     if (f.attack && f.attack.elapsed > .16 && f.attack.elapsed < .46) {
       c.save(); c.strokeStyle = `${f.color}88`; c.lineWidth = 3;

@@ -18,7 +18,7 @@ export class Fighter {
   constructor(id, x, y, rng = Math.random) {
     Object.assign(this, { id, x, y, z: 0, vx: 0, vy: 0, vz: 0, facing: 1,
       state: 'idle', stun: 0, attack: null, cooldown: range(rng, .1, .8),
-      flash: 0, age: 0, stridePhase: rng() * Math.PI * 2, tumble: 0, angularVelocity: 0,
+      flash: 0, age: 0, attackVariants: {}, stridePhase: rng() * Math.PI * 2, tumble: 0, angularVelocity: 0,
       stamina: 1, intent: 'chase', heldBy: null, holdingId: null,
       color: COLORS[id % COLORS.length], name: NAMES[id % NAMES.length] });
     this.maxHp = 80 + Math.floor(rng() * 51); this.hp = this.maxHp;
@@ -38,7 +38,9 @@ export class Fighter {
     if (!this.standing || this.attack || this.cooldown > 0 || target.heldBy != null || (name === 'WeaponStrike' && this.weapon === 'None')) return false;
     const dx = target.x - this.x, dy = target.y - this.y, length = Math.hypot(dx, dy) || 1;
     this.facing = dx >= 0 ? 1 : -1;
-    this.attack = { name, targetId: target.id, elapsed: 0, duration: this.getMove(name).duration, resolved: false, hitIds: [], dx: dx / length, dy: dy / length };
+    const variant = (this.attackVariants[name] || 0) % 2;
+    this.attackVariants[name] = (this.attackVariants[name] || 0) + 1;
+    this.attack = { name, targetId: target.id, elapsed: 0, duration: this.getMove(name).duration, variant, resolved: false, hitIds: [], dx: dx / length, dy: dy / length };
     this.state = 'attack'; this.vx = this.vy = 0;
     if (name === 'JumpKick') this.vz = 305;
     return true;
@@ -157,7 +159,7 @@ export class Fighter {
       }
       if (this.holdingId != null && target?.heldBy === this.id) {
         target.x = this.x + this.facing * 24; target.y = this.y + 1;
-        target.z = 35 + clamp((a.elapsed - .16) / .32, 0, 1) * 55;
+        target.z = 35 + clamp((a.elapsed - .16) / .32, 0, 1) * 30;
         target.vx = target.vy = target.vz = 0; target.state = 'held';
         if (a.elapsed >= .55 && !a.resolved) {
           a.resolved = true; this.releaseGrab(world); this.hit(target, world, 'Grab');
