@@ -51,7 +51,7 @@ The ink outlines, colored torso strokes, round heads, fluttering headbands, and 
 
 ## Validation
 
-`npm test` uses Node's built-in test runner with no dependencies. The 53 tests cover the four unarmed moves and weapon strikes, exact crit thresholds and multipliers, stat bounds, retreat/corner behavior, seeded replay, airborne domino chains, swept collision misses, duplicate-hit prevention, mine arming and splash, dash/landing triggers, healing caps, KO exclusions, hazard lifetime/caps, the demo opening, and camera framing/replay isolation. A simulation test also runs 32 complete random matches, checks finite state and HP bounds, and confirms all four chaos events occur naturally across those rounds.
+`npm test` uses Node's built-in test runner with no dependencies. The 59 tests cover the four unarmed moves and weapon strikes, exact crit thresholds and multipliers, stat bounds, retreat/corner behavior, seeded replay, airborne domino chains, swept collision misses, duplicate-hit prevention, mine arming and splash, dash/landing triggers, healing caps, KO exclusions, hazard lifetime/caps, the demo opening, and camera framing/replay isolation. A simulation test also runs 32 complete random matches, checks finite state and HP bounds, and confirms all four chaos events occur naturally across those rounds.
 
 The game runs as static files locally or on GitHub Pages. No backend, remote assets, multiplayer service, or build step is required.
 
@@ -108,3 +108,13 @@ Cowardly fighters can occasionally jump away while fleeing. The sprint/evade cad
 GitHub Pages publishes the `main` branch from the repository root (`/`). The root `.nojekyll` file disables Jekyll processing; JavaScript modules, CSS, and the HTML entry point are served directly. All application paths are relative, so the project works under `/stickman-auto-brawl/`. Future pushes to `main` update the hosted game automatically through GitHub's Pages build/deployment process.
 
 For a new fork, open **Settings → Pages**, select **Deploy from a branch**, choose **main** and **/(root)**, and save. The local `server.js`, tests, and `package.json` are development tools; the published game needs only static browser assets.
+
+## Participant setup and language
+
+Choose **New match** (or **More → Set up your match**) to select 2–12 participants and enter names before starting. First-time visitors without a replay URL see the setup dialog automatically. Names support Korean and other Unicode text, are limited to 16 characters, and appear in the arena, roster, event feed, and winner announcement. Blank names receive defaults. Reducing and then increasing the participant count preserves draft names; canceling setup leaves the current match unchanged.
+
+English is the first-visit default. Use the header **한국어 / English** button or the dialog language selector to switch UI, event callouts, loadout labels, and results without resetting the match. Names, count, and language are saved only in this browser's localStorage, with in-memory fallback if storage is unavailable. Locale and names do not affect seeded physics. Names are escaped before inclusion in HTML.
+
+`ui.js` owns the browser UI and modal lifecycle, `settings.js` validates/persists preferences, and `i18n.js` provides English/Korean messages. Opening setup freezes the current simulation; canceling resumes its prior pause state. Replay preserves the current round's participant count and names. The staged chaos demo remains an eight-fighter demonstration.
+
+Automated checks cover count/name bounds, safe text rendering, storage failures, translation placeholders, replay isolation, and complete 2-, 6-, and 12-participant rounds. Browser validation covers language changes, saved names/count restoration, literal markup in names, and a scrollable 12-person setup at 320×568.

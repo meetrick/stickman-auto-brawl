@@ -181,3 +181,40 @@ footer { display: flex; justify-content: space-between; gap: 20px; border-top: 1
 
 .loadout { font: normal 9px monospace; color: var(--green); display: block; margin-top: 2px; }
 .fighter-card { min-height: 67px; }
+.header-actions { display: flex; align-items: center; gap: 18px; }
+#language { min-width: 66px; border-radius: 6px; font-size: 12px; }
+.intro-aside { max-width: 230px; }
+.controls .primary > [data-i18n] { float: none; margin-left: 0; }
+.fighter-info strong { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+#setup-dialog { width: min(480px, calc(100% - 24px)); max-height: calc(100svh - 28px); padding: 0; background: var(--paper); color: var(--ink); border: 1px solid #bfc7b4; border-radius: 14px; box-shadow: 0 16px 70px #16241333; }
+#setup-dialog::backdrop { background: #25322088; backdrop-filter: blur(3px); }
+#setup-form { display: flex; flex-direction: column; max-height: calc(100svh - 30px); }
+.setup-heading { padding: 22px 22px 16px; border-bottom: 1px solid var(--line); }
+.setup-heading h2 { margin: 0 0 8px; font: 29px Georgia, serif; }
+.setup-heading p, .setup-help { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.setup-body { padding: 18px 22px; overflow-y: auto; overscroll-behavior: contain; }
+.setup-options { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.setup-options label > span { display: block; font-size: 12px; margin-bottom: 7px; }
+.setup-body select, .setup-body input { font: 16px Arial, sans-serif; color: var(--ink); width: 100%; min-height: 46px; border: 1px solid #bdc6b3; border-radius: 6px; background: #fcfaf2; padding: 10px; }
+.setup-body select:focus, .setup-body input:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+.setup-body h3 { font-size: 13px; margin: 22px 0 6px; }
+.setup-help { margin-bottom: 12px; }
+.name-row { display: grid; grid-template-columns: 32px 1fr; align-items: center; gap: 10px; margin-bottom: 10px; }
+.name-row > span { font: 11px monospace; color: var(--fighter); }
+.setup-footer { display: flex; gap: 10px; padding: 14px 22px max(14px, env(safe-area-inset-bottom)); border-top: 1px solid var(--line); }
+.setup-footer button { min-height: 48px; border-radius: 6px; font-size: 14px; }
+.start-button { flex: 1; background: var(--green); color: white; border-color: var(--green); }
+html[lang="ko"] .eyebrow, html[lang="ko"] .section-label h2 { letter-spacing: 0; }
+@media (max-width: 480px) {
+  .header-actions .watch-label { display: none; }
+  .header-actions { gap: 0; }
+  .setup-heading { padding: 18px 16px 14px; }
+  .setup-body { padding-inline: 16px; }
+  .setup-footer { padding-inline: 16px; }
+  html[lang="ko"] h1 { font-size: 21px; letter-spacing: -1px; }
+}
+@media (max-width: 370px) {
+  .controls .primary > [data-i18n] { display: inline; }
+  .controls .primary > [aria-hidden] { display: none; }
+  html[lang="ko"] h1 { font-size: 18px; }
+}

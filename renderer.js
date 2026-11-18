@@ -3,11 +3,13 @@ import { clamp } from './random.js';
 import { barPoint } from './arena.js';
 import { computePose } from './pose.js';
 import { WEAPONS } from './weapons.js';
+import { t, eventText } from './i18n.js';
 const INK = '#292b27';
 export class Renderer {
   constructor(canvas) {
     this.canvas = canvas; this.ctx = canvas.getContext('2d');
     this.camera = new SpectatorCamera(); this.overview = false; this.dirty = true;
+    this.nameLabels = new Map();
     this.mobile = matchMedia('(max-width: 800px), (max-width: 950px) and (max-height: 500px) and (orientation: landscape)');
     this.reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
     this.overview = this.reducedMotion.matches;
@@ -83,7 +85,7 @@ export class Renderer {
       c.fillStyle = '#a33c30'; c.beginPath(); c.ellipse(0, -2, 11, 6, 0, 0, Math.PI * 2); c.fill();
       c.fillStyle = armed && pulse > .5 ? '#ffd8a1' : '#e27251';
       c.beginPath(); c.arc(0, -5, 3, 0, Math.PI * 2); c.fill();
-      if (!armed) { c.font = '9px monospace'; c.textAlign = 'center'; c.fillStyle = '#b34638'; c.fillText('ARMING', 0, -18); }
+      if (!armed) { c.font = '9px monospace'; c.textAlign = 'center'; c.fillStyle = '#b34638'; c.fillText(t('ARMING'), 0, -18); }
     } else {
       c.globalAlpha = .6; c.fillStyle = '#5e9c7433'; c.beginPath(); c.ellipse(0, 0, 17, 9, 0, 0, Math.PI * 2); c.fill();
       c.globalAlpha = 1; c.translate(0, -8 + Math.sin(world.time * 4 + item.id) * 2);
@@ -125,7 +127,7 @@ export class Renderer {
     }
     c.textAlign = 'center'; c.fillStyle = e.type === 'heal' ? '#43845b' : e.crit ? '#ba7c1d' : '#a44735';
     c.font = `bold ${e.crit || e.type === 'explosion' ? 26 : 15}px monospace`;
-    c.fillText(e.text || e.type, e.x, e.y - e.z - 95 - progress * 45); c.restore();
+    c.fillText(eventText(e), e.x, e.y - e.z - 95 - progress * 45); c.restore();
   }
   weapon(p, f) {
     if (!f.weapon || f.weapon === 'None') return;
@@ -207,7 +209,13 @@ export class Renderer {
     c.restore();
     if (f.alive) {
       c.save(); c.translate(f.x, sy - 131 * scale); c.textAlign = 'center';
-      c.font = '600 10px monospace'; c.fillStyle = f.color; c.fillText(f.name, 0, -7);
+      c.font = '600 10px monospace'; c.fillStyle = f.color;
+      if (!this.nameLabels.has(f.name)) {
+        const letters = Array.from(f.name);
+        while (letters.length > 1 && c.measureText(letters.join('') + '…').width > 88) letters.pop();
+        this.nameLabels.set(f.name, letters.length < Array.from(f.name).length ? letters.join('') + '…' : f.name);
+      }
+      c.fillText(this.nameLabels.get(f.name), 0, -7);
       c.fillStyle = '#38392b22'; c.fillRect(-22, 0, 44, 3);
       c.fillStyle = f.color; c.fillRect(-22, 0, 44 * f.hp / f.maxHp, 3); c.restore();
     }
@@ -237,8 +245,8 @@ export class Renderer {
     c.save(); c.translate(600, 433); c.scale(1, .4); c.strokeStyle = '#87917c33'; c.lineWidth = 2;
     c.beginPath(); c.arc(0, 0, 140, 0, Math.PI * 2); c.stroke();
     c.font = '600 34px Georgia'; c.textAlign = 'center'; c.fillStyle = '#87917c33'; c.fillText('乱 闘', 0, 13); c.restore();
-    c.font = '11px monospace'; c.fillStyle = '#878d79'; c.fillText('THE COURTYARD / 01', 44, 653);
-    c.textAlign = 'right'; c.fillText('EVERY BODY IS A PROJECTILE', 1156, 653); c.textAlign = 'left';
+    c.font = '11px monospace'; c.fillStyle = '#878d79'; c.fillText(t('courtyard') + ' / 01', 44, 653);
+    c.textAlign = 'right'; c.fillText(t('projectile'), 1156, 653); c.textAlign = 'left';
     for (const item of world.hazards.items) this.hazard(item, world);
     for (const trap of world.arena?.traps || []) this.trap(trap, world);
     const objects = [...world.fighters.map(f => ({ depth: f.y, fighter: f })), ...(world.arena?.walls || []).map(w => ({ depth: w.y + w.d / 2, wall: w }))];

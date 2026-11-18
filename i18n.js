@@ -1,0 +1,62 @@
+export const MESSAGES = {
+  watch: ['JUST WATCH.', '편하게 관전하세요.'], eyebrow: ['A SPECTATOR SPORT', '보는 재미로 즐기는 격투'],
+  titleA: ['Small sticks.', '작은 스틱맨.'], titleB: ['Big consequences.', '예측 불가 한판.'],
+  intro: ['Fighters enter. Physics takes it personally.', '스틱맨들이 모이면, 예측 불가의 격투가 시작됩니다.'],
+  newMatch: ['New match', '새 경기'], pause: ['Ⅱ Pause', 'Ⅱ 일시정지'], resume: ['▶ Resume', '▶ 계속'],
+  speed: ['{speed}× Speed', '{speed}배속'], speedLabel: ['Playback speed: {speed} times', '재생 속도: {speed}배'],
+  more: ['More', '더보기'], toolsTitle: ['WATCH YOUR WAY', '관전 설정'], replay: ['↺ Replay seed', '↺ 같은 경기 재생'],
+  demo: ['✳ Chaos demo', '✳ 혼돈 시연'], demoHint: ['Demo opens with a staged collision.', '시연은 연쇄 충돌 장면으로 시작합니다.'],
+  fighters: ['The fighters', '참가자'], remaining: ['remaining', '생존'], rosterNote: ['Fresh stats. Different personalities. Every round.', '능력치와 성격은 경기마다 새로 정해집니다.'],
+  guide: ['Expect the unexpected.', '어떤 일이 벌어질지 모릅니다.'], mines: ['Landmines launch.', '지뢰에 맞으면 공중으로.'],
+  potions: ['Potions heal.', '포션으로 체력 회복.'], odds: ['10% crit chance · 3× damage · flying bodies hit back.', '치명타 확률 10% · 피해 3배 · 날아온 몸도 무기가 됩니다.'],
+  notes: ['Ringside notes', '전투 기록'], recent: ['Recent action', '최근 상황'], quiet: ['The arena is holding its breath.', '곧 격투가 시작됩니다.'],
+  footer: ['BUILT FROM STICKS & UNLIKELY OUTCOMES.', '작은 스틱맨들이 만들어내는 예측 불가의 격투.'],
+  footerTech: ['2.5D PHYSICS / ZERO PLAYER INPUT', '2.5D 물리 / 자동 전투'],
+  noControls: ['NO CONTROLS. JUST CHAOS.', '조작 없이 즐기는 예측 불가의 격투.'],
+  crits: ['CRITS', '치명타'], dominoes: ['DOMINOES', '연쇄 충돌'], explosions: ['EXPLOSIONS', '폭발'], heals: ['HEALS', '회복'],
+  live: ['LIVE MATCH', '경기 진행 중'], paused: ['PAUSED', '일시정지'], roundOver: ['ROUND OVER', '경기 종료'],
+  alive: ['{count} left', '{count}명 생존'], ko: ['KO', '탈락'], seed: ['SEED', '시드'],
+  overview: ['⊞ Overview', '⊞ 전체 보기'], autoCameraButton: ['◎ Auto camera', '◎ 자동 카메라'],
+  autoCamera: ['AUTO CAMERA', '자동 카메라'], courtyard: ['THE COURTYARD', '격투 마당'], demoMode: ['CHAOS DEMO', '혼돈 시연'],
+  map: ['{name} · {bars} rotating poles · {traps} spike traps', '{name} · 회전봉 {bars}개 · 가시 함정 {traps}개'],
+  openCourt: ['Open courtyard', '열린 마당'],
+  lastStanding: ['LAST STICK STANDING', '최후의 생존자'], noWinner: ['NO WINNER THIS ROUND', '생존자 없음'],
+  breather: ['TAKE A BREATHER', '잠시 쉬어 가세요'], pauseTitle: ['Paused.', '일시정지 중'],
+  winner: ['{name} wins.', '{name} 승리!'], draw: ['A glorious draw.', '무승부!'],
+  resumeHint: ['Tap Resume when you’re ready.', '준비되면 계속 버튼을 누르세요.'],
+  newMatchHint: ['Tap New match. Let chaos roll again.', '새 경기에서 참가자를 정하고 다시 시작하세요.'],
+  setupTitle: ['Set up your match', '경기 준비'], setupHint: ['Choose the fighters. Make it personal.', '참가 인원과 이름을 정해 주세요.'],
+  count: ['Fighters', '참가 인원'], countOption: ['{count} fighters', '{count}명'], language: ['Language', '언어'],
+  names: ['Fighter names', '참가자 이름'], nameLabel: ['Fighter {number}', '참가자 {number}'],
+  nameHint: ['Up to 16 characters each. Saved on this device.', '이름은 최대 16자이며 이 기기에 저장됩니다.'],
+  start: ['Start match', '경기 시작'], cancel: ['Cancel', '취소'], switchLanguage: ['Switch to Korean', '영어로 전환'],
+  homeLabel: ['Stickman Auto Brawl home', '스틱맨 오토 브롤 홈'], arenaLabel: ['Live match', '실시간 경기'],
+  canvasLabel: ['Automatic stick fighter battle. No gameplay input needed.', '자동 스틱맨 격투 경기. 직접 조작할 필요가 없습니다.'],
+  cameraLabel: ['Toggle full arena view', '전체 경기장 보기 전환'], metricsLabel: ['Live chaos counts', '실시간 전투 지표'],
+  controlsLabel: ['Match controls', '경기 관전 조작'], eventsLabel: ['Recent combat events', '최근 전투 기록'],
+  Aggressive: ['Aggressive', '공격형'], Cowardly: ['Cowardly', '도주형'], Brawler: ['Brawler', '잡기형'], Trickster: ['Trickster', '교란형'],
+  Walker: ['Walker', '보행형'], Runner: ['Runner', '달리기형'], Sprinter: ['Sprinter', '스프린터'],
+  None: ['Unarmed', '맨손'], Sword: ['Sword', '검'], Staff: ['Staff', '봉'], Hammer: ['Hammer', '망치'],
+  'BROKEN COURT': ['BROKEN COURT', '부서진 마당'], 'SPRING YARD': ['SPRING YARD', '튕김 마당'],
+  'SPLIT RING': ['SPLIT RING', '갈라진 격투장'], 'RUIN GARDEN': ['RUIN GARDEN', '폐허 정원'],
+  'CRIT!': ['CRIT!', '치명타!'], 'DOMINO!': ['DOMINO!', '연쇄 충돌!'], 'BOOM!': ['BOOM!', '폭발!'],
+  'DASH CRASH!': ['DASH CRASH!', '돌진 충돌!'], 'FLYING KICK!': ['FLYING KICK!', '점프킥!'], 'UPPERCUT!': ['UPPERCUT!', '어퍼컷!'],
+  'THROWN!': ['THROWN!', '던지기!'], 'GRABBED!': ['GRABBED!', '붙잡힘!'], 'SLASH!': ['SLASH!', '베기!'],
+  'STAFF SWEEP!': ['STAFF SWEEP!', '봉 휘두르기!'], 'HAMMER SMASH!': ['HAMMER SMASH!', '망치 강타!'],
+  'CRASH!': ['CRASH!', '파괴!'], 'LUCKY BOUNCE!': ['LUCKY BOUNCE!', '행운의 반동!'], 'SPRING!': ['SPRING!', '튕김!'],
+  'WALL SLAM!': ['WALL SLAM!', '벽 충돌!'], 'LUCKY RICOCHET!': ['LUCKY RICOCHET!', '행운의 도약!'], 'POLE HIT!': ['POLE HIT!', '회전봉 충돌!'],
+  'SPIKED!': ['SPIKED!', '가시 함정!'], 'CHAOS DEMO': ['CHAOS DEMO', '혼돈 시연'], ARMING: ['ARMING', '설치 중'],
+  healText: ['+{amount} HP', '체력 +{amount}'], projectile: ['EVERY BODY IS A PROJECTILE', '날아온 몸도 무기가 됩니다'],
+  hp: ['HP', '체력'], spd: ['SPD', '속도'], atk: ['ATK', '공격'],
+};
+let language = 'en';
+export function setLanguage(value) { language = value === 'ko' ? 'ko' : 'en'; }
+export function getLanguage() { return language; }
+export function t(key, values = {}, locale = language) {
+  const message = MESSAGES[key]?.[locale === 'ko' ? 1 : 0] ?? key;
+  return message.replace(/\{(\w+)\}/g, (_, name) => String(values[name] ?? ''));
+}
+export function eventText(event) {
+  const heal = /^\+(\d+) HP$/.exec(event.text || '');
+  return heal ? t('healText', { amount: heal[1] }) : t(event.text || event.type);
+}

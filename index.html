@@ -12,18 +12,18 @@
 <div class="shell">
   <header>
     <a class="brand" href="./" aria-label="Stickman Auto Brawl home"><span class="brand-mark">乱</span><span>STICKMAN<small>AUTO BRAWL / CHAOS LAB</small></span></a>
-    <span class="watch-label"><i class="live-dot"></i> JUST WATCH.</span>
+    <div class="header-actions"><span class="watch-label"><i class="live-dot"></i> <span data-i18n="watch">JUST WATCH.</span></span><button id="language" aria-label="Switch to Korean">한국어</button></div>
   </header>
   <main>
     <section class="intro">
-      <div><p class="eyebrow">A SPECTATOR SPORT</p><h1>Small sticks.<br> <em>Big consequences.</em></h1></div>
-      <p class="intro-aside">Eight fighters enter.<br>Physics takes it personally.</p>
+      <div><p class="eyebrow" data-i18n="eyebrow">A SPECTATOR SPORT</p><h1><span data-i18n="titleA">Small sticks.</span><br> <em data-i18n="titleB">Big consequences.</em></h1></div>
+      <p class="intro-aside" data-i18n="intro">Fighters enter. Physics takes it personally.</p>
     </section>
     <div class="workspace">
       <section class="arena-panel" aria-label="Live match">
         <div class="arena-bar">
           <span class="match-status"><i class="live-dot"></i><b id="status" role="status">LIVE MATCH</b></span>
-          <span class="seed-label">SEED <b id="seed">000000</b></span>
+          <span class="seed-label"><span data-i18n="seed">SEED</span> <b id="seed">000000</b></span>
           <span id="arena-alive">8 left</span><time id="clock">00:00</time>
         </div>
         <div class="canvas-wrap">
@@ -32,37 +32,48 @@
           <button id="camera" class="camera-button" aria-pressed="false" title="Toggle full arena view">⊞ Overview</button>
           <div id="result" class="result" hidden><p id="result-caption"></p><h2 id="result-title"></h2><span id="result-hint"></span></div>
           <div id="moment" class="moment" aria-hidden="true" hidden></div>
-          <p class="watch-hint">NO CONTROLS. JUST CHAOS.</p>
+          <p class="watch-hint" data-i18n="noControls">NO CONTROLS. JUST CHAOS.</p>
         </div>
         <div class="metrics" aria-label="Live chaos counts">
-          <div><b id="crits">0</b><span>CRITS</span></div>
-          <div><b id="dominoes">0</b><span>DOMINOES</span></div>
-          <div><b id="explosions">0</b><span>EXPLOSIONS</span></div>
-          <div><b id="heals">0</b><span>HEALS</span></div>
+          <div><b id="crits">0</b><span data-i18n="crits">CRITS</span></div>
+          <div><b id="dominoes">0</b><span data-i18n="dominoes">DOMINOES</span></div>
+          <div><b id="explosions">0</b><span data-i18n="explosions">EXPLOSIONS</span></div>
+          <div><b id="heals">0</b><span data-i18n="heals">HEALS</span></div>
         </div>
         <nav class="controls" aria-label="Match controls">
-          <button id="new-match" class="primary">New match <span aria-hidden="true">↗</span></button>
+          <button id="new-match" class="primary"><span data-i18n="newMatch">New match</span> <span aria-hidden="true">↗</span></button>
           <button id="pause" aria-pressed="false">Ⅱ Pause</button>
           <button id="speed" aria-label="Playback speed: 1 times">1× Speed</button>
           <details class="tools" id="tools">
-            <summary>More <span aria-hidden="true">⋯</span></summary>
-            <div class="tools-menu"><p>WATCH YOUR WAY</p><button id="replay">↺ Replay seed</button><button id="demo">✳ Chaos demo</button><span>Demo opens with a staged collision.</span></div>
+            <summary><span data-i18n="more">More</span> <span aria-hidden="true">⋯</span></summary>
+            <div class="tools-menu"><p data-i18n="toolsTitle">WATCH YOUR WAY</p><button id="setup" data-i18n="setupTitle">Set up your match</button><button id="replay" data-i18n="replay">↺ Replay seed</button><button id="demo" data-i18n="demo">✳ Chaos demo</button><span data-i18n="demoHint">Demo opens with a staged collision.</span></div>
           </details>
         </nav>
       </section>
       <details class="roster-panel" id="fighters-panel">
-        <summary class="section-label"><h2>The fighters</h2><span><b id="alive">8 / 8</b> remaining <i class="chevron" aria-hidden="true">⌄</i></span></summary>
+        <summary class="section-label"><h2 data-i18n="fighters">The fighters</h2><span><b id="alive">8 / 8</b> <span data-i18n="remaining">remaining</span> <i class="chevron" aria-hidden="true">⌄</i></span></summary>
         <div id="roster"></div>
-        <p class="roster-note">Fresh stats. Different personalities. Every round.</p>
+        <p class="roster-note" data-i18n="rosterNote">Fresh stats. Different personalities. Every round.</p>
       </details>
     </div>
     <section class="below">
-      <div class="field-guide"><h2>Expect the unexpected.</h2><p id="map-info"></p><p><span class="item-dot red"></span> Landmines launch. <span class="item-dot green"></span> Potions heal.</p><span>10% crit chance · 3× damage · flying bodies hit back.</span></div>
-      <details class="event-panel"><summary class="section-label"><h2>Ringside notes</h2><span>Recent action <i class="chevron" aria-hidden="true">⌄</i></span></summary><ul id="events" aria-label="Recent combat events"></ul></details>
+      <div class="field-guide"><h2 data-i18n="guide">Expect the unexpected.</h2><p id="map-info"></p><p><span class="item-dot red"></span> <span data-i18n="mines">Landmines launch.</span> <span class="item-dot green"></span> <span data-i18n="potions">Potions heal.</span></p><span data-i18n="odds">10% crit chance · 3× damage · flying bodies hit back.</span></div>
+      <details class="event-panel"><summary class="section-label"><h2 data-i18n="notes">Ringside notes</h2><span><span data-i18n="recent">Recent action</span> <i class="chevron" aria-hidden="true">⌄</i></span></summary><ul id="events" aria-label="Recent combat events"></ul></details>
     </section>
   </main>
-  <footer><span>BUILT FROM STICKS & UNLIKELY OUTCOMES.</span><span>2.5D PHYSICS / ZERO PLAYER INPUT</span></footer>
+  <footer><span data-i18n="footer">BUILT FROM STICKS & UNLIKELY OUTCOMES.</span><span data-i18n="footerTech">2.5D PHYSICS / ZERO PLAYER INPUT</span></footer>
 </div>
+<dialog id="setup-dialog" aria-labelledby="setup-title" aria-describedby="setup-hint">
+  <form id="setup-form">
+    <div class="setup-heading"><h2 id="setup-title" data-i18n="setupTitle">Set up your match</h2><p id="setup-hint" data-i18n="setupHint">Choose the fighters. Make it personal.</p></div>
+    <div class="setup-body">
+      <div class="setup-options"><label><span data-i18n="count">Fighters</span><select id="fighter-count" name="count"></select></label><label><span data-i18n="language">Language</span><select id="setup-language" name="language"><option value="en">English</option><option value="ko">한국어</option></select></label></div>
+      <h3 data-i18n="names">Fighter names</h3><p class="setup-help" data-i18n="nameHint">Up to 16 characters each. Saved on this device.</p>
+      <div id="name-fields"></div>
+    </div>
+    <div class="setup-footer"><button type="button" id="setup-cancel" data-i18n="cancel">Cancel</button><button type="submit" class="start-button" data-i18n="start">Start match</button></div>
+  </form>
+</dialog>
 <script type="module" src="app.js"></script>
 </body>
 </html>
