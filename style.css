@@ -174,7 +174,7 @@ footer { display: flex; justify-content: space-between; gap: 20px; border-top: 1
   .arena-bar { gap: 10px; padding-inline: 11px; min-height: 42px; }
   .seed-label { display: none; }
   #arena-alive { margin-left: auto; }
-  .canvas-wrap { height: clamp(220px, calc(100svh - 300px - env(safe-area-inset-top) - env(safe-area-inset-bottom)), 500px); }
+  .canvas-wrap { height: clamp(220px, calc(100svh - 380px - env(safe-area-inset-top) - env(safe-area-inset-bottom)), 500px); }
   canvas { height: 100%; aspect-ratio: auto; }
   .camera-button { display: block; }
   .arena-label { top: 25px; left: 12px; font-size: 9px; letter-spacing: .5px; }
