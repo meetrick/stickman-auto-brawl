@@ -113,7 +113,7 @@ export class Arena {
     return f.route.points[0] || goal;
   }
   resolveFighter(f, world) {
-    if (f.heldBy != null) return;
+    if (f.settled || f.heldBy != null) return;
     const from = f.previous || f;
     const contacts = this.walls.filter(w => !w.destroyed).map(w => ({ wall: w, hit: sweepWall(from, f, w, 16, true) }))
       .filter(c => c.hit).sort((a, b) => a.hit.t - b.hit.t);

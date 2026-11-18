@@ -60,7 +60,7 @@ export function solveLimb(root, target, upper, lower, bend = 1) {
     tip: [root[0] + Math.cos(angle) * distance, root[1] + Math.sin(angle) * distance] };
 }
 export function computePose(f) {
-  const moving = f.state === 'walk' || f.state === 'run', running = f.state === 'run';
+  const moving = f.alive && (f.state === 'walk' || f.state === 'run'), running = f.alive && f.state === 'run';
   const phase = f.stridePhase || 0, wave = Math.sin(phase), other = Math.sin(phase + Math.PI);
   let lean = moving ? running ? .35 : .1 : Math.sin(f.age * 2.8 + f.id) * .025;
   let crouch = moving ? -Math.abs(Math.sin(phase)) * (running ? 5 : 2) : 2 + Math.sin(f.age * 2.8 + f.id) * 1.2;
@@ -84,8 +84,13 @@ export function computePose(f) {
   }
   if (f.weapon === 'Staff' && f.attack?.name === 'WeaponStrike') off = [main[0] - Math.cos(weaponAngle) * 19, main[1] - Math.sin(weaponAngle) * 19];
   let rotation = f.tumble || 0;
-  if (f.state === 'held') { rotation = -1.5; main = [20, 19]; off = [-23, 16]; front = [24, -14]; back = [-22, -7]; }
-  else if (!f.alive || f.stun > 0) {
+  if (!f.alive) {
+    // One inert pose: no breathing, flailing, or recovery cycle after defeat.
+    lean = -.08; crouch = 0; weaponAngle = .35;
+    main = [21, 19]; off = [-21, 11]; front = [24, -2]; back = [-18, 1];
+    rotation = f.z > 0 ? f.tumble || 0 : -Math.PI / 2;
+  } else if (f.state === 'held') { rotation = -1.5; main = [20, 19]; off = [-23, 16]; front = [24, -14]; back = [-22, -7]; }
+  else if (f.stun > 0) {
     const flail = Math.sin(f.age * 15 + f.id);
     main = [18, 12 + flail * 20]; off = [-24, -4 - flail * 17]; front = [23, -8 - flail * 12]; back = [-23, -12 + flail * 8];
     lean = -.2;

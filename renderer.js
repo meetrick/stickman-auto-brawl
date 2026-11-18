@@ -173,7 +173,7 @@ export class Renderer {
     this.line([p.shoulder, p.main.joint, p.main.tip], ink, 4.5);
     c.fillStyle = ink; c.beginPath(); c.arc(...p.main.tip, 3, 0, Math.PI * 2); c.fill();
     this.line([[hx - 10, hy - 4], [hx + 10, hy - 4]], f.color, 3.8);
-    const drag = clamp(Math.abs(f.vx) * .04, 0, 16), flutter = Math.sin(f.age * 15 + f.id) * 4;
+    const drag = clamp(Math.abs(f.vx) * .04, 0, 16), flutter = f.alive ? Math.sin(f.age * 15 + f.id) * 4 : 0;
     c.strokeStyle = f.color; c.lineWidth = 2.5;
     c.beginPath(); c.moveTo(hx - 9, hy - 4); c.quadraticCurveTo(hx - 20 - drag, hy - 9 + flutter, hx - 29 - drag, hy - 2 + flutter); c.stroke();
     c.beginPath(); c.moveTo(hx - 9, hy - 3); c.quadraticCurveTo(hx - 17 - drag, hy + flutter, hx - 24 - drag, hy + 8 + flutter); c.stroke();
@@ -193,6 +193,7 @@ export class Renderer {
       c.restore();
     }
     c.save(); c.translate(f.x, sy); c.scale(scale * f.facing, scale); c.lineCap = 'round'; c.lineJoin = 'round';
+    if (!f.alive && f.z === 0) c.translate(0, 37);
     c.translate(...p.hip); c.rotate(p.rotation); c.translate(-p.hip[0], -p.hip[1]);
     if (f.attack?.name === 'Dash' && f.attack.elapsed > .12 && f.attack.elapsed < .5) {
       for (const offset of [35, 70]) {

@@ -59,6 +59,15 @@ export class Fighter {
     }
     this.holdingId = null;
   }
+  settleDeath(world) {
+    if (this.alive) return;
+    if (this.holdingId != null) this.releaseGrab(world);
+    this.heldBy = null; this.attack = null; this.state = 'ko'; this.intent = 'dead';
+    this.z = 0; this.vx = this.vy = this.vz = this.angularVelocity = 0;
+    this.tumble = -Math.PI / 2; this.stun = this.flash = 0; this.sprinting = false;
+    this.collateralActive = false; this.flightHits.clear(); this.settled = true;
+    this.previous = { x: this.x, y: this.y, z: 0 };
+  }
   hit(target, world, name) {
     if (name === 'WeaponStrike' && this.weapon === 'None') return false;
     if (world.arena && !world.arena.attackClear(this, target)) return false;
@@ -173,6 +182,8 @@ export class Fighter {
     }
   }
   update(dt, world) {
+    if (this.settled) return;
+    if (!this.alive && this.z === 0 && this.vz <= 0) { this.settleDeath(world); return; }
     this.previous = { x: this.x, y: this.y, z: this.z };
     this.age += dt; this.flash = Math.max(0, this.flash - dt);
     if (this.holdingId != null && (!this.alive || this.attack?.name !== 'Grab')) this.releaseGrab(world);
@@ -201,5 +212,6 @@ export class Fighter {
     this.x = clamp(this.x, b.left, b.right); this.y = clamp(this.y, b.top, b.bottom);
     const drag = Math.exp(-(this.z > 0 ? .65 : 9) * dt); this.vx *= drag; this.vy *= drag;
     if (this.standing && !this.attack && Math.hypot(this.vx, this.vy) < 25) this.state = 'idle';
+    if (!this.alive && this.z === 0) this.settleDeath(world);
   }
 }

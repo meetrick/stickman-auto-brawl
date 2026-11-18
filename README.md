@@ -51,7 +51,7 @@ The ink outlines, colored torso strokes, round heads, fluttering headbands, and 
 
 ## Validation
 
-`npm test` uses Node's built-in test runner with no dependencies. The 59 tests cover the four unarmed moves and weapon strikes, exact crit thresholds and multipliers, stat bounds, retreat/corner behavior, seeded replay, airborne domino chains, swept collision misses, duplicate-hit prevention, mine arming and splash, dash/landing triggers, healing caps, KO exclusions, hazard lifetime/caps, the demo opening, and camera framing/replay isolation. A simulation test also runs 32 complete random matches, checks finite state and HP bounds, and confirms all four chaos events occur naturally across those rounds.
+`npm test` uses Node's built-in test runner with no dependencies. The 62 tests cover the four unarmed moves and weapon strikes, exact crit thresholds and multipliers, stat bounds, retreat/corner behavior, seeded replay, airborne domino chains, swept collision misses, duplicate-hit prevention, mine arming and splash, dash/landing triggers, healing caps, KO exclusions, hazard lifetime/caps, the demo opening, and camera framing/replay isolation. A simulation test also runs 32 complete random matches, checks finite state and HP bounds, and confirms all four chaos events occur naturally across those rounds.
 
 The game runs as static files locally or on GitHub Pages. No backend, remote assets, multiplayer service, or build step is required.
 
@@ -118,3 +118,9 @@ English is the first-visit default. Use the header **한국어 / English** butto
 `ui.js` owns the browser UI and modal lifecycle, `settings.js` validates/persists preferences, and `i18n.js` provides English/Korean messages. Opening setup freezes the current simulation; canceling resumes its prior pause state. Replay preserves the current round's participant count and names. The staged chaos demo remains an eight-fighter demonstration.
 
 Automated checks cover count/name bounds, safe text rendering, storage failures, translation placeholders, replay isolation, and complete 2-, 6-, and 12-participant rounds. Browser validation covers language changes, saved names/count restoration, literal markup in names, and a scrollable 12-person setup at 320×568.
+
+## Defeat behavior
+
+A fighter is defeated when HP reaches zero. Defeated limbs use one inert pose instead of a time-driven flailing/breathing animation. A launched body can still complete its initial physical fall and airborne collateral collision, then settles permanently on the floor: zero velocity, no AI, no get-up animation, no headband flutter, and no further environmental movement. Surviving nonlethal hits retain their normal recovery.
+
+When a round ends, defeated bodies are settled immediately so the result screen never freezes them in midair. Regression tests check landing and permanent state/pose stability through 1,000 additional steps, separation from surviving knockdowns, and settlement at round end.

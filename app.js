@@ -57,6 +57,7 @@ export class Match {
     if (alive.length <= 1 || this.time >= 90) {
       this.finished = true;
       this.winner = alive.length === 1 ? alive[0] : null;
+      for (const fighter of this.fighters) if (!fighter.alive) fighter.settleDeath(this);
     }
   }
 }
