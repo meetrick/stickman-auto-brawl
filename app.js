@@ -3,10 +3,11 @@ import { seededRandom } from './random.js';
 import { Renderer } from './renderer.js';
 import { resolveDominoes } from './collisions.js';
 import { HazardManager } from './hazards.js';
+import { Arena } from './arena.js';
 
 export const STEP = 1 / 120;
 export class Match {
-  constructor(seed = 1, count = 8, { showcase = false } = {}) {
+  constructor(seed = 1, count = 8, { showcase = false, terrain = true } = {}) {
     this.seed = seed >>> 0; this.rng = seededRandom(this.seed);
     this.bounds = { left: 100, right: 1100, top: 245, bottom: 580 };
     this.time = 0; this.events = []; this.effects = []; this.winner = null; this.finished = false;
@@ -18,6 +19,8 @@ export class Match {
       return new Fighter(id, 600 + Math.cos(angle) * 290, 412 + Math.sin(angle) * 115, this.rng);
     });
     if (showcase && count >= 4) this.stageShowcase();
+    this.arena = terrain ? new Arena(this.seed, this.bounds, this.fighters) : null;
+    if (this.arena) for (let i = 0; i < this.arena.mineCount; i++) this.hazards.spawn(this, 'mine');
   }
   stageShowcase() {
     // A labeled demonstration uses actual physics, not fabricated event counters.
@@ -76,6 +79,7 @@ if (typeof document !== 'undefined') {
     $('#roster').innerHTML = match.fighters.map(f => `<article class="fighter-card" data-id="${f.id}"><span class="swatch" style="--fighter:${f.color}">${String(f.id + 1).padStart(2, '0')}</span><div class="fighter-info"><strong>${f.name}</strong><span>${f.personality}</span><div class="hp-track"><i style="background:${f.color}"></i></div></div><div class="fighter-numbers"><b><span class="hp"></span><small> / ${f.maxHp}</small></b><span>SPD ${Math.round(f.speed)} · ATK ${f.power.toFixed(2)}</span></div></article>`).join('');
     cards.clear();
     for (const node of $('#roster').children) cards.set(Number(node.dataset.id), { node, hp: node.querySelector('.hp'), bar: node.querySelector('.hp-track i') });
+    text($('#map-info'), match.arena ? `${match.arena.name} · ${match.arena.walls.length} walls · ${match.arena.traps.length} spike traps` : 'Open courtyard');
     updateCameraLabel(); updateUI();
   }
   function updateUI() {

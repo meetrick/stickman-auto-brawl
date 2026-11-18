@@ -16,6 +16,43 @@ export class Renderer {
     const c = this.ctx; c.beginPath(); c.strokeStyle = color; c.lineWidth = width;
     points.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke();
   }
+  wall(w) {
+    const c = this.ctx, x = w.x - w.w / 2, y = w.y - w.d / 2;
+    const color = w.type === 'spring' ? '#6e9486' : w.type === 'crate' ? '#b59464' : '#a5aa98';
+    c.save(); c.lineJoin = 'round'; c.lineWidth = 1.5; c.strokeStyle = '#666c5a';
+    c.fillStyle = '#30392a20'; c.fillRect(x - 5, y, w.w + 14, w.d + 8);
+    if (w.destroyed) {
+      c.fillStyle = color;
+      for (let i = 0; i < 5; i++) c.fillRect(x + i * w.w / 5, y + (i % 2) * 8, w.w / 7, 5);
+      c.restore(); return;
+    }
+    c.fillStyle = color; c.fillRect(x, y + w.d - w.height, w.w, w.height); c.strokeRect(x, y + w.d - w.height, w.w, w.height);
+    c.fillStyle = w.type === 'spring' ? '#b0c9b5' : w.type === 'crate' ? '#ddc49a' : '#d0d2bf';
+    c.fillRect(x, y - w.height, w.w, w.d); c.strokeRect(x, y - w.height, w.w, w.d);
+    if (w.type === 'crate') {
+      this.line([[x + 5, y + w.d - w.height + 5], [x + w.w - 5, y + w.d - 5]], '#806a4d', 3);
+      this.line([[x + w.w - 5, y + w.d - w.height + 5], [x + 5, y + w.d - 5]], '#806a4d', 3);
+    } else if (w.type === 'spring') {
+      const points = Array.from({ length: 9 }, (_, i) => [x + w.w / 2 + (i % 2 ? 9 : -9), y + w.d - 7 - i * (w.height - 14) / 8]);
+      this.line(points, '#e8edd9', 3);
+    } else {
+      this.line([[x, y + w.d - w.height / 2], [x + w.w, y + w.d - w.height / 2]], '#838b75', 1);
+      this.line([[w.x, y + w.d - w.height], [w.x, y + w.d - w.height / 2]], '#838b75', 1);
+    }
+    c.restore();
+  }
+  trap(trap, world) {
+    const c = this.ctx, phase = world.arena.trapPhase(trap, world.time), active = phase === 'active';
+    c.save(); c.translate(trap.x, trap.y);
+    c.fillStyle = active ? '#af514738' : '#444e3c20'; c.strokeStyle = phase === 'warning' ? '#c58631' : '#858b77'; c.lineWidth = 1.5;
+    c.beginPath(); c.ellipse(0, 0, 26, 16, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+    for (let i = -1; i <= 1; i++) {
+      c.fillStyle = active ? '#9b5145' : '#818775'; c.beginPath();
+      c.moveTo(i * 14 - 5, 4); c.lineTo(i * 14, active ? -25 : -3); c.lineTo(i * 14 + 5, 4); c.closePath(); c.fill();
+    }
+    if (phase === 'warning') { c.fillStyle = '#b57828'; c.font = 'bold 15px monospace'; c.textAlign = 'center'; c.fillText('!', 0, -20); }
+    c.restore();
+  }
   hazard(item, world) {
     const c = this.ctx, armed = world.time >= item.armAt;
     c.save(); c.translate(item.x, item.y);
@@ -129,7 +166,9 @@ export class Renderer {
     c.font = '11px monospace'; c.fillStyle = '#878d79'; c.fillText('THE COURTYARD / 01', 44, 653);
     c.textAlign = 'right'; c.fillText('EVERY BODY IS A PROJECTILE', 1156, 653); c.textAlign = 'left';
     for (const item of world.hazards.items) this.hazard(item, world);
-    [...world.fighters].sort((a, b) => a.y - b.y || a.id - b.id).forEach(f => this.fighter(f, world.time));
+    for (const trap of world.arena?.traps || []) this.trap(trap, world);
+    const objects = [...world.fighters.map(f => ({ depth: f.y, fighter: f })), ...(world.arena?.walls || []).map(w => ({ depth: w.y + w.d / 2, wall: w }))];
+    objects.sort((a, b) => a.depth - b.depth).forEach(o => o.wall ? this.wall(o.wall) : this.fighter(o.fighter, world.time));
     for (const e of world.effects) this.effect(e);
     c.restore();
     if (view.closeUp) {

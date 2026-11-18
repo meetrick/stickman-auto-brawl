@@ -31,7 +31,8 @@ export class HazardManager {
       y = nearby ? nearby.y + range(world.rng, -55, 55) : range(world.rng, b.top + 20, b.bottom - 20);
     }
     x = clamp(x, b.left + 18, b.right - 18); y = clamp(y, b.top + 18, b.bottom - 18);
-    if (this.items.some(i => Math.hypot(i.x - x, i.y - y) < 35)) return null;
+    if (world.arena?.isBlocked(x, y, 28) || world.arena?.traps.some(t => Math.hypot(t.x - x, t.y - y) < 45)
+      || this.items.some(i => Math.hypot(i.x - x, i.y - y) < 35)) return null;
     const item = { id: this.nextId++, type, x, y, radius: type === 'mine' ? 15 : 12,
       born: world.time, armAt: world.time + (type === 'mine' ? .8 : .25), expiresAt: world.time + 20 };
     this.items.push(item); return item;

@@ -62,3 +62,7 @@ Mobile web is the primary viewing target. At phone widths, the opening title is 
 - Reduced-motion preference defaults to Overview. If auto framing is selected manually, continuous camera panning is suppressed. Browser zoom remains enabled.
 
 Validation includes browser checks at 320×568, 390×844, 844×390, and 1280×900: no horizontal overflow, phone touch targets, arena/counter clearance above the dock, camera and pause toggles, More/replay controls, and desktop disclosure behavior. These are browser viewport checks, not a physical iOS/Android device certification.
+
+## Arena variety
+
+Each seeded round now generates a separate map RNG stream: 3–6 attempted walls, 2–5 attempted timed spike traps, and 1–3 initial mine placement attempts. Placement rejects fighter spawn areas, overlapping obstacles, and tight wall gaps. Stone, spring, and crate walls have distinct procedural drawings and share depth sorting with fighters. Traps cycle between safe, warning, and raised states. Replay seed reproduces the full layout. Dynamic item placement also rejects walls and spike patches. Layout counts are shown under the arena guide. Wall and spike collision responses are the next implementation chunk.

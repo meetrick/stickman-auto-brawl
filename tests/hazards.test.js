@@ -4,7 +4,7 @@ import { Match, STEP } from '../app.js';
 import { touchesFloorItem } from '../hazards.js';
 
 function setup(type = 'mine') {
-  const w = new Match(7, 3), f = w.fighters[0];
+  const w = new Match(7, 3, { terrain: false }), f = w.fighters[0];
   f.x = 500; f.y = 400; f.previous = { x: 500, y: 400, z: 0 };
   const item = w.hazards.spawn(w, type, f);
   w.time = 1; w.hazards.mineTimer = w.hazards.potionTimer = 100;
