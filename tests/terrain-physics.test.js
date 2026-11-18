@@ -43,12 +43,3 @@ test('navigation leads a fighter around a wall instead of pinning it against the
   assert.ok(f.x > 550, `fighter reached ${f.x}`);
   assert.equal(w.arena.isBlocked(f.x, f.y, 15), false);
 });
-test('spikes hurt on the active floor contact, not during safe phases or overhead flight', () => {
-  const { w, f } = scene(); w.arena.walls = [];
-  const trap = { id: 0, x: f.x, y: f.y, radius: 21, period: 4, phase: 0, cooldowns: new Map() };
-  w.arena.traps = [trap]; f.previous = { x: f.x, y: f.y, z: 0 }; const hp = f.hp;
-  w.time = 2; w.arena.update(w); assert.equal(f.hp, hp);
-  w.time = 4; f.previous.z = f.z = 100; w.arena.update(w); assert.equal(f.hp, hp);
-  f.previous.z = 10; f.z = 0; w.arena.update(w);
-  assert.equal(f.hp, hp - 14); assert.equal(f.vz, 300); assert.equal(w.stats.spikes, 1);
-});

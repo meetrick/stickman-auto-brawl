@@ -2,11 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Match } from '../app.js';
 
-test('each seed reproduces its map and different seeds vary pole/trap counts and placement', () => {
+test('each seed reproduces its map and different seeds vary pole counts and placement', () => {
   assert.deepEqual(new Match(72).arena, new Match(72).arena);
   const maps = Array.from({ length: 100 }, (_, seed) => new Match(seed).arena);
   assert.ok(new Set(maps.map(a => a.bars.length)).size >= 3);
-  assert.ok(new Set(maps.map(a => a.traps.length)).size >= 3);
+  assert.ok(maps.every(a => a.traps.length === 0));
   assert.equal(new Set(maps.map(a => JSON.stringify(a.bars))).size, 100);
 });
 test('generated obstacles leave spawns clear, stay inside bounds and leave walkable gaps', () => {
@@ -24,10 +24,9 @@ test('generated obstacles leave spawns clear, stay inside bounds and leave walka
     for (const item of w.hazards.items) assert.equal(a.isBlocked(item.x, item.y, 28), false);
   }
 });
-test('spike traps alternate warning, active and safe phases without per-frame RNG', () => {
-  const a = new Match(10).arena, t = a.traps[0];
-  t.phase = 0;
-  assert.equal(a.trapPhase(t, 0), 'active');
-  assert.equal(a.trapPhase(t, t.period - .3), 'warning');
-  assert.equal(a.trapPhase(t, 1.5), 'safe');
+test('all participant counts and the demo have clear floors without spike traps', () => {
+  for (const count of [2, 4, 8, 12]) for (const showcase of [false, true]) {
+    const w = new Match(10, count, { showcase });
+    assert.equal(w.arena.traps.length, 0); assert.ok(w.hazards.items.every(i => i.type === 'potion'));
+  }
 });

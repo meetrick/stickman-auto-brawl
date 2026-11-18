@@ -1,5 +1,4 @@
 import { seededRandom, range, clamp } from './random.js';
-import { touchesFloorItem } from './hazards.js';
 
 export const WALL_TYPES = ['stone', 'spring', 'crate'];
 export function barPoint(bar, time, offset) {
@@ -47,9 +46,8 @@ export class Arena {
     // Map rolls have their own RNG stream, independent of fighter/combat rolls.
     const rng = seededRandom(seed ^ 0xA7E4C921);
     this.walls = []; this.traps = []; this.bars = [];
-    const wallCount = legacyWalls ? 3 + Math.floor(rng() * 4) : 0, trapCount = 2 + Math.floor(rng() * 4);
+    const wallCount = legacyWalls ? 3 + Math.floor(rng() * 4) : 0;
     const barCount = 2 + Math.floor(rng() * 3);
-    this.mineCount = 1 + Math.floor(rng() * 3);
     this.name = ['BROKEN COURT', 'SPRING YARD', 'SPLIT RING', 'RUIN GARDEN'][Math.floor(rng() * 4)];
     for (let attempt = 0; this.walls.length < wallCount && attempt < 250; attempt++) {
       const vertical = rng() < .4;
@@ -68,13 +66,6 @@ export class Arena {
       if (fighters.some(f => Math.hypot(f.x - bar.x, (f.y - bar.y) / .55) < radius + 35)
         || this.bars.some(b => Math.hypot(b.x - bar.x, (b.y - bar.y) / .55) < b.radius + radius + 30)) continue;
       this.bars.push(bar);
-    }
-    for (let attempt = 0; this.traps.length < trapCount && attempt < 250; attempt++) {
-      const trap = { id: this.traps.length, x: range(rng, bounds.left + 35, bounds.right - 35), y: range(rng, bounds.top + 30, bounds.bottom - 30),
-        radius: 21, phase: range(rng, 0, 5), period: range(rng, 3.2, 5.2), cooldowns: new Map() };
-      if (this.isBlocked(trap.x, trap.y, 35) || this.bars.some(b => Math.hypot(b.x - trap.x, b.y - trap.y) < 35) || this.traps.some(t => Math.hypot(t.x - trap.x, t.y - trap.y) < 70)
-        || fighters.some(f => Math.hypot(f.x - trap.x, f.y - trap.y) < 50)) continue;
-      this.traps.push(trap);
     }
   }
   isBlocked(x, y, radius = 16) {
@@ -165,19 +156,5 @@ export class Arena {
       world.stats.barHits++; if (lucky) world.stats.luckyBounces++;
       world.emit('bar', f, { text: lucky ? 'LUCKY RICOCHET!' : 'POLE HIT!', lucky });
     }
-    for (const trap of this.traps) {
-      if (this.trapPhase(trap, world.time) !== 'active') continue;
-      for (const f of world.fighters) {
-        if (!f.alive || world.time < (trap.cooldowns.get(f.id) || 0) || !touchesFloorItem(f, trap)) continue;
-        trap.cooldowns.set(f.id, world.time + 1.2);
-        const angle = Math.atan2(f.y - trap.y, f.x - trap.x);
-        f.receiveHit(14, Math.cos(angle) * 170, Math.sin(angle) * 170, 300);
-        world.stats.spikes++; world.emit('spike', f, { text: 'SPIKED!' });
-      }
-    }
-  }
-  trapPhase(trap, time) {
-    const phase = (time + trap.phase) % trap.period;
-    return phase < 1.1 ? 'active' : phase > trap.period - .65 ? 'warning' : 'safe';
   }
 }

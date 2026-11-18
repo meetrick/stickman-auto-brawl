@@ -17,9 +17,10 @@ export function touchesFloorItem(fighter, item) {
 }
 
 export class HazardManager {
-  constructor() { this.items = []; this.nextId = 0; this.mineTimer = .4; this.potionTimer = 1.4; }
+  constructor() { this.items = []; this.nextId = 0; this.potionTimer = 1.4; }
   spawn(world, type, position) {
-    const cap = type === 'mine' ? 6 : 3;
+    if (type !== 'potion') return null;
+    const cap = 3;
     if (this.items.filter(i => i.type === type).length >= cap) return null;
     let x, y;
     const b = world.bounds, alive = world.fighters.filter(f => f.alive);
@@ -31,27 +32,14 @@ export class HazardManager {
       y = nearby ? nearby.y + range(world.rng, -55, 55) : range(world.rng, b.top + 20, b.bottom - 20);
     }
     x = clamp(x, b.left + 18, b.right - 18); y = clamp(y, b.top + 18, b.bottom - 18);
-    if (world.arena?.isBlocked(x, y, 28) || world.arena?.traps.some(t => Math.hypot(t.x - x, t.y - y) < 45)
+    if (world.arena?.isBlocked(x, y, 28)
       || this.items.some(i => Math.hypot(i.x - x, i.y - y) < 35)) return null;
-    const item = { id: this.nextId++, type, x, y, radius: type === 'mine' ? 15 : 12,
-      born: world.time, armAt: world.time + (type === 'mine' ? .8 : .25), expiresAt: world.time + 20 };
+    const item = { id: this.nextId++, type, x, y, radius: 12,
+      born: world.time, armAt: world.time + .25, expiresAt: world.time + 20 };
     this.items.push(item); return item;
   }
-  explode(world, mine, trigger) {
-    world.stats.explosions++;
-    world.emit('explosion', trigger, { text: 'BOOM!', x: mine.x, y: mine.y, z: 0, radius: 100 });
-    for (const f of world.fighters) {
-      if (!f.alive) continue;
-      const dx = f.x - mine.x, dy = f.y - mine.y, dist = Math.hypot(dx, dy);
-      if (f !== trigger && (dist > 100 || f.z > 125)) continue;
-      const angle = dist < 1 ? f.id * 2.4 : Math.atan2(dy, dx);
-      const force = 420 * (1 - Math.min(dist, 100) / 200);
-      f.receiveHit(36, Math.cos(angle) * force, Math.sin(angle) * force, 670);
-    }
-  }
   update(dt, world) {
-    this.mineTimer -= dt; this.potionTimer -= dt;
-    if (this.mineTimer <= 0) { this.spawn(world, 'mine'); this.mineTimer = range(world.rng, 1.5, 3); }
+    this.potionTimer -= dt;
     if (this.potionTimer <= 0) { this.spawn(world, 'potion'); this.potionTimer = range(world.rng, 4, 7); }
     const consumed = new Set();
     for (const item of this.items) {
@@ -59,13 +47,10 @@ export class HazardManager {
       if (world.time < item.armAt) continue;
       for (const f of world.fighters) {
         if (!f.alive || !touchesFloorItem(f, item)) continue;
-        if (item.type === 'mine') this.explode(world, item, f);
-        else {
           if (f.hp >= f.maxHp) continue;
           const heal = Math.min(30, f.maxHp - f.hp); f.hp += heal;
           world.stats.heals++;
           world.emit('heal', f, { text: `+${Math.ceil(heal)} HP` });
-        }
         consumed.add(item.id); break;
       }
     }

@@ -46,18 +46,6 @@ export class Renderer {
     }
     c.restore();
   }
-  trap(trap, world) {
-    const c = this.ctx, phase = world.arena.trapPhase(trap, world.time), active = phase === 'active';
-    c.save(); c.translate(trap.x, trap.y);
-    c.fillStyle = active ? '#af514738' : '#444e3c20'; c.strokeStyle = phase === 'warning' ? '#c58631' : '#858b77'; c.lineWidth = 1.5;
-    c.beginPath(); c.ellipse(0, 0, 26, 16, 0, 0, Math.PI * 2); c.fill(); c.stroke();
-    for (let i = -1; i <= 1; i++) {
-      c.fillStyle = active ? '#9b5145' : '#818775'; c.beginPath();
-      c.moveTo(i * 14 - 5, 4); c.lineTo(i * 14, active ? -25 : -3); c.lineTo(i * 14 + 5, 4); c.closePath(); c.fill();
-    }
-    if (phase === 'warning') { c.fillStyle = '#b57828'; c.font = 'bold 15px monospace'; c.textAlign = 'center'; c.fillText('!', 0, -20); }
-    c.restore();
-  }
   spinner(bar, time, part) {
     const c = this.ctx;
     if (part === 0) {
@@ -78,22 +66,12 @@ export class Renderer {
     const c = this.ctx, armed = world.time >= item.armAt;
     c.save(); c.translate(item.x, item.y);
     const pulse = .5 + .5 * Math.sin((world.time - item.born) * 11);
-    if (item.type === 'mine') {
-      c.globalAlpha = armed ? .55 + pulse * .45 : .3;
-      c.strokeStyle = '#bb493b'; c.fillStyle = '#bb493b22'; c.lineWidth = 2;
-      c.beginPath(); c.ellipse(0, 0, 18 + pulse * 4, 10 + pulse * 2, 0, 0, Math.PI * 2); c.fill(); c.stroke();
-      c.fillStyle = '#a33c30'; c.beginPath(); c.ellipse(0, -2, 11, 6, 0, 0, Math.PI * 2); c.fill();
-      c.fillStyle = armed && pulse > .5 ? '#ffd8a1' : '#e27251';
-      c.beginPath(); c.arc(0, -5, 3, 0, Math.PI * 2); c.fill();
-      if (!armed) { c.font = '9px monospace'; c.textAlign = 'center'; c.fillStyle = '#b34638'; c.fillText(t('ARMING'), 0, -18); }
-    } else {
       c.globalAlpha = .6; c.fillStyle = '#5e9c7433'; c.beginPath(); c.ellipse(0, 0, 17, 9, 0, 0, Math.PI * 2); c.fill();
       c.globalAlpha = 1; c.translate(0, -8 + Math.sin(world.time * 4 + item.id) * 2);
       c.fillStyle = '#6b9b70'; c.strokeStyle = '#3b6745'; c.lineWidth = 1.5;
       c.beginPath(); c.roundRect(-8, -10, 16, 19, 4); c.fill(); c.stroke();
       c.fillStyle = '#b9a67d'; c.fillRect(-5, -15, 10, 5);
       this.line([[-4, -1], [4, -1]], '#f3f1dc', 2.5); this.line([[0, -5], [0, 3]], '#f3f1dc', 2.5);
-    }
     c.restore();
   }
   effect(e) {
@@ -106,17 +84,6 @@ export class Renderer {
         this.line([[x + Math.cos(angle) * inner, y + Math.sin(angle) * inner], [x + Math.cos(angle) * outer, y + Math.sin(angle) * outer]], '#b26737', 2.5);
       }
     }
-    if (e.type === 'explosion') {
-      c.translate(e.x, e.y);
-      c.strokeStyle = '#c75b33'; c.fillStyle = '#edbd5866'; c.lineWidth = 4 * (1 - progress) + 1;
-      c.beginPath(); c.ellipse(0, 0, 15 + progress * 110, 8 + progress * 48, 0, 0, Math.PI * 2); c.fill(); c.stroke();
-      for (let i = 0; i < 15; i++) {
-        const angle = i * 2.39996, radius = 15 + progress * (55 + i * 3);
-        c.fillStyle = i % 2 ? '#c26338' : '#e6a736'; c.beginPath();
-        c.arc(Math.cos(angle) * radius, Math.sin(angle) * radius * .5 - progress * 85, 2 + (1 - progress) * 6, 0, Math.PI * 2); c.fill();
-      }
-      c.translate(-e.x, -e.y);
-    }
     if (e.crit) {
       c.strokeStyle = '#d99524'; c.lineWidth = 2;
       for (let i = 0; i < 8; i++) {
@@ -126,7 +93,7 @@ export class Renderer {
       }
     }
     c.textAlign = 'center'; c.fillStyle = e.type === 'heal' ? '#43845b' : e.crit ? '#ba7c1d' : '#a44735';
-    c.font = `bold ${e.crit || e.type === 'explosion' ? 26 : 15}px monospace`;
+    c.font = `bold ${e.crit ? 26 : 15}px monospace`;
     c.fillText(eventText(e), e.x, e.y - e.z - 95 - progress * 45); c.restore();
   }
   weapon(p, f) {
@@ -249,7 +216,6 @@ export class Renderer {
     c.font = '11px monospace'; c.fillStyle = '#878d79'; c.fillText(t('courtyard') + ' / 01', 44, 653);
     c.textAlign = 'right'; c.fillText(t('projectile'), 1156, 653); c.textAlign = 'left';
     for (const item of world.hazards.items) this.hazard(item, world);
-    for (const trap of world.arena?.traps || []) this.trap(trap, world);
     const objects = [...world.fighters.map(f => ({ depth: f.y, fighter: f })), ...(world.arena?.walls || []).map(w => ({ depth: w.y + w.d / 2, wall: w }))];
     for (const bar of world.arena?.bars || []) for (let part = -3; part <= 3; part++) {
       const point = barPoint(bar, world.time, part === 0 ? 0 : (Math.abs(part) - .5) / 3 * bar.radius * Math.sign(part));

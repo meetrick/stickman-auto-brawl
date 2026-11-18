@@ -23,7 +23,6 @@ export class Match {
     });
     if (showcase && count >= 4) this.stageShowcase();
     this.arena = terrain ? new Arena(this.seed, this.bounds, this.fighters) : null;
-    if (this.arena) for (let i = 0; i < this.arena.mineCount; i++) this.hazards.spawn(this, 'mine');
   }
   stageShowcase() {
     // A labeled demonstration uses actual physics, not fabricated event counters.
@@ -35,7 +34,6 @@ export class Match {
     a.x = 240; b.x = 308; c.x = 376;
     a.receiveHit(0, 450, 0, 190);
     d.x = 720; d.y = 465;
-    this.hazards.spawn(this, 'mine', { x: d.x, y: d.y });
     this.emit('demo', a, { text: 'CHAOS DEMO' });
   }
   emit(type, fighter, detail = {}) {

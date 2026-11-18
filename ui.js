@@ -53,7 +53,7 @@ export function boot() {
       lastEvent = match.events[0];
       $('#events').innerHTML = match.events.slice(0, 5).map(e => `<li><time>${e.time.toFixed(1)}s</time><span>${escapeHTML(match.fighters[e.fighter].name)} <b>${escapeHTML(eventText(e))}</b></span></li>`).join('') || `<li class="quiet">${t('quiet')}</li>`;
     }
-    text($('#map-info'), match.arena ? t('map', { name: t(match.arena.name), bars: match.arena.bars.length, traps: match.arena.traps.length }) : t('openCourt'));
+    text($('#map-info'), match.arena ? t('map', { name: t(match.arena.name), bars: match.arena.bars.length }) : t('openCourt'));
     text($('#status'), t(match.finished ? 'roundOver' : paused ? 'paused' : 'live'));
     text($('#pause'), t(paused ? 'resume' : 'pause')); $('#pause').disabled = match.finished;
     text($('#speed'), t('speed', { speed })); $('#speed').setAttribute('aria-label', t('speedLabel', { speed }));
@@ -63,10 +63,11 @@ export function boot() {
       text($('#result-title'), paused ? t('pauseTitle') : match.winner ? t('winner', { name: match.winner.name }) : t('draw'));
       text($('#result-hint'), t(paused ? 'resumeHint' : 'newMatchHint'));
     }
-    const moment = match.events.find(e => e.crit || ['explosion', 'domino', 'heal', 'wall', 'spike', 'bar'].includes(e.type));
+    const moment = match.events.find(e => e.crit || ['domino', 'heal', 'wall', 'bar'].includes(e.type));
     $('#moment').hidden = paused || match.finished || !moment || match.time - moment.time > 1.8;
     if (moment) { text($('#moment'), `${match.fighters[moment.fighter].name} · ${eventText(moment)}`); $('#moment').dataset.kind = moment.crit ? 'crit' : moment.type; }
-    for (const key of ['crits', 'dominoes', 'explosions', 'heals']) text($(`#${key}`), match.stats[key]);
+    text($('#weapon-hits'), match.stats.moves?.WeaponStrike || 0);
+    for (const key of ['crits', 'dominoes', 'heals']) text($(`#${key}`), match.stats[key]);
   }
   function translatePage() {
     document.documentElement.lang = getLanguage(); document.title = getLanguage() === 'ko' ? '스틱맨 — 오토 브롤' : 'Stickman — Auto Brawl';
