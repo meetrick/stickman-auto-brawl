@@ -45,6 +45,20 @@ The ink outlines, colored torso strokes, round heads, fluttering headbands, and 
 
 ## Validation
 
-`npm test` uses Node's built-in test runner with no dependencies. The 25 tests cover all four attacks, exact crit thresholds and multipliers, stat bounds, retreat/corner behavior, seeded replay, airborne domino chains, swept collision misses, duplicate-hit prevention, mine arming and splash, dash/landing triggers, healing caps, KO exclusions, hazard lifetime/caps, and the demo opening. A simulation test also runs 32 complete random matches, checks finite state and HP bounds, and confirms all four chaos events occur naturally across those rounds.
+`npm test` uses Node's built-in test runner with no dependencies. The 29 tests cover all four attacks, exact crit thresholds and multipliers, stat bounds, retreat/corner behavior, seeded replay, airborne domino chains, swept collision misses, duplicate-hit prevention, mine arming and splash, dash/landing triggers, healing caps, KO exclusions, hazard lifetime/caps, the demo opening, and camera framing/replay isolation. A simulation test also runs 32 complete random matches, checks finite state and HP bounds, and confirms all four chaos events occur naturally across those rounds.
 
 The project is intentionally local-only. No backend, remote assets, multiplayer service, or build step is required.
+
+## Mobile spectator experience
+
+Mobile web is the primary viewing target. At phone widths, the opening title is compact and the match, chaos counters, and playback dock take priority. Fighter stats and ringside notes are native disclosure panels, collapsed initially on phones and open on desktop.
+
+- The bottom dock keeps **New match**, **Pause/Resume**, **Speed**, and **More** within reach. Main phone controls have at least 48px touch targets; safe-area insets accommodate home indicators and display cutouts.
+- **More** contains Replay seed and Chaos demo. Tap outside or press Escape to dismiss it.
+- The mobile **auto camera** enlarges the active fight using a damped camera with a two-second focus hold. Numbered edge markers identify surviving fighters outside the frame. Tap **Overview** for the entire arena, then **Auto camera** to return. Camera framing changes presentation only; it never consumes match RNG or changes physics.
+- Full-arena views preserve aspect ratio in portrait and landscape. Short landscape layouts reduce header and counter spacing to keep the arena and dock visible.
+- Major events have readable screen-space callouts. The end-of-round overlay names the winner and points to New match. Paused and completed rounds stop continuous Canvas redraws; tab visibility resets elapsed time to avoid a catch-up burst on return.
+- Fighter rows are created once per match; health values and bars are updated in place. Canvas size is observed with ResizeObserver instead of requesting layout every animation frame.
+- Reduced-motion preference defaults to Overview. If auto framing is selected manually, continuous camera panning is suppressed. Browser zoom remains enabled.
+
+Validation includes browser checks at 320×568, 390×844, 844×390, and 1280×900: no horizontal overflow, phone touch targets, arena/counter clearance above the dock, camera and pause toggles, More/replay controls, and desktop disclosure behavior. These are browser viewport checks, not a physical iOS/Android device certification.

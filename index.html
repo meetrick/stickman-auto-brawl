@@ -1,14 +1,68 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#f5f3e9"><title>Stickman — Auto Brawl</title><link rel="stylesheet" href="style.css"></head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f3e9">
+  <meta name="description" content="Eight stick fighters. Unlikely outcomes. A mobile-first auto-brawler made for watching.">
+  <title>Stickman — Auto Brawl</title>
+  <link rel="stylesheet" href="style.css">
+</head>
 <body>
 <div class="shell">
-<header><a class="brand" href="./"><span class="brand-mark">乱</span><span>STICKMAN<small>AUTO BRAWL / CHAOS LAB</small></span></a><div class="edition"><span class="live-dot"></span> A SPECTATOR SPORT <span class="edition-no">VOL. 003</span></div></header>
-<main>
-<section class="intro"><div><p class="eyebrow">PROCEDURAL FIGHTERS. QUESTIONABLE DECISIONS.</p><h1>Small sticks.<br><em>Big consequences.</em></h1></div><div class="intro-aside"><p>Eight fighters enter the courtyard.<br>Physics takes it personally.</p><button id="new-match" class="primary">New match <span>↗</span></button></div></section>
-<div class="workspace"><section class="arena-panel"><div class="arena-bar"><span><i class="live-dot"></i> <b id="status">LIVE MATCH</b></span><span>ROUND SEED <b id="seed">000000</b></span><time id="clock">00:00</time></div><div class="canvas-wrap"><canvas aria-label="Live 2.5D auto-battler arena with eight procedural stick fighters"></canvas><span class="arena-label" id="mode">NO TEAMS. NO MERCY.</span></div><div class="controls"><div><button id="pause">Ⅱ Pause</button><button id="speed">1× Speed</button><button id="replay">↺ Replay seed</button><button id="demo" title="Staged opening, real physics: see dominoes and a landmine immediately">✳ Chaos demo</button></div><span>JUST WATCH IT UNFOLD.</span></div></section>
-<aside class="roster-panel"><div class="section-label"><h2>THE CONTENDERS</h2><span id="alive">8 / 8</span></div><div id="roster"></div><p class="roster-note">A fresh roll of the dice, every round.</p></aside></div>
-<section class="below"><div class="chaos-panel"><div class="section-label"><h2>THE CHAOS INDEX</h2><span>LIVE TELEMETRY</span></div><div class="metrics"><div><b id="crits">0</b><span>CRITICAL HITS</span></div><div><b id="dominoes">0</b><span>DOMINO HITS</span></div><div><b id="explosions">0</b><span>LANDMINES</span></div><div><b id="heals">0</b><span>POTIONS USED</span></div></div><div class="legend"><span><i class="red"></i> LANDMINE</span><span><i class="green"></i> HEALTH POTION</span><span>10% CRIT · 3× DAMAGE · 2× KNOCKBACK</span></div></div><div class="event-panel"><div class="section-label"><h2>RINGSIDE NOTES</h2><span>AS IT HAPPENS</span></div><ul id="events" aria-label="Recent combat events"></ul></div></section>
-</main><footer><span>BUILT FROM STICKS & UNLIKELY OUTCOMES.</span><span>2.5D PHYSICS / ZERO PLAYER INPUT</span></footer>
-</div><script type="module" src="app.js"></script>
-</body></html>
+  <header>
+    <a class="brand" href="./" aria-label="Stickman Auto Brawl home"><span class="brand-mark">乱</span><span>STICKMAN<small>AUTO BRAWL / CHAOS LAB</small></span></a>
+    <span class="watch-label"><i class="live-dot"></i> JUST WATCH.</span>
+  </header>
+  <main>
+    <section class="intro">
+      <div><p class="eyebrow">A SPECTATOR SPORT</p><h1>Small sticks.<br> <em>Big consequences.</em></h1></div>
+      <p class="intro-aside">Eight fighters enter.<br>Physics takes it personally.</p>
+    </section>
+    <div class="workspace">
+      <section class="arena-panel" aria-label="Live match">
+        <div class="arena-bar">
+          <span class="match-status"><i class="live-dot"></i><b id="status" role="status">LIVE MATCH</b></span>
+          <span class="seed-label">SEED <b id="seed">000000</b></span>
+          <span id="arena-alive">8 left</span><time id="clock">00:00</time>
+        </div>
+        <div class="canvas-wrap">
+          <canvas aria-label="Live auto-battler arena. Fighters battle automatically; no gameplay input is needed."></canvas>
+          <span class="arena-label" id="mode">THE COURTYARD</span>
+          <button id="camera" class="camera-button" aria-pressed="false" title="Toggle full arena view">⊞ Overview</button>
+          <div id="result" class="result" hidden><p id="result-caption"></p><h2 id="result-title"></h2><span id="result-hint"></span></div>
+          <div id="moment" class="moment" aria-hidden="true" hidden></div>
+          <p class="watch-hint">NO CONTROLS. JUST CHAOS.</p>
+        </div>
+        <div class="metrics" aria-label="Live chaos counts">
+          <div><b id="crits">0</b><span>CRITS</span></div>
+          <div><b id="dominoes">0</b><span>DOMINOES</span></div>
+          <div><b id="explosions">0</b><span>EXPLOSIONS</span></div>
+          <div><b id="heals">0</b><span>HEALS</span></div>
+        </div>
+        <nav class="controls" aria-label="Match controls">
+          <button id="new-match" class="primary">New match <span aria-hidden="true">↗</span></button>
+          <button id="pause" aria-pressed="false">Ⅱ Pause</button>
+          <button id="speed" aria-label="Playback speed: 1 times">1× Speed</button>
+          <details class="tools" id="tools">
+            <summary>More <span aria-hidden="true">⋯</span></summary>
+            <div class="tools-menu"><p>WATCH YOUR WAY</p><button id="replay">↺ Replay seed</button><button id="demo">✳ Chaos demo</button><span>Demo opens with a staged collision.</span></div>
+          </details>
+        </nav>
+      </section>
+      <details class="roster-panel" id="fighters-panel">
+        <summary class="section-label"><h2>The fighters</h2><span><b id="alive">8 / 8</b> remaining <i class="chevron" aria-hidden="true">⌄</i></span></summary>
+        <div id="roster"></div>
+        <p class="roster-note">Fresh stats. Different personalities. Every round.</p>
+      </details>
+    </div>
+    <section class="below">
+      <div class="field-guide"><h2>Expect the unexpected.</h2><p><span class="item-dot red"></span> Landmines launch. <span class="item-dot green"></span> Potions heal.</p><span>10% crit chance · 3× damage · flying bodies hit back.</span></div>
+      <details class="event-panel"><summary class="section-label"><h2>Ringside notes</h2><span>Recent action <i class="chevron" aria-hidden="true">⌄</i></span></summary><ul id="events" aria-label="Recent combat events"></ul></details>
+    </section>
+  </main>
+  <footer><span>BUILT FROM STICKS & UNLIKELY OUTCOMES.</span><span>2.5D PHYSICS / ZERO PLAYER INPUT</span></footer>
+</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

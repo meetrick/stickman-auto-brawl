@@ -1,6 +1,17 @@
+import { SpectatorCamera } from './camera.js';
+import { clamp } from './random.js';
 const INK = '#292b27';
 export class Renderer {
-  constructor(canvas) { this.canvas = canvas; this.ctx = canvas.getContext('2d'); }
+  constructor(canvas) {
+    this.canvas = canvas; this.ctx = canvas.getContext('2d');
+    this.camera = new SpectatorCamera(); this.overview = false; this.dirty = true;
+    this.mobile = matchMedia('(max-width: 800px), (max-width: 950px) and (max-height: 500px) and (orientation: landscape)');
+    this.reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    this.overview = this.reducedMotion.matches;
+    this.rect = canvas.getBoundingClientRect();
+    this.resizeObserver = new ResizeObserver(() => { this.rect = canvas.getBoundingClientRect(); this.dirty = true; });
+    this.resizeObserver.observe(canvas);
+  }
   line(points, color = INK, width = 4.5) {
     const c = this.ctx; c.beginPath(); c.strokeStyle = color; c.lineWidth = width;
     points.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke();
@@ -90,13 +101,16 @@ export class Renderer {
       c.fillStyle = f.color; c.fillRect(-22, 0, 44 * f.hp / f.maxHp, 3); c.restore();
     }
   }
-  draw(world, paused) {
+  draw(world) {
     const c = this.ctx, dpr = Math.min(globalThis.devicePixelRatio || 1, 2);
-    const rect = this.canvas.getBoundingClientRect();
+    const rect = this.rect;
+    if (!rect.width || !rect.height) return;
     const w = Math.round(rect.width * dpr), h = Math.round(rect.height * dpr);
     if (this.canvas.width !== w || this.canvas.height !== h) { this.canvas.width = w; this.canvas.height = h; }
-    c.setTransform(w / 1200, 0, 0, h / 680, 0, 0);
-    c.fillStyle = '#eae6d7'; c.fillRect(0, 0, 1200, 680);
+    const view = this.camera.frame(world, rect.width, rect.height, this.mobile.matches && !this.overview, this.reducedMotion.matches);
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.fillStyle = '#eae6d7'; c.fillRect(0, 0, rect.width, rect.height);
+    c.save(); c.translate(rect.width / 2, rect.height / 2); c.scale(view.scale, view.scale); c.translate(-view.x, -view.y);
     // Perspective lines and distant mountains are all procedural Canvas paths.
     c.fillStyle = '#d9dccf';
     for (let i = 0; i < 3; i++) {
@@ -117,11 +131,25 @@ export class Renderer {
     for (const item of world.hazards.items) this.hazard(item, world);
     [...world.fighters].sort((a, b) => a.y - b.y || a.id - b.id).forEach(f => this.fighter(f, world.time));
     for (const e of world.effects) this.effect(e);
-    if (world.finished || paused) {
-      c.fillStyle = '#f1eedfcc'; c.fillRect(310, 265, 580, 120);
-      c.textAlign = 'center'; c.fillStyle = INK; c.font = 'bold 46px Georgia';
-      c.fillText(paused ? 'A moment of peace.' : world.winner ? `${world.winner.name} WINS` : 'A glorious draw.', 600, 323);
-      c.font = '12px monospace'; c.fillText(paused ? 'RESUME TO UNLEASH THE CHAOS' : 'NEW MATCH. NEW ODDS. NEW CHAOS.', 600, 357); c.textAlign = 'left';
+    c.restore();
+    if (view.closeUp) {
+      const edges = { left: 0, right: 0 };
+      for (const f of world.fighters.filter(f => f.alive)) {
+        const x = (f.x - view.x) * view.scale + rect.width / 2;
+        const y = (f.y - f.z - 55 - view.y) * view.scale + rect.height / 2;
+        if (x >= 15 && x <= rect.width - 15 && y >= 55 && y <= rect.height - 25) continue;
+        const left = x < rect.width / 2, side = left ? 'left' : 'right';
+        const sx = left ? 9 : rect.width - 43;
+        const sy = clamp(75 + edges[side]++ * 28, 65, rect.height - 55);
+        c.fillStyle = '#f5f3e9e6'; c.strokeStyle = f.color; c.lineWidth = 1;
+        c.beginPath(); c.roundRect(sx, sy, 34, 22, 11); c.fill(); c.stroke();
+        c.fillStyle = f.color; c.textAlign = 'center'; c.font = '10px monospace';
+        const insideX = x >= 15 && x <= rect.width - 15;
+        const arrow = insideX && y < 55 ? '↑' : insideX && y > rect.height - 25 ? '↓' : left ? '‹' : '›';
+        c.fillText(`${arrow}${String(f.id + 1).padStart(2, '0')}`, sx + 17, sy + 15);
+      }
+      c.textAlign = 'left';
     }
+    this.dirty = false;
   }
 }
