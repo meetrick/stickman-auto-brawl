@@ -1,0 +1,19 @@
+Stickman Auto Brawl
+Copyright 2026 Hwangjae Lee (meetrick)
+
+This product is licensed under the Apache License, Version 2.0.
+See the LICENSE file for the full license text.
+
+Acknowledgments
+
+The visual style and procedural animation architecture were inspired by:
+
+  Stick Brawl (스틱 브롤)
+  Copyright 2025–2026 Hwangjae Lee (meetrick)
+  https://github.com/meetrick/stick_brawl
+
+The character poses, combat moves, and rendering in this project are
+independently implemented, as described in the README.
+
+This NOTICE is for attribution and does not modify the Apache License,
+Version 2.0.

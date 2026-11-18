@@ -64,3 +64,12 @@ Each weapon has independent hand/foot keyframes and angle tracks aligned to its 
 Weapon ribbons are sampled from the actual recent hand and weapon-tip path, rather than a generic circular arc. Dash and spin afterimages sample earlier poses and travel direction; hammer contacts kick up a brief dust burst. These effects are presentation-only and are suppressed by reduced-motion preference where appropriate. Ordinary hits use sparks instead of large floating attack labels, keeping fighters legible; critical and major-event callouts remain.
 
 Motion tests verify distinct sword directions, a continuous staff revolution, hammer overhead-to-floor travel, stable IK lengths for every weapon and variant, and spin completion before the active kick window.
+
+## Copyright and license
+
+Copyright 2026 Hwangjae Lee (meetrick).
+
+This project is licensed under the **Apache License, Version 2.0**
+([Apache-2.0](LICENSE)). See [NOTICE](NOTICE) for copyright and source
+acknowledgments, including the reference project
+[Stick Brawl](https://github.com/meetrick/stick_brawl).
