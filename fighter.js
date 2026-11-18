@@ -46,6 +46,7 @@ export class Fighter {
     return true;
   }
   hit(target, world, name) {
+    if (world.arena && !world.arena.attackClear(this, target)) return;
     const move = MOVES[name];
     const dx = target.x - this.x, dy = target.y - this.y;
     const length = Math.hypot(dx, dy) || 1;
@@ -56,6 +57,12 @@ export class Fighter {
       dy / length * knockback, lift)) return;
     if (crit) { world.stats.crits++; target.flash = .3; }
     world.emit('hit', target, { text: crit ? 'CRIT!' : name.toUpperCase(), source: this.id, crit });
+  }
+  moveToward(goal, world, multiplier = 1) {
+    const waypoint = world.arena?.waypoint(this, goal, world) || goal;
+    const dx = waypoint.x - this.x, dy = waypoint.y - this.y, length = Math.hypot(dx, dy) || 1;
+    this.vx = dx / length * this.speed * multiplier; this.vy = dy / length * this.speed * multiplier;
+    this.state = 'walk';
   }
   think(dt, world) {
     if (world.time < (this.readyAt || 0)) return;
@@ -73,15 +80,13 @@ export class Fighter {
     // off the boundary and the coward oscillates without ever fighting back.
     if (cornered) this.courageUntil = world.time + 2.5;
     if (this.personality === 'Cowardly' && distance < 210 && !cornered && world.time >= (this.courageUntil || 0)) {
-      this.vx = -dx / distance * this.speed; this.vy = -dy / distance * this.speed;
-      this.state = 'walk'; return;
+      this.moveToward({ x: clamp(this.x - dx / distance * 150, b.left + 18, b.right - 18), y: clamp(this.y - dy / distance * 150, b.top + 18, b.bottom - 18) }, world); return;
     }
     if (distance < 70 && this.cooldown <= 0 && target.z < 70) {
       const choices = Object.keys(MOVES).filter(name => MOVES[name].reach >= distance);
       if (choices.length) this.startAttack(choices[Math.floor(world.rng() * choices.length)], target);
     } else if (distance > 38) {
-      this.vx = dx / distance * this.speed; this.vy = dy / distance * this.speed;
-      this.state = 'walk';
+      this.moveToward(target, world);
     }
   }
   update(dt, world) {

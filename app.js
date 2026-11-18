@@ -11,7 +11,7 @@ export class Match {
     this.seed = seed >>> 0; this.rng = seededRandom(this.seed);
     this.bounds = { left: 100, right: 1100, top: 245, bottom: 580 };
     this.time = 0; this.events = []; this.effects = []; this.winner = null; this.finished = false;
-    this.stats = { hits: 0, crits: 0, dominoes: 0, explosions: 0, heals: 0 };
+    this.stats = { hits: 0, crits: 0, dominoes: 0, explosions: 0, heals: 0, wallHits: 0, wallBreaks: 0, luckyBounces: 0, spikes: 0 };
     this.hazards = new HazardManager();
     this.showcase = showcase;
     this.fighters = Array.from({ length: count }, (_, id) => {
@@ -45,6 +45,7 @@ export class Match {
     if (this.finished) return;
     this.time += dt;
     for (const fighter of this.fighters) fighter.update(dt, this);
+    this.arena?.update(this);
     resolveDominoes(this);
     this.hazards.update(dt, this);
     for (const effect of this.effects) effect.ttl -= dt;
@@ -105,7 +106,7 @@ if (typeof document !== 'undefined') {
       text($('#result-title'), paused ? 'Paused.' : match.winner ? `${match.winner.name} wins.` : 'A glorious draw.');
       text($('#result-hint'), paused ? 'Tap Resume when you’re ready.' : 'Tap New match. Let chaos roll again.');
     }
-    const moment = match.events.find(e => e.crit || ['explosion', 'domino', 'heal'].includes(e.type));
+    const moment = match.events.find(e => e.crit || ['explosion', 'domino', 'heal', 'wall', 'spike'].includes(e.type));
     $('#moment').hidden = paused || match.finished || !moment || match.time - moment.time > 1.8;
     if (moment) {
       text($('#moment'), `${match.fighters[moment.fighter].name} · ${moment.text}`);

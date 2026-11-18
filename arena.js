@@ -1,7 +1,26 @@
-import { seededRandom, range } from './random.js';
+import { seededRandom, range, clamp } from './random.js';
+import { touchesFloorItem } from './hazards.js';
 
 export const WALL_TYPES = ['stone', 'spring', 'crate'];
 const overlaps = (a, b, gap = 0) => Math.abs(a.x - b.x) < (a.w + b.w) / 2 + gap && Math.abs(a.y - b.y) < (a.d + b.d) / 2 + gap;
+
+export function sweepWall(from, to, wall, radius = 16, vertical = false) {
+  let enter = 0, exit = 1, normal = { x: 0, y: 0, z: 0 };
+  const axes = [['x', wall.x - wall.w / 2 - radius, wall.x + wall.w / 2 + radius],
+    ['y', wall.y - wall.d / 2 - radius, wall.y + wall.d / 2 + radius]];
+  if (vertical) axes.push(['z', -110, wall.height]);
+  for (const [axis, lo, hi] of axes) {
+    const delta = to[axis] - from[axis];
+    if (Math.abs(delta) < 1e-9) { if (from[axis] < lo || from[axis] > hi) return null; continue; }
+    let t0 = (lo - from[axis]) / delta, t1 = (hi - from[axis]) / delta;
+    const direction = delta > 0 ? -1 : 1;
+    if (t0 > t1) [t0, t1] = [t1, t0];
+    if (t0 > enter) { enter = t0; normal = { x: 0, y: 0, z: 0, [axis]: direction }; }
+    exit = Math.min(exit, t1);
+    if (enter > exit) return null;
+  }
+  return { t: enter, ...normal };
+}
 
 export class Arena {
   constructor(seed, bounds, fighters) {
@@ -30,6 +49,89 @@ export class Arena {
   }
   isBlocked(x, y, radius = 16) {
     return this.walls.some(w => !w.destroyed && Math.abs(x - w.x) < w.w / 2 + radius && Math.abs(y - w.y) < w.d / 2 + radius);
+  }
+  lineClear(a, b, radius = 16) {
+    return !this.walls.some(w => !w.destroyed && sweepWall(a, b, w, radius));
+  }
+  attackClear(a, b) {
+    return !this.walls.some(w => !w.destroyed && sweepWall({ ...a, z: a.z + 45 }, { ...b, z: b.z + 45 }, w, 4, true));
+  }
+  waypoint(f, goal, world) {
+    if (this.lineClear(f, goal)) { f.route = null; return goal; }
+    if (!f.route || world.time >= f.route.until || Math.hypot(goal.x - f.route.goal.x, goal.y - f.route.goal.y) > 80) {
+      const b = world.bounds, nodes = [{ x: f.x, y: f.y }, { x: goal.x, y: goal.y }];
+      for (const w of this.walls.filter(w => !w.destroyed)) for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
+        const p = { x: w.x + sx * (w.w / 2 + 26), y: w.y + sy * (w.d / 2 + 26) };
+        if (p.x > b.left + 16 && p.x < b.right - 16 && p.y > b.top + 16 && p.y < b.bottom - 16 && !this.isBlocked(p.x, p.y, 18)) nodes.push(p);
+      }
+      const costs = nodes.map(() => Infinity), previous = [], visited = new Set(); costs[0] = 0;
+      for (let step = 0; step < nodes.length; step++) {
+        let current = -1;
+        for (let i = 0; i < nodes.length; i++) if (!visited.has(i) && (current < 0 || costs[i] < costs[current])) current = i;
+        if (current < 0 || !Number.isFinite(costs[current]) || current === 1) break;
+        visited.add(current);
+        for (let i = 1; i < nodes.length; i++) if (!visited.has(i) && this.lineClear(nodes[current], nodes[i])) {
+          const cost = costs[current] + Math.hypot(nodes[current].x - nodes[i].x, nodes[current].y - nodes[i].y);
+          if (cost < costs[i]) { costs[i] = cost; previous[i] = current; }
+        }
+      }
+      const points = [];
+      if (Number.isFinite(costs[1])) for (let i = 1; i !== 0 && i !== undefined; i = previous[i]) points.unshift(nodes[i]);
+      f.route = { points, goal: { x: goal.x, y: goal.y }, until: world.time + .55 + f.id * .015 };
+    }
+    while (f.route.points.length > 1 && Math.hypot(f.route.points[0].x - f.x, f.route.points[0].y - f.y) < 12 && this.lineClear(f, f.route.points[1])) f.route.points.shift();
+    return f.route.points[0] || goal;
+  }
+  resolveFighter(f, world) {
+    const from = f.previous || f;
+    const contacts = this.walls.filter(w => !w.destroyed).map(w => ({ wall: w, hit: sweepWall(from, f, w, 16, true) }))
+      .filter(c => c.hit).sort((a, b) => a.hit.t - b.hit.t);
+    const contact = contacts[0];
+    if (!contact) return;
+    const { wall: w, hit } = contact;
+    let nx = hit.x, ny = hit.y;
+    const hx = from.x + (f.x - from.x) * hit.t, hy = from.y + (f.y - from.y) * hit.t;
+    if (!nx && !ny) {
+      const px = w.w / 2 + 16 - Math.abs(hx - w.x), py = w.d / 2 + 16 - Math.abs(hy - w.y);
+      if (px < py) nx = hx < w.x ? -1 : 1; else ny = hy < w.y ? -1 : 1;
+    }
+    const speed = Math.hypot(f.vx, f.vy), violent = (f.collateralActive && (speed > 90 || f.vz < -200)) || f.attack?.name === 'Dash';
+    if (violent && w.type === 'crate') {
+      w.destroyed = true; f.vx *= .75; f.vy *= .75; f.route = null;
+      world.stats.wallBreaks++; world.emit('wall', f, { text: 'CRASH!', x: w.x, y: w.y, z: 0 }); return;
+    }
+    f.x = nx ? w.x + nx * (w.w / 2 + 16.1) : hx;
+    f.y = ny ? w.y + ny * (w.d / 2 + 16.1) : hy;
+    f.route = null;
+    f.wallCooldowns ||= new Map();
+    if (violent && world.time >= (f.wallCooldowns.get(w.id) || 0)) {
+      f.wallCooldowns.set(w.id, world.time + .5);
+      const lucky = world.rng() < .18, spring = w.type === 'spring';
+      const impulse = Math.max(180, speed) * (spring ? 1.1 : lucky ? .85 : .55);
+      const lift = lucky ? 430 : spring ? 390 : Math.max(160, Math.abs(f.vz) * .45);
+      const damage = lucky || spring ? 0 : clamp(speed * .035, 6, 18);
+      if (f.alive) f.receiveHit(damage, nx * impulse, ny * impulse, lift);
+      else { f.vx = nx * impulse; f.vy = ny * impulse; f.vz = lift; }
+      world.stats.wallHits++;
+      if (lucky) world.stats.luckyBounces++;
+      world.emit('wall', f, { text: lucky ? 'LUCKY BOUNCE!' : spring ? 'SPRING!' : 'WALL SLAM!', lucky });
+    } else {
+      const inward = f.vx * nx + f.vy * ny;
+      if (inward < 0) { f.vx -= inward * nx; f.vy -= inward * ny; }
+    }
+  }
+  update(world) {
+    for (const f of world.fighters) this.resolveFighter(f, world);
+    for (const trap of this.traps) {
+      if (this.trapPhase(trap, world.time) !== 'active') continue;
+      for (const f of world.fighters) {
+        if (!f.alive || world.time < (trap.cooldowns.get(f.id) || 0) || !touchesFloorItem(f, trap)) continue;
+        trap.cooldowns.set(f.id, world.time + 1.2);
+        const angle = Math.atan2(f.y - trap.y, f.x - trap.x);
+        f.receiveHit(14, Math.cos(angle) * 170, Math.sin(angle) * 170, 300);
+        world.stats.spikes++; world.emit('spike', f, { text: 'SPIKED!' });
+      }
+    }
   }
   trapPhase(trap, time) {
     const phase = (time + trap.phase) % trap.period;
