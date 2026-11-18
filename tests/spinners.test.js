@@ -10,7 +10,7 @@ test('rotating poles sweep through grounded fighters but allow jumps above the b
   f.z = f.previous.z = 60; assert.equal(barContact(bar, f, 1, 1 / 120), null);
 });
 test('swept pole contact catches a fast body and applies one seeded knockback per cooldown', () => {
-  const w = new Match(12), f = w.fighters[0], bar = pole();
+  const w = new Match(12, 8, { terrain: true }), f = w.fighters[0], bar = pole();
   w.arena.walls = []; w.arena.traps = []; w.arena.bars = [bar];
   bar.phase = -1.5; w.time = 1; w.rng = () => .5;
   f.x = 550; f.y = 400; f.z = 0; f.previous = { x: 550, y: 350, z: 0 };
@@ -18,10 +18,10 @@ test('swept pole contact catches a fast body and applies one seeded knockback pe
   assert.equal(w.stats.barHits, 1); assert.ok(f.vz > 0); assert.ok(f.collateralActive);
   w.arena.update(w); assert.equal(f.hp, hp); assert.equal(w.stats.barHits, 1);
 });
-test('new maps use rotating poles, vary their speed and direction, and keep opening spawns safe', () => {
+test('isolated legacy maps use rotating poles, vary their speed and direction, and keep opening spawns safe', () => {
   const speeds = new Set(), directions = new Set();
   for (let seed = 0; seed < 50; seed++) {
-    const w = new Match(seed); assert.equal(w.arena.walls.length, 0);
+    const w = new Match(seed, 8, { terrain: true }); assert.equal(w.arena.walls.length, 0);
     assert.ok(w.arena.bars.length >= 2 && w.arena.bars.length <= 4);
     for (const bar of w.arena.bars) {
       speeds.add(bar.omega); directions.add(Math.sign(bar.omega));

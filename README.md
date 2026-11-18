@@ -1,6 +1,6 @@
 # Stickman Auto Brawl
 
-A mobile-first HTML5 Canvas spectator auto-battler for 2–12 procedural fighters. Random stats, personalities, weapons, flying-body collisions, and rotating poles make each seeded match different.
+A mobile-first HTML5 Canvas spectator auto-battler for 2–12 procedural fighters. Random stats, personalities, grounded unarmed combos, and flying-body collisions make each seeded match different. Normal matches have no weapons, poles, walls, or damaging floor traps.
 
 [Play online](https://meetrick.github.io/stickman-auto-brawl/)
 
@@ -26,14 +26,14 @@ English is the first-visit default. The header language button and setup selecto
 - HP 80–130, base speed 90–155, power 0.8–1.25×, random favored attacks and tempo.
 - Aggressive, Cowardly, Brawler, and Trickster personalities; Walker, Runner, and stamina-limited Sprinter movement.
 - Grounded jab/cross Punch chains into Kick, a braking Dash, a short-hop JumpKick, Uppercut, and a physical lift-and-throw Grab, plus weapon-specific strikes.
-- Unarmed, Sword (fast slash), Staff (long sweep, two victims maximum), or Hammer (slow heavy launch) loadouts. Sword hits can open one short dash follow-up; cowards backstep instead of repeatedly jumping. Ordinary hits recoil on the floor; uppercuts, throws, heavy hammers, and poles retain launch physics.
+- All fighters start and remain unarmed. Cowards backstep instead of repeatedly jumping. Ordinary hits recoil on the floor; uppercuts and throws retain launch physics.
 - Each attack has a 10% critical roll: 3× damage and 2× knockback. Cleave victims share the attack's critical roll.
 - Thrown and knocked bodies can bowl over standing fighters, including airborne KO bodies. Swept collision checks prevent tunneling and repeated damage to the same victim during one flight.
-- Each map rolls 2–4 rotating poles with different positions, lengths, heights, speeds, and directions. Jumping over a low pole can avoid it; contact launches a fighter along the sweep. A 12% lucky ricochet avoids pole damage and adds lift.
+- Open floor: no rotating poles or walls interrupt the fight.
 - **No landmines or floor spike traps**, including in the demo. Floors are clear except for optional health potions, which restore up to 30 HP and never revive a KO. At most three potions exist, expiring after 20 seconds.
 - Defeated fighters fall once, then remain permanently still: no flailing, breathing, sliding, get-up, or environmental relaunch. Round end settles KO bodies so they are never frozen in midair. Nonlethal hits can still recover.
 
-Legacy static-wall physics is retained for isolated collision tests; normal maps use rotating poles.
+Legacy wall, pole, and weapon code is retained for isolated regression tests. The browser creates open-floor, unarmed matches; it offers no weapon or obstacle mode.
 
 ## Mobile spectator UI
 

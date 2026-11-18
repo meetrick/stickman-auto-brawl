@@ -49,5 +49,5 @@ test('seeded rounds favor grounded exchanges while keeping every special move', 
   }
   assert.ok(airborne / samples < .15);
   assert.ok(moves.Punch + moves.Kick > moves.JumpKick * 4);
-  for (const name of ['Dash', 'JumpKick', 'Uppercut', 'Grab', 'WeaponStrike']) assert.ok(moves[name] > 5, name);
+  for (const name of ['Dash', 'JumpKick', 'Uppercut', 'Grab']) assert.ok(moves[name] > 5, name);
 });

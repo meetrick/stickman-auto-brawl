@@ -4,7 +4,7 @@ import { Match, STEP } from '../app.js';
 import { computePose } from '../pose.js';
 
 test('a defeated fighter lands once and then freezes all motion and animation state', () => {
-  const w = new Match(8, 3), f = w.fighters[0];
+  const w = new Match(8, 3, { terrain: true }), f = w.fighters[0];
   f.receiveHit(999, 450, 50, 300);
   assert.equal(f.settled, undefined);
   for (let i = 0; i < 300 && !f.settled; i++) f.update(STEP, w);

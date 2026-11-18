@@ -27,9 +27,9 @@ export class Fighter {
     this.speed = range(rng, 90, 155); this.power = range(rng, .8, 1.25);
     this.personality = PERSONALITIES[Math.floor(rng() * PERSONALITIES.length)];
     this.gait = GAITS[Math.floor(rng() * GAITS.length)];
-    this.weapon = Object.keys(WEAPONS)[Math.floor(rng() * Object.keys(WEAPONS).length)];
+    this.weapon = 'None';
     const moves = MOVE_NAMES.filter(name => name !== 'WeaponStrike' || this.weapon !== 'None');
-    this.favoriteMove = this.weapon !== 'None' && rng() < .55 ? 'WeaponStrike' : moves[Math.floor(rng() * moves.length)];
+    this.favoriteMove = moves[Math.floor(rng() * moves.length)];
     this.tempo = range(rng, .8, 1.3);
     this.collateralActive = false; this.flightHits = new Set();
   }

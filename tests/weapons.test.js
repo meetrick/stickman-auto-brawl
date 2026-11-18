@@ -5,13 +5,13 @@ import { Fighter } from '../fighter.js';
 import { seededRandom } from '../random.js';
 import { WEAPONS } from '../weapons.js';
 
-test('loadouts roll reproducibly and all weapons plus unarmed fighters can spawn', () => {
+test('all fighters spawn unarmed across seeds', () => {
   const types = new Set();
   for (let seed = 0; seed < 200; seed++) {
     const a = new Fighter(0, 400, 400, seededRandom(seed)), b = new Fighter(0, 400, 400, seededRandom(seed));
     assert.equal(a.weapon, b.weapon); types.add(a.weapon);
   }
-  assert.equal(types.size, Object.keys(WEAPONS).length);
+  assert.deepEqual([...types], ['None']);
 });
 test('weapon choices change combat reach, timing and launch; unarmed fighters cannot swing a weapon', () => {
   const [a, b] = new Match(2, 2, { terrain: false }).fighters; a.cooldown = 0;
