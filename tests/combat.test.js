@@ -62,4 +62,6 @@ test('coward flees in open space and fights when cornered; aggressive closes in'
   a.personality = 'Aggressive'; a.think(STEP, w); assert.ok(a.vx > 0);
   a.personality = 'Cowardly'; a.x = w.bounds.left + 5; b.x = a.x + 30;
   a.cooldown = 0; a.think(STEP, w); assert.ok(a.attack);
+  a.attack = null; a.cooldown = 1; a.x = 350; b.x = 450; w.time = 1;
+  a.think(STEP, w); assert.ok(a.vx > 0, 'cornered coward commits to a counterattack after leaving the edge');
 });

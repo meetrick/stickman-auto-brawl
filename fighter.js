@@ -58,6 +58,7 @@ export class Fighter {
     world.emit('hit', target, { text: crit ? 'CRIT!' : name.toUpperCase(), source: this.id, crit });
   }
   think(dt, world) {
+    if (world.time < (this.readyAt || 0)) return;
     if (!this.standing || this.attack) return;
     const enemies = world.fighters.filter(f => f !== this && f.alive);
     const target = enemies.sort((a, b) => Math.hypot(a.x - this.x, a.y - this.y) - Math.hypot(b.x - this.x, b.y - this.y))[0];
@@ -68,7 +69,10 @@ export class Fighter {
     const b = world.bounds;
     const cornered = (this.x < b.left + 60 && dx > 0) || (this.x > b.right - 60 && dx < 0)
       || (this.y < b.top + 45 && dy > 0) || (this.y > b.bottom - 45 && dy < 0);
-    if (this.personality === 'Cowardly' && distance < 210 && !cornered) {
+    // Commit briefly after being cornered; otherwise fleeing resumes one step
+    // off the boundary and the coward oscillates without ever fighting back.
+    if (cornered) this.courageUntil = world.time + 2.5;
+    if (this.personality === 'Cowardly' && distance < 210 && !cornered && world.time >= (this.courageUntil || 0)) {
       this.vx = -dx / distance * this.speed; this.vy = -dy / distance * this.speed;
       this.state = 'walk'; return;
     }
