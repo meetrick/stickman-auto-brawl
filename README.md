@@ -2,6 +2,10 @@
 
 A dependency-free HTML5 Canvas spectator auto-battler. Eight procedural stick fighters fight in a depth-sorted 2.5D courtyard with four unarmed attack families (Dash, JumpKick, Uppercut, Grab) plus randomized weapon strikes.
 
+## Play online
+
+Open [Stickman Auto Brawl](https://meetrick.github.io/stickman-auto-brawl/) on a phone or desktop browser. No installation or sign-in is required to watch a match.
+
 ## Run
 
 Requires Node.js 20.11 or later. No installation is needed.
@@ -49,7 +53,7 @@ The ink outlines, colored torso strokes, round heads, fluttering headbands, and 
 
 `npm test` uses Node's built-in test runner with no dependencies. The 53 tests cover the four unarmed moves and weapon strikes, exact crit thresholds and multipliers, stat bounds, retreat/corner behavior, seeded replay, airborne domino chains, swept collision misses, duplicate-hit prevention, mine arming and splash, dash/landing triggers, healing caps, KO exclusions, hazard lifetime/caps, the demo opening, and camera framing/replay isolation. A simulation test also runs 32 complete random matches, checks finite state and HP bounds, and confirms all four chaos events occur naturally across those rounds.
 
-The project is intentionally local-only. No backend, remote assets, multiplayer service, or build step is required.
+The game runs as static files locally or on GitHub Pages. No backend, remote assets, multiplayer service, or build step is required.
 
 ## Mobile spectator experience
 
@@ -98,3 +102,9 @@ Each spawn rolls Unarmed, Sword, Staff, or Hammer from the match RNG. Weapon sil
 Power and critical multipliers apply to these base values. A cleaving attack shares one 10% critical roll across its victims. Swing reach, depth width, active window, and per-attack victim IDs constrain contact; targets are not repeatedly damaged while remaining in range. Weapon attacks can be interrupted during windup. Armed fighters still mix in kicks, dashes, uppercuts, and grabs according to personality and range.
 
 Cowardly fighters can occasionally jump away while fleeing. The sprint/evade cadence and finite sword follow-up add variation without creating unlimited attack chains. Automated tests cover loadout replay, each weapon's mechanics, staff cleave limits, shared critical rolls, windup interruption, sword follow-ups, and fleeing jumps. Integration tests verify natural use of all weapon types across complete seeded rounds.
+
+## GitHub Pages deployment
+
+GitHub Pages publishes the `main` branch from the repository root (`/`). The root `.nojekyll` file disables Jekyll processing; JavaScript modules, CSS, and the HTML entry point are served directly. All application paths are relative, so the project works under `/stickman-auto-brawl/`. Future pushes to `main` update the hosted game automatically through GitHub's Pages build/deployment process.
+
+For a new fork, open **Settings → Pages**, select **Deploy from a branch**, choose **main** and **/(root)**, and save. The local `server.js`, tests, and `package.json` are development tools; the published game needs only static browser assets.
