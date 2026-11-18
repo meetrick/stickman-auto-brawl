@@ -2,6 +2,26 @@ import { seededRandom, range, clamp } from './random.js';
 import { touchesFloorItem } from './hazards.js';
 
 export const WALL_TYPES = ['stone', 'spring', 'crate'];
+export function barPoint(bar, time, offset) {
+  const angle = bar.phase + bar.omega * time;
+  return { x: bar.x + Math.cos(angle) * offset, y: bar.y + Math.sin(angle) * offset * .55 };
+}
+export function barContact(bar, fighter, time, dt) {
+  const from = fighter.previous || fighter;
+  const travel = Math.hypot(fighter.x - from.x, fighter.y - from.y) + Math.abs(bar.omega) * bar.radius * dt;
+  const steps = Math.max(1, Math.ceil(travel / 8));
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps, z = from.z + (fighter.z - from.z) * t;
+    if (z > bar.height + 9 || z + 104 < bar.height - 9) continue;
+    const when = time - dt + dt * t, a = barPoint(bar, when, -bar.radius), b = barPoint(bar, when, bar.radius);
+    const x = from.x + (fighter.x - from.x) * t, y = from.y + (fighter.y - from.y) * t;
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const u = clamp(((x - a.x) * dx + (y - a.y) * dy) / (dx * dx + dy * dy), 0, 1);
+    const px = a.x + dx * u, py = a.y + dy * u;
+    if (Math.hypot(x - px, y - py) <= 21) return { x: px, y: py, side: u >= .5 ? 1 : -1, angle: bar.phase + bar.omega * when };
+  }
+  return null;
+}
 const overlaps = (a, b, gap = 0) => Math.abs(a.x - b.x) < (a.w + b.w) / 2 + gap && Math.abs(a.y - b.y) < (a.d + b.d) / 2 + gap;
 
 export function sweepWall(from, to, wall, radius = 16, vertical = false) {
@@ -23,11 +43,12 @@ export function sweepWall(from, to, wall, radius = 16, vertical = false) {
 }
 
 export class Arena {
-  constructor(seed, bounds, fighters) {
+  constructor(seed, bounds, fighters, { legacyWalls = false } = {}) {
     // Map rolls have their own RNG stream, independent of fighter/combat rolls.
     const rng = seededRandom(seed ^ 0xA7E4C921);
-    this.walls = []; this.traps = [];
-    const wallCount = 3 + Math.floor(rng() * 4), trapCount = 2 + Math.floor(rng() * 4);
+    this.walls = []; this.traps = []; this.bars = [];
+    const wallCount = legacyWalls ? 3 + Math.floor(rng() * 4) : 0, trapCount = 2 + Math.floor(rng() * 4);
+    const barCount = 2 + Math.floor(rng() * 3);
     this.mineCount = 1 + Math.floor(rng() * 3);
     this.name = ['BROKEN COURT', 'SPRING YARD', 'SPLIT RING', 'RUIN GARDEN'][Math.floor(rng() * 4)];
     for (let attempt = 0; this.walls.length < wallCount && attempt < 250; attempt++) {
@@ -39,10 +60,19 @@ export class Arena {
       if (fighters.some(f => overlaps(wall, { ...f, w: 30, d: 28 }, 40))) continue;
       this.walls.push(wall);
     }
+    for (let attempt = 0; this.bars.length < barCount && attempt < 400; attempt++) {
+      const radius = range(rng, 60, 90);
+      const bar = { id: this.bars.length, x: range(rng, bounds.left + radius + 25, bounds.right - radius - 25),
+        y: range(rng, bounds.top + radius * .55 + 25, bounds.bottom - radius * .55 - 25), radius,
+        height: range(rng, 25, 48), phase: range(rng, 0, Math.PI * 2), omega: range(rng, .8, 1.8) * (rng() < .5 ? -1 : 1), cooldowns: new Map() };
+      if (fighters.some(f => Math.hypot(f.x - bar.x, (f.y - bar.y) / .55) < radius + 35)
+        || this.bars.some(b => Math.hypot(b.x - bar.x, (b.y - bar.y) / .55) < b.radius + radius + 30)) continue;
+      this.bars.push(bar);
+    }
     for (let attempt = 0; this.traps.length < trapCount && attempt < 250; attempt++) {
       const trap = { id: this.traps.length, x: range(rng, bounds.left + 35, bounds.right - 35), y: range(rng, bounds.top + 30, bounds.bottom - 30),
         radius: 21, phase: range(rng, 0, 5), period: range(rng, 3.2, 5.2), cooldowns: new Map() };
-      if (this.isBlocked(trap.x, trap.y, 35) || this.traps.some(t => Math.hypot(t.x - trap.x, t.y - trap.y) < 70)
+      if (this.isBlocked(trap.x, trap.y, 35) || this.bars.some(b => Math.hypot(b.x - trap.x, b.y - trap.y) < 35) || this.traps.some(t => Math.hypot(t.x - trap.x, t.y - trap.y) < 70)
         || fighters.some(f => Math.hypot(f.x - trap.x, f.y - trap.y) < 50)) continue;
       this.traps.push(trap);
     }
@@ -122,6 +152,18 @@ export class Arena {
   }
   update(world) {
     for (const f of world.fighters) this.resolveFighter(f, world);
+    for (const bar of this.bars) for (const f of world.fighters) {
+      if (!f.alive || f.heldBy != null || world.time < .9 || world.time < (bar.cooldowns.get(f.id) || 0)) continue;
+      const contact = barContact(bar, f, world.time, world.dt || 1 / 120);
+      if (!contact) continue;
+      bar.cooldowns.set(f.id, world.time + .95);
+      const direction = Math.sign(bar.omega) * contact.side, lucky = world.rng() < .12;
+      const speed = 300 + Math.abs(bar.omega) * 80;
+      f.receiveHit(lucky ? 0 : 13, -Math.sin(contact.angle) * direction * speed,
+        Math.cos(contact.angle) * direction * speed * .65, lucky ? 460 : 270);
+      world.stats.barHits++; if (lucky) world.stats.luckyBounces++;
+      world.emit('bar', f, { text: lucky ? 'LUCKY RICOCHET!' : 'POLE HIT!', lucky });
+    }
     for (const trap of this.traps) {
       if (this.trapPhase(trap, world.time) !== 'active') continue;
       for (const f of world.fighters) {

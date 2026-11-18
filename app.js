@@ -11,7 +11,7 @@ export class Match {
     this.seed = seed >>> 0; this.rng = seededRandom(this.seed);
     this.bounds = { left: 100, right: 1100, top: 245, bottom: 580 };
     this.time = 0; this.events = []; this.effects = []; this.winner = null; this.finished = false;
-    this.stats = { hits: 0, crits: 0, dominoes: 0, explosions: 0, heals: 0, wallHits: 0, wallBreaks: 0, luckyBounces: 0, spikes: 0 };
+    this.stats = { hits: 0, crits: 0, dominoes: 0, explosions: 0, heals: 0, barHits: 0, wallHits: 0, wallBreaks: 0, luckyBounces: 0, spikes: 0 };
     this.hazards = new HazardManager();
     this.showcase = showcase;
     this.fighters = Array.from({ length: count }, (_, id) => {
@@ -43,7 +43,7 @@ export class Match {
   }
   update(dt = STEP) {
     if (this.finished) return;
-    this.time += dt;
+    this.dt = dt; this.time += dt;
     for (const fighter of this.fighters) fighter.update(dt, this);
     this.arena?.update(this);
     resolveDominoes(this);
@@ -80,7 +80,7 @@ if (typeof document !== 'undefined') {
     $('#roster').innerHTML = match.fighters.map(f => `<article class="fighter-card" data-id="${f.id}"><span class="swatch" style="--fighter:${f.color}">${String(f.id + 1).padStart(2, '0')}</span><div class="fighter-info"><strong>${f.name}</strong><span>${f.personality}</span><div class="hp-track"><i style="background:${f.color}"></i></div></div><div class="fighter-numbers"><b><span class="hp"></span><small> / ${f.maxHp}</small></b><span>SPD ${Math.round(f.speed)} · ATK ${f.power.toFixed(2)}</span></div></article>`).join('');
     cards.clear();
     for (const node of $('#roster').children) cards.set(Number(node.dataset.id), { node, hp: node.querySelector('.hp'), bar: node.querySelector('.hp-track i') });
-    text($('#map-info'), match.arena ? `${match.arena.name} · ${match.arena.walls.length} walls · ${match.arena.traps.length} spike traps` : 'Open courtyard');
+    text($('#map-info'), match.arena ? `${match.arena.name} · ${match.arena.bars.length} rotating poles · ${match.arena.traps.length} spike traps` : 'Open courtyard');
     updateCameraLabel(); updateUI();
   }
   function updateUI() {
@@ -106,7 +106,7 @@ if (typeof document !== 'undefined') {
       text($('#result-title'), paused ? 'Paused.' : match.winner ? `${match.winner.name} wins.` : 'A glorious draw.');
       text($('#result-hint'), paused ? 'Tap Resume when you’re ready.' : 'Tap New match. Let chaos roll again.');
     }
-    const moment = match.events.find(e => e.crit || ['explosion', 'domino', 'heal', 'wall', 'spike'].includes(e.type));
+    const moment = match.events.find(e => e.crit || ['explosion', 'domino', 'heal', 'wall', 'spike', 'bar'].includes(e.type));
     $('#moment').hidden = paused || match.finished || !moment || match.time - moment.time > 1.8;
     if (moment) {
       text($('#moment'), `${match.fighters[moment.fighter].name} · ${moment.text}`);

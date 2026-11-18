@@ -2,12 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Match } from '../app.js';
 
-test('each seed reproduces its map and different seeds vary wall/trap counts and placement', () => {
+test('each seed reproduces its map and different seeds vary pole/trap counts and placement', () => {
   assert.deepEqual(new Match(72).arena, new Match(72).arena);
   const maps = Array.from({ length: 100 }, (_, seed) => new Match(seed).arena);
-  assert.ok(new Set(maps.map(a => a.walls.length)).size >= 3);
+  assert.ok(new Set(maps.map(a => a.bars.length)).size >= 3);
   assert.ok(new Set(maps.map(a => a.traps.length)).size >= 3);
-  assert.equal(new Set(maps.map(a => JSON.stringify(a.walls))).size, 100);
+  assert.equal(new Set(maps.map(a => JSON.stringify(a.bars))).size, 100);
 });
 test('generated obstacles leave spawns clear, stay inside bounds and leave walkable gaps', () => {
   for (let seed = 0; seed < 100; seed++) {

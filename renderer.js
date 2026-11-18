@@ -1,5 +1,6 @@
 import { SpectatorCamera } from './camera.js';
 import { clamp } from './random.js';
+import { barPoint } from './arena.js';
 const INK = '#292b27';
 export class Renderer {
   constructor(canvas) {
@@ -51,6 +52,22 @@ export class Renderer {
       c.moveTo(i * 14 - 5, 4); c.lineTo(i * 14, active ? -25 : -3); c.lineTo(i * 14 + 5, 4); c.closePath(); c.fill();
     }
     if (phase === 'warning') { c.fillStyle = '#b57828'; c.font = 'bold 15px monospace'; c.textAlign = 'center'; c.fillText('!', 0, -20); }
+    c.restore();
+  }
+  spinner(bar, time, part) {
+    const c = this.ctx;
+    if (part === 0) {
+      c.save(); c.fillStyle = '#556451'; c.beginPath(); c.ellipse(bar.x, bar.y, 15, 8, 0, 0, Math.PI * 2); c.fill();
+      this.line([[bar.x, bar.y], [bar.x, bar.y - bar.height - 7]], '#66705d', 10);
+      c.fillStyle = '#d4ba75'; c.beginPath(); c.arc(bar.x, bar.y - bar.height, 9, 0, Math.PI * 2); c.fill(); c.restore(); return;
+    }
+    const from = barPoint(bar, time, (Math.abs(part) - 1) / 3 * bar.radius * Math.sign(part));
+    const to = barPoint(bar, time, Math.abs(part) / 3 * bar.radius * Math.sign(part));
+    c.save(); c.lineCap = 'round';
+    this.line([[from.x, from.y + 3], [to.x, to.y + 3]], '#39452d22', 12);
+    this.line([[from.x, from.y - bar.height], [to.x, to.y - bar.height]], '#713f32', 12);
+    this.line([[from.x, from.y - bar.height - 2], [to.x, to.y - bar.height - 2]], '#bd7053', 7);
+    if (Math.abs(part) === 3) { c.fillStyle = '#eed494'; c.beginPath(); c.arc(to.x, to.y - bar.height, 6, 0, Math.PI * 2); c.fill(); }
     c.restore();
   }
   hazard(item, world) {
@@ -168,7 +185,11 @@ export class Renderer {
     for (const item of world.hazards.items) this.hazard(item, world);
     for (const trap of world.arena?.traps || []) this.trap(trap, world);
     const objects = [...world.fighters.map(f => ({ depth: f.y, fighter: f })), ...(world.arena?.walls || []).map(w => ({ depth: w.y + w.d / 2, wall: w }))];
-    objects.sort((a, b) => a.depth - b.depth).forEach(o => o.wall ? this.wall(o.wall) : this.fighter(o.fighter, world.time));
+    for (const bar of world.arena?.bars || []) for (let part = -3; part <= 3; part++) {
+      const point = barPoint(bar, world.time, part === 0 ? 0 : (Math.abs(part) - .5) / 3 * bar.radius * Math.sign(part));
+      objects.push({ depth: point.y, bar, part });
+    }
+    objects.sort((a, b) => a.depth - b.depth).forEach(o => o.bar ? this.spinner(o.bar, world.time, o.part) : o.wall ? this.wall(o.wall) : this.fighter(o.fighter, world.time));
     for (const e of world.effects) this.effect(e);
     c.restore();
     if (view.closeUp) {

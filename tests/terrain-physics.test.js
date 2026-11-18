@@ -4,7 +4,7 @@ import { Match, STEP } from '../app.js';
 import { Arena } from '../arena.js';
 function scene(type = 'stone') {
   const w = new Match(8, 2, { terrain: false });
-  w.arena = new Arena(8, w.bounds, []); w.arena.traps = [];
+  w.arena = new Arena(8, w.bounds, []); w.arena.traps = []; w.arena.bars = [];
   const wall = { id: 0, x: 500, y: 400, w: 35, d: 90, height: 65, type, destroyed: false };
   w.arena.walls = [wall];
   const [f, b] = w.fighters; f.x = 540; f.y = 400; b.x = 800; b.y = 500;
