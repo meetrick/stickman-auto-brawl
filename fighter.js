@@ -1,5 +1,6 @@
 import { clamp, range } from './random.js';
 import { WEAPONS } from './weapons.js';
+import { STYLE_NAMES, styleProfile } from './styles.js';
 
 export const MOVES = Object.freeze({
   Punch: { damage: 6, knockback: 65, lift: 0, reach: 65, engage: 70, windup: .10, activeEnd: .17, duration: .28 },
@@ -31,6 +32,7 @@ export class Fighter {
     const moves = MOVE_NAMES.filter(name => name !== 'WeaponStrike' || this.weapon !== 'None');
     this.favoriteMove = moves[Math.floor(rng() * moves.length)];
     this.tempo = range(rng, .8, 1.3);
+    this.style = STYLE_NAMES[Math.floor(rng() * STYLE_NAMES.length)];
     this.collateralActive = false; this.flightHits = new Set();
   }
   get alive() { return this.hp > 0; }
@@ -54,7 +56,7 @@ export class Fighter {
     this.vx = vx; this.vy = vy; this.vz = vz;
     if (airborne) this.z = Math.max(this.z, 2);
     this.stun = airborne ? .42 : .16; this.flash = .12; this.attack = null; this.heldBy = null;
-    this.followUp = null; this.comboStep = 0;
+    this.followUp = null; this.comboStep = 0; this.footworkUntil = 0;
     this.tumble = 0; this.angularVelocity = clamp(vx / 130, -6, 6);
     this.state = this.alive ? airborne ? 'down' : 'hit' : 'ko'; this.collateralActive = airborne; this.flightHits.clear();
     return true;
@@ -89,7 +91,7 @@ export class Fighter {
     if (name === 'WeaponStrike') {
       world.stats.weaponHits ||= { Sword: 0, Staff: 0, Hammer: 0 }; world.stats.weaponHits[this.weapon]++;
     }
-    world.emit('hit', target, { text: crit ? 'CRIT!' : text, move: name, weapon: this.weapon, source: this.id, crit }); return true;
+    world.emit('hit', target, { text: crit ? 'CRIT!' : text, move: name, weapon: this.weapon, style: this.style, source: this.id, crit }); return true;
   }
   moveToward(goal, world, hurry = false) {
     const waypoint = world.arena?.waypoint(this, goal, world) || goal;
@@ -106,6 +108,7 @@ export class Fighter {
     const target = enemies.sort((a, b) => Math.hypot(a.x - this.x, a.y - this.y) - Math.hypot(b.x - this.x, b.y - this.y))[0];
     if (!target) return;
     const dx = target.x - this.x, dy = target.y - this.y, distance = Math.hypot(dx, dy) || 1, b = world.bounds;
+    const discipline = styleProfile(this.style);
     this.facing = dx >= 0 ? 1 : -1;
     const cornered = (this.x < b.left + 60 && dx > 0) || (this.x > b.right - 60 && dx < 0)
       || (this.y < b.top + 45 && dy > 0) || (this.y > b.bottom - 45 && dy < 0);
@@ -123,27 +126,33 @@ export class Fighter {
     if (world.time >= (this.decisionAt || 0)) {
       this.decisionAt = world.time + range(world.rng, .55, 1.1);
       this.flankSide = world.rng() < .5 ? -1 : 1;
-      this.flank = this.personality === 'Trickster' && world.rng() < .55;
+      this.flank = world.rng() < Math.min(.85, discipline.flank + (this.personality === 'Trickster' ? .2 : 0));
     }
     if (this.cooldown <= 0 && target.z < 65) {
       if (this.followUp && world.time < this.followUpUntil && distance < MOVES[this.followUp].engage) {
         const name = this.followUp; this.followUp = null;
         if (this.startAttack(name, target)) { this.intent = 'combo'; return; }
       }
-      let choices = MOVE_NAMES.filter(name => distance <= this.getMove(name).engage && (name !== 'JumpKick' || !(this.jumpCooldown > 0)) && (name !== 'Grab' || target.standing) && (name !== 'WeaponStrike' || this.weapon !== 'None'));
-      const preferred = this.personality === 'Brawler' ? 'Grab' : this.personality === 'Trickster' ? 'Kick'
-        : this.weapon !== 'None' ? 'WeaponStrike' : 'Punch';
+      let choices = MOVE_NAMES.filter(name => (discipline.weights[name] > 0 || name === 'WeaponStrike' && this.weapon !== 'None') && distance <= this.getMove(name).engage && (name !== 'JumpKick' || !(this.jumpCooldown > 0)) && (name !== 'Grab' || target.standing));
+      const preferred = this.weapon !== 'None' ? 'WeaponStrike' : discipline.preferred;
       // Close-range specialists must actually close in, rather than selecting
       // Dash as soon as it becomes the first available move every encounter.
       if (distance > this.getMove(preferred).engage) choices = [];
       if (choices.length) {
         // Ground exchanges dominate; launches and short hops punctuate them.
-        const weights = choices.map(name => ({ name, weight: (name === preferred ? 5 : 1) * (['JumpKick', 'Uppercut', 'Grab'].includes(name) ? .45 : 1) * (name === this.favoriteMove ? 1.5 : 1) }));
+        const weights = choices.map(name => ({ name, weight: (discipline.weights[name] || 1) * (name === this.favoriteMove ? 1.35 : 1)
+          * (this.personality === 'Brawler' && name === 'Grab' || this.personality === 'Aggressive' && name === 'Punch' ? 1.4 : 1) }));
         let roll = world.rng() * weights.reduce((sum, item) => sum + item.weight, 0);
         const name = weights.find(item => (roll -= item.weight) < 0)?.name || choices.at(-1);
         this.comboStep = 0;
         if (this.startAttack(name, target)) { this.intent = 'attack'; return; }
       }
+    }
+    if (world.time < (this.footworkUntil || 0) && distance < 155 && !cornered) {
+      this.intent = 'footwork';
+      this.moveToward({ x: clamp(this.x - dx / distance * 30 - dy / distance * discipline.sideStep * this.flankSide, b.left + 18, b.right - 18),
+        y: clamp(this.y - dy / distance * 30 + dx / distance * discipline.sideStep * this.flankSide, b.top + 18, b.bottom - 18) }, world);
+      this.facing = dx >= 0 ? 1 : -1; this.state = 'evade'; return;
     }
     if (this.flank && distance < 180 && distance > 45) {
       this.intent = 'flank';
@@ -168,13 +177,14 @@ export class Fighter {
       if (!a.attempted && a.elapsed >= move.windup) {
         a.attempted = true;
         if (target?.standing && Math.hypot(target.x - this.x, target.y - this.y) < move.reach + 12 && (!world.arena || world.arena.attackClear(this, target))) {
-          this.holdingId = target.id; target.heldBy = this.id; target.attack = null; target.collateralActive = false;
+          this.holdingId = target.id; target.heldBy = this.id; target.heldStyle = this.style; target.attack = null; target.collateralActive = false;
           world.emit('grab', target, { text: 'GRABBED!', source: this.id });
         }
       }
       if (this.holdingId != null && target?.heldBy === this.id) {
         target.x = this.x + this.facing * 24; target.y = this.y + 1;
-        target.z = 35 + clamp((a.elapsed - .16) / .32, 0, 1) * 30;
+        target.z = this.style === 'Judo' ? 23 + clamp((a.elapsed - .16) / .32, 0, 1) * 20
+          : 35 + clamp((a.elapsed - .16) / .32, 0, 1) * 30;
         target.vx = target.vy = target.vz = 0; target.state = 'held';
         if (a.elapsed >= .55 && !a.resolved) {
           a.resolved = true; this.releaseGrab(world); this.hit(target, world, 'Grab');
@@ -193,10 +203,14 @@ export class Fighter {
     }
     if (a.elapsed >= move.duration) {
       this.releaseGrab(world); this.attack = null; this.cooldown = range(world.rng, .22, .55) * this.tempo;
-      if (a.name === 'Punch' && a.hitIds.length && (this.comboStep || 0) < 2) {
+      const profile = styleProfile(this.style), step = this.comboStep || 0;
+      if (a.hitIds.length && step < profile.combo.length && a.name === (step === 0 ? 'Punch' : profile.combo[step - 1])) {
         this.comboStep = (this.comboStep || 0) + 1;
-        this.followUp = this.comboStep === 1 ? 'Punch' : 'Kick';
+        this.followUp = profile.combo[step];
         this.followUpUntil = world.time + .65; this.cooldown = .045;
+      } else if (this.weapon === 'None') {
+        this.footworkUntil = world.time + profile.recovery;
+        this.flankSide ||= this.id % 2 ? -1 : 1;
       }
       if (a.name === 'WeaponStrike' && this.weapon === 'Sword' && a.hitIds.length && world.rng() < .35) {
         this.followUp = 'Dash'; this.followUpUntil = world.time + 1; this.cooldown = .12;

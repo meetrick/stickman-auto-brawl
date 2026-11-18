@@ -4,10 +4,11 @@ import { resolveDominoes } from './collisions.js';
 import { HazardManager } from './hazards.js';
 import { Arena } from './arena.js';
 import { normalizeCount, normalizeName } from './settings.js';
+import { normalizeStyle } from './styles.js';
 
 export const STEP = 1 / 120;
 export class Match {
-  constructor(seed = 1, count = 8, { showcase = false, terrain = false, names = [] } = {}) {
+  constructor(seed = 1, count = 8, { showcase = false, terrain = false, names = [], styles = [] } = {}) {
     count = normalizeCount(count);
     this.seed = seed >>> 0; this.rng = seededRandom(this.seed);
     this.bounds = { left: 100, right: 1100, top: 245, bottom: 580 };
@@ -20,6 +21,7 @@ export class Match {
       const angle = id / count * Math.PI * 2;
       const fighter = new Fighter(id, 600 + Math.cos(angle) * 290, 412 + Math.sin(angle) * 115, this.rng);
       fighter.name = normalizeName(names[id], id);
+      if (normalizeStyle(styles[id]) !== 'Random') fighter.style = styles[id];
       return fighter;
     });
     if (showcase && count >= 4) this.stageShowcase();

@@ -24,6 +24,7 @@ English is the first-visit default. The header language button and setup selecto
 ## Combat and arena
 
 - HP 80–130, base speed 90–155, power 0.8–1.25×, random favored attacks and tempo.
+- Random Ninja, Boxing, Judo, or Kickboxing disciplines affect attack weights, punch follow-ups, and recovery footwork independently of personality.
 - Aggressive, Cowardly, Brawler, and Trickster personalities; Walker, Runner, and stamina-limited Sprinter movement.
 - Grounded jab/cross Punch chains into Kick, a braking Dash, a short-hop JumpKick, Uppercut, and a physical lift-and-throw Grab, with no weapon attacks in normal matches.
 - All fighters start and remain unarmed. Cowards backstep instead of repeatedly jumping, then commit to fighting when only two participants remain. Ordinary hits recoil on the floor; uppercuts and throws retain launch physics.
@@ -43,6 +44,7 @@ Pause, 0.5× / 1× / 2× speed, and camera selection affect presentation only. P
 
 ## Architecture and reference
 
+- `styles.js`: discipline profiles and style validation.
 - `app.js`: deterministic match simulation. `fighter.js`: combat, AI, movement, and defeat.
 - `pose.js`: keyframed hand/foot targets and two-bone IK. `renderer.js`: articulated drawing, trails, effects, and depth sorting.
 - `arena.js`: legacy obstacle physics for isolated tests. `hazards.js`: potion spawning and floor pickup contact.

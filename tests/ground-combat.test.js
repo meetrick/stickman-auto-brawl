@@ -4,7 +4,7 @@ import { Match, STEP } from '../app.js';
 
 function pair() {
   const w = new Match(5, 2, { terrain: false }), [a, b] = w.fighters;
-  Object.assign(a, { x: 500, y: 400, cooldown: 0, weapon: 'None', personality: 'Aggressive' });
+  Object.assign(a, { x: 500, y: 400, cooldown: 0, weapon: 'None', style: 'Kickboxing', personality: 'Aggressive' });
   Object.assign(b, { x: 540, y: 400, readyAt: 100, hp: 500, maxHp: 500 });
   w.rng = () => .5;
   return { w, a, b };
