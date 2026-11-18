@@ -19,7 +19,7 @@ Open http://127.0.0.1:5173. Use `?seed=72` for a reproducible match or `?seed=72
 
 **New match** opens a setup dialog for participant count (2–12) and names (up to 16 characters). Names appear above fighters, in the roster, combat notes, and victory announcement. Blank inputs receive defaults. Changing the count preserves hidden draft names; Cancel leaves the current match unchanged. Setup pauses the simulation until dismissed.
 
-English is the first-visit default. The header language button and setup selector switch English/Korean UI and combat callouts without resetting a match. Count, names, and language are remembered in this browser's localStorage, with an in-memory fallback. Names are rendered as text and escaped in HTML. Replay preserves the current round's seed, names, and count; the staged demo uses eight fighters.
+English is the first-visit default. The header language button and setup selector switch English/Korean UI and combat callouts without resetting a match. Count, names, per-fighter style choices, and language are remembered in this browser's localStorage, with an in-memory fallback. Names are rendered as text and escaped in HTML. Replay preserves the current round's seed, names, count, and resolved styles; the staged demo uses eight fighters.
 
 ## Combat and arena
 
@@ -56,9 +56,22 @@ The paper palette, ink outlines, fluttering headbands, and keyframed end-effecto
 
 ## Validation
 
-Node's built-in tests cover attacks/crit boundaries, IK limb lengths, attack silhouettes, grabs and interruption, weapon differences/cleave limits, sprint/evade behavior, swept body/pole collisions, trap absence, potion limits, permanent defeat, preference persistence and safe names, translations, seeded replay, and complete 2-/6-/12-player rounds. Integration checks run 32 full random matches and verify natural use of unarmed attacks without weapons, poles, walls, or damaging floor traps. Ranking tests cover KO-time recording, shared places, timeout survivors, event-log truncation, duplicate/unsafe names, replay reset, and deterministic complete rounds.
+Node's built-in tests cover attacks/crit boundaries, IK limb lengths, attack silhouettes, grabs and interruption, weapon differences/cleave limits, sprint/evade behavior, swept body/pole collisions, trap absence, potion limits, permanent defeat, preference persistence and safe names, translations, seeded replay, and complete 2-/6-/12-player rounds. Integration checks run 32 full random matches and verify natural use of unarmed attacks without weapons, poles, walls, or damaging floor traps. Ranking tests cover KO-time recording, shared places, timeout survivors, event-log truncation, duplicate/unsafe names, replay reset, and deterministic complete rounds. Style tests check AI move preferences, valid combinations and interruption, legacy preference migration, resolved-style replay, distinct stances, every attack/variant's IK lengths, inert KO poses, and full rounds for all four disciplines.
 
 Browser checks include phone portrait/landscape and desktop layouts, a scrollable 12-player setup at 320×568, language/name restoration, and published GitHub Pages execution. These are browser viewport checks, not physical-device certification.
+
+## Fighting styles
+
+Each participant can use **Random style**, **Ninja**, **Boxing**, **Judo**, or **Kickboxing** in the match setup dialog. Random is the default, including for older saved preferences. Choices are saved per participant; decreasing and increasing the fighter count preserves hidden draft choices. Cancel discards style edits. Changing UI language translates choices without changing the battle. The roster and standings display the resolved discipline.
+
+| Style | Movement and pose | Attack preference and punch follow-up |
+| --- | --- | --- |
+| Ninja | Low stance, forward-leaning run, wider lateral recovery steps, face wrap | Low sweeping kicks and dashes; Punch → Kick → Dash |
+| Boxing | High guard, short grounded shuffles, gloves | Punches and uppercuts; Punch → Punch → Uppercut. AI never chooses kicks or grabs. |
+| Judo | Wide base, open hands, close pressure, waist belt | Grips and a lower hip-loading throw; Punch → Grab |
+| Kickboxing | Guarded steps, hand wraps, alternating side/high roundhouse kicks | Kicks mixed with punches; Punch → Punch → Kick |
+
+These are stylized procedural game disciplines rather than sporting-rule simulations. Styles affect choices, combinations, footwork, and presentation; they do not directly multiply HP, attack damage, or movement speed. Random base stats and personality remain independent. A follow-up requires contact, range, and recovery, and a hit cancels pending combinations. Short-hop cooldowns and grounded-combat limits still apply. Pure pose sampling consumes no simulation RNG. Fixed style selections still consume the normal spawn style roll, so they cannot shift another participant's base stat rolls.
 
 ## Combat choreography
 
@@ -72,7 +85,7 @@ Each knockout is recorded when HP reaches zero at the end of a fixed 120 Hz phys
 
 During a round, surviving fighters have no assigned place. At the 90-second limit, any remaining survivors share first place, without an HP tiebreak or a fabricated elimination. If everyone is knocked out, there is no surviving winner, and the last simultaneous KO group shares first place. The UI explains ties and timeout results in English and Korean.
 
-The first-out strip stays visible below the arena. Final standings open automatically at round end; View standings scrolls to all participants and the chronological elimination log, with participant numbers and times shown to 0.01 seconds. Long summary names are limited to two lines; full names remain in the lists. Results belong to the current round and reset on a new match, replay, or page reload; match history is not persisted. Names and participant/language preferences remain saved separately.
+The first-out strip stays visible below the arena. Final standings open automatically at round end; View standings scrolls to all participants and the chronological elimination log, with participant numbers and times shown to 0.01 seconds. Long summary names are limited to two lines; full names remain in the lists. Results belong to the current round and reset on a new match, replay, or page reload; match history is not persisted. Names, style choices, and participant/language preferences remain saved separately.
 
 ## Copyright and license
 

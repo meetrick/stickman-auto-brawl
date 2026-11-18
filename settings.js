@@ -1,4 +1,5 @@
 import { NAMES } from './fighter.js';
+import { normalizeStyle } from './styles.js';
 
 export const SETTINGS_KEY = 'stickman-auto-brawl.preferences.v1';
 export const MIN_FIGHTERS = 2, MAX_FIGHTERS = 12, MAX_NAME_LENGTH = 16;
@@ -13,7 +14,8 @@ export function normalizeName(value, index) {
 export function normalizePreferences(value = {}) {
   if (!value || typeof value !== 'object') value = {};
   return { count: value.count == null ? 8 : normalizeCount(value.count), language: value.language === 'ko' ? 'ko' : 'en',
-    names: Array.from({ length: MAX_FIGHTERS }, (_, i) => normalizeName(Array.isArray(value.names) ? value.names[i] : '', i)) };
+    names: Array.from({ length: MAX_FIGHTERS }, (_, i) => normalizeName(Array.isArray(value.names) ? value.names[i] : '', i)),
+    styles: Array.from({ length: MAX_FIGHTERS }, (_, i) => normalizeStyle(Array.isArray(value.styles) ? value.styles[i] : 'Random')) };
 }
 export function loadPreferences(storage) {
   try { return normalizePreferences(JSON.parse(storage.getItem(SETTINGS_KEY)) || {}); }

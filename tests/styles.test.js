@@ -64,3 +64,20 @@ test('every discipline finishes complete rounds with valid rankings and no weapo
     assert.ok(a.fighters.every(f => f.weapon === 'None' && Number.isFinite(f.x)));
   }
 });
+
+test('style preferences validate, migrate older settings and preserve hidden participant choices', async () => {
+  const {normalizePreferences, savePreferences, loadPreferences} = await import('../settings.js');
+  const old = normalizePreferences({names:['봄']}); assert.ok(old.styles.every(s => s === 'Random'));
+  const p = normalizePreferences({count:2, styles:['Boxing','<bad>','Judo',...Array(9).fill('Ninja')]});
+  assert.deepEqual(p.styles.slice(0,3), ['Boxing','Random','Judo']); assert.equal(p.styles.length, 12);
+  let saved; const storage = {setItem:(_,value)=>{saved=value;}, getItem:()=>saved};
+  assert.equal(savePreferences(storage,p),true); assert.equal(loadPreferences(storage).styles[2],'Judo');
+});
+test('replay with resolved style choices reproduces random and configured style rounds', () => {
+  for (const styles of [[], ['Boxing','Ninja','Random','Judo']]) {
+    const a = new Match(12,4,{styles});
+    const b = new Match(a.seed,4,{styles:a.fighters.map(f=>f.style)});
+    for(let i=0;i<1600;i++){a.update();b.update();}
+    assert.deepEqual(a.fighters,b.fighters); assert.deepEqual(a.eliminations,b.eliminations);
+  }
+});

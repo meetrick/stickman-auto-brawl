@@ -171,9 +171,19 @@ export class Renderer {
     const c = this.ctx, [hx, hy] = p.head;
     c.fillStyle = '#f4efdd'; c.strokeStyle = ink; c.lineWidth = 3;
     c.beginPath(); c.arc(hx, hy, 11, 0, Math.PI * 2); c.fill(); c.stroke();
+    if (f.style === 'Ninja') { c.fillStyle = ink; c.fillRect(hx - 9, hy + 1, 18, 7); }
+    if (f.style === 'Judo') {
+      this.line([[p.hip[0] - 9, p.hip[1] - 3], [p.hip[0] + 9, p.hip[1] - 3], [p.hip[0] + 5, p.hip[1] + 9]], ink, 3);
+    }
     this.weapon(p, f);
     this.line([p.shoulder, p.main.joint, p.main.tip], ink, 4.5);
     c.fillStyle = ink; c.beginPath(); c.arc(...p.main.tip, 3, 0, Math.PI * 2); c.fill();
+    if (f.style === 'Boxing' || f.style === 'Kickboxing') {
+      c.fillStyle = f.style === 'Boxing' ? f.color : '#e6dfc9'; c.strokeStyle = ink; c.lineWidth = 1.5;
+      for (const hand of [p.main.tip, p.off.tip]) {
+        c.beginPath(); c.arc(...hand, f.style === 'Boxing' ? 5.5 : 4, 0, Math.PI * 2); c.fill(); c.stroke();
+      }
+    }
     this.line([[hx - 10, hy - 4], [hx + 10, hy - 4]], f.color, 3.8);
     const drag = clamp(Math.abs(f.vx) * .04, 0, 16), flutter = f.alive ? Math.sin(f.age * 15 + f.id) * 4 : 0;
     c.strokeStyle = f.color; c.lineWidth = 2.5;

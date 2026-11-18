@@ -1,6 +1,37 @@
 import { clamp } from './random.js';
 
 const lerp = (a, b, t) => a + (b - a) * t;
+export const STANCES = {
+  Ninja: [-.12, 13, 22, -5, -22, 12, 26, 0, -24, 0],
+  Boxing: [.12, 7, 16, -24, 1, -21, 20, 0, -23, 0],
+  Judo: [.12, 12, 32, -4, 23, 9, 26, 0, -26, 0],
+  Kickboxing: [.02, 6, 19, -20, -4, -17, 27, 0, -25, 0],
+};
+export const STYLE_TRACKS = {
+  Ninja: { Kick: [
+    [0, -.12, 13, 22, -5, -22, 12, 26, 0, -24, 0],
+    [.22, -.32, 23, 14, -9, -27, 8, 14, -22, -24, 0],
+    [.40, .28, 22, 30, -3, -30, 15, 52, -7, -23, 0],
+    [.62, .35, 18, 28, 4, -25, 16, 50, -9, -24, 0],
+    [1, -.12, 13, 22, -5, -22, 12, 26, 0, -24, 0],
+  ] },
+  Judo: { Grab: [
+    [0, .12, 12, 32, -4, 23, 9, 26, 0, -26, 0],
+    [.20, .35, 12, 43, 0, 35, 9, 28, 0, -24, 0],
+    [.44, -.45, 23, 14, -12, 27, -1, 16, 0, -25, 0],
+    [.64, .92, 14, 39, 18, 29, 26, 31, 0, -26, 0],
+    [.83, .6, 20, 30, 27, 22, 29, 30, 0, -24, 0],
+    [1, .12, 12, 32, -4, 23, 9, 26, 0, -26, 0],
+  ] },
+};
+const ROUNDHOUSE = [
+  [0, .02, 6, 19, -20, -4, -17, 27, 0, -25, 0],
+  [.20, -.22, 8, 12, -23, -10, -17, 13, -34, -18, 0],
+  [.40, -.5, 5, -8, -20, -25, -5, 51, -57, -12, 0],
+  [.57, -.28, 5, 5, -22, -16, -11, 48, -38, -14, 0],
+  [.79, .13, 8, 16, -21, -4, -17, -3, -25, -21, 0],
+  [1, .02, 6, 19, -20, -4, -17, 27, 0, -25, 0],
+];
 // End-effector tracks, independently authored for this unarmed auto-brawler.
 // [time, lean, crouch, main hand XY, off hand XY, front foot XY, back foot XY]
 export const TRACKS = {
@@ -139,12 +170,36 @@ export function computePose(f) {
     front = [wave * stride, -Math.max(0, Math.cos(phase)) * lift];
     back = [-wave * stride, -Math.max(0, -Math.cos(phase)) * lift];
   } else if (f.z > 1) { front = [19, -18]; back = [-18, -8]; }
+  const stance = STANCES[f.style];
+  if (stance && f.weapon === 'None' && f.z <= 1) {
+    [lean, crouch] = stance; main = stance.slice(2, 4); off = stance.slice(4, 6);
+    if (!moving) { front = stance.slice(6, 8); back = stance.slice(8, 10); }
+    if (moving) {
+      if (f.style === 'Ninja') {
+        lean = running ? .65 : .35; crouch += 3;
+        main = [-12 + wave * 5, 11]; off = [-25, 12 + other * 5];
+      } else if (f.style === 'Boxing') {
+        crouch += Math.abs(wave) * 2;
+        front = [wave * (running ? 22 : 16), -Math.max(0, Math.cos(phase)) * (running ? 7 : 4)];
+        back = [-wave * (running ? 22 : 16), -Math.max(0, -Math.cos(phase)) * (running ? 7 : 4)];
+        main[1] += wave * 2; off[1] -= wave * 2;
+      } else if (f.style === 'Judo') {
+        front = [wave * (running ? 26 : 20), -Math.max(0, Math.cos(phase)) * (running ? 10 : 6)];
+        back = [-wave * (running ? 26 : 20), -Math.max(0, -Math.cos(phase)) * (running ? 10 : 6)];
+      } else { lean += running ? .2 : .05; main[1] += wave * 3; off[1] -= wave * 3; }
+    } else { crouch += Math.sin(f.age * 4 + f.id) * .7; }
+  }
   if (f.attack) {
     const weaponKeys = f.weapon === 'Sword' && f.attack.variant === 1 ? SWORD_RISING : WEAPON_TRACKS[f.weapon];
     const keys = f.attack.name === 'WeaponStrike' ? weaponKeys || TRACKS.WeaponStrike
-      : f.attack.name === 'Punch' && f.attack.variant === 1 ? CROSS : TRACKS[f.attack.name];
+      : STYLE_TRACKS[f.style]?.[f.attack.name] || (f.style === 'Kickboxing' && f.attack.name === 'Kick' && f.attack.variant === 1 ? ROUNDHOUSE
+        : f.attack.name === 'Punch' && f.attack.variant === 1 ? CROSS : TRACKS[f.attack.name]);
     const k = sampleTrack(keys, f.attack.elapsed / f.attack.duration);
     [lean, crouch] = k; main = k.slice(2, 4); off = k.slice(4, 6); front = k.slice(6, 8); back = k.slice(8, 10);
+    if (f.style === 'Boxing' && f.attack.name === 'Punch') {
+      if (f.attack.variant === 1) main = [11, -24]; else off = [3, -23];
+    }
+    if (f.style === 'Ninja' && f.attack.name === 'Dash') { lean += .12; crouch += 8; }
   }
   if (!moving && !f.attack) {
     if (f.weapon === 'Hammer') { main = [12, -12]; off = [2, -8]; }
@@ -178,7 +233,7 @@ export function computePose(f) {
     lean = -.08; crouch = 0; weaponAngle = .35;
     main = [21, 19]; off = [-21, 11]; front = [24, -2]; back = [-18, 1];
     rotation = f.z > 0 ? f.tumble || 0 : -Math.PI / 2;
-  } else if (f.state === 'held') { rotation = -1.5; main = [20, 19]; off = [-23, 16]; front = [24, -14]; back = [-22, -7]; }
+  } else if (f.state === 'held') { rotation = f.heldStyle === 'Judo' ? -.65 : -1.5; main = [20, 19]; off = [-23, 16]; front = [24, -14]; back = [-22, -7]; }
   else if (f.stun > 0 && f.state === 'hit' && f.z === 0) {
     // A short chest/head recoil, not a knockdown or airborne flail.
     const recoil = Math.sin(clamp(f.stun / .16, 0, 1) * Math.PI * .8);

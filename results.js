@@ -16,7 +16,7 @@ export function standingsMarkup(match) {
     const first = entry.order === 1;
     const status = entry.time == null ? t(match.finished ? 'survived' : 'stillFighting')
       : t(entry.tied ? 'tiedOutOrder' : 'outOrder', { order: entry.order });
-    return `<li class="rank-row${match.finished && entry.rank === 1 ? ' rank-top' : ''}${first ? ' rank-last' : ''}"><b class="rank-place">${escapeHTML(rankLabel(entry))}</b><div class="rank-name"><strong>${escapeHTML(fighter.name)}</strong><small>#${String(fighter.id + 1).padStart(2, '0')} · ${escapeHTML(status)}</small></div><span class="rank-time">${entry.time == null ? '—' : t('elapsedSeconds', { seconds: entry.time.toFixed(2) })}</span></li>`;
+    return `<li class="rank-row${match.finished && entry.rank === 1 ? ' rank-top' : ''}${first ? ' rank-last' : ''}"><b class="rank-place">${escapeHTML(rankLabel(entry))}</b><div class="rank-name"><strong>${escapeHTML(fighter.name)}</strong><small>#${String(fighter.id + 1).padStart(2, '0')} · ${escapeHTML(t(fighter.style))} · ${escapeHTML(status)}</small></div><span class="rank-time">${entry.time == null ? '—' : t('elapsedSeconds', { seconds: entry.time.toFixed(2) })}</span></li>`;
   }).join('');
 }
 

@@ -4,12 +4,13 @@ import { COLORS } from './fighter.js';
 import { MIN_FIGHTERS, MAX_FIGHTERS, SETTINGS_KEY, normalizePreferences, loadPreferences, savePreferences, escapeHTML } from './settings.js';
 import { t, eventText, setLanguage, getLanguage } from './i18n.js';
 import { firstOutNames, standingsMarkup, eliminationMarkup } from './results.js';
+import { STYLE_NAMES } from './styles.js';
 
 export function boot() {
   const $ = selector => document.querySelector(selector), renderer = new Renderer($('canvas'));
   let storage = null;
   try { storage = window.localStorage; } catch { /* Storage may be disabled in private/embedded browsers. */ }
-  let preferences = loadPreferences(storage), draftNames = [...preferences.names];
+  let preferences = loadPreferences(storage), draftNames = [...preferences.names], draftStyles = [...preferences.styles];
   setLanguage(preferences.language);
   const mobile = matchMedia('(max-width: 800px), (max-width: 950px) and (max-height: 500px) and (orientation: landscape)');
   const rosterPanel = $('#fighters-panel'), tools = $('#tools'), dialog = $('#setup-dialog'), cards = new Map();
@@ -35,7 +36,7 @@ export function boot() {
     }
   }
   function start(seed, showcase = false, setup = preferences) {
-    match = new Match(seed, setup.count, { showcase, names: setup.names }); paused = false; accumulator = 0;
+    match = new Match(seed, setup.count, { showcase, names: setup.names, styles: setup.styles }); paused = false; accumulator = 0;
     renderer.camera.reset(); renderer.dirty = true; renderer.nameLabels?.clear(); lastEvent = null; tools.open = false;
     lastRankingKey = null; resultsShown = false; $('#rankings-panel').open = false;
     text($('#seed'), String(match.seed).padStart(6, '0')); $('#pause').setAttribute('aria-pressed', 'false');
@@ -62,7 +63,7 @@ export function boot() {
     for (const f of match.fighters) {
       const card = cards.get(f.id); card.node.classList.toggle('out', !f.alive);
       text(card.hp, f.alive ? Math.ceil(f.hp) : t('ko'));
-      text(card.traits, `${t(f.personality)} · ${t(f.gait)}`); text(card.weapon, t(f.weapon));
+      text(card.traits, `${t(f.personality)} · ${t(f.gait)}`); text(card.weapon, t(f.style)); card.weapon.title = t(`${f.style}Hint`);
       text(card.stats, `${t('spd')} ${Math.round(f.speed)} · ${t('atk')} ${f.power.toFixed(2)}`);
       const width = `${f.hp / f.maxHp * 100}%`; if (card.bar.style.width !== width) card.bar.style.width = width;
     }
@@ -98,24 +99,37 @@ export function boot() {
     $('#language').setAttribute('aria-label', t('switchLanguage')); $('#setup-language').value = getLanguage();
     for (const option of $('#fighter-count').options) option.textContent = t('countOption', { count: option.value });
     for (const input of document.querySelectorAll('#name-fields input')) input.setAttribute('aria-label', t('nameLabel', { number: Number(input.dataset.index) + 1 }));
+    for (const select of document.querySelectorAll('#name-fields select')) {
+      select.setAttribute('aria-label', t('styleLabel', { number: Number(select.dataset.index) + 1 }));
+      for (const option of select.options) option.textContent = t(option.value);
+    }
     lastEvent = null; renderer.dirty = true; updateCameraLabel(); updateUI();
   }
   function changeLanguage(language) {
     setLanguage(language); preferences.language = getLanguage(); persist(); translatePage();
   }
-  function collectNames() { for (const input of document.querySelectorAll('#name-fields input')) draftNames[Number(input.dataset.index)] = input.value; }
+  function collectNames() {
+    for (const input of document.querySelectorAll('#name-fields input')) draftNames[Number(input.dataset.index)] = input.value;
+    for (const select of document.querySelectorAll('#name-fields select')) draftStyles[Number(select.dataset.index)] = select.value;
+  }
   function renderNameFields() {
     $('#name-fields').replaceChildren();
     for (let i = 0; i < Number($('#fighter-count').value); i++) {
-      const row = document.createElement('label'); row.className = 'name-row'; row.style.setProperty('--fighter', COLORS[i % COLORS.length]);
+      const row = document.createElement('div'); row.className = 'name-row'; row.style.setProperty('--fighter', COLORS[i % COLORS.length]);
       const badge = document.createElement('span'); badge.textContent = String(i + 1).padStart(2, '0');
       const input = document.createElement('input'); input.type = 'text'; input.value = draftNames[i]; input.maxLength = 16;
       input.dataset.index = String(i); input.autocomplete = 'off'; input.spellcheck = false; input.setAttribute('autocapitalize', 'off');
       input.setAttribute('aria-label', t('nameLabel', { number: i + 1 })); row.append(badge, input); $('#name-fields').append(row);
+      const select = document.createElement('select'); select.dataset.index = String(i); select.id = `fighter-style-${i}`;
+      select.setAttribute('aria-label', t('styleLabel', { number: i + 1 }));
+      for (const value of ['Random', ...STYLE_NAMES]) {
+        const option = document.createElement('option'); option.value = value; option.textContent = t(value); select.append(option);
+      }
+      select.value = draftStyles[i]; row.append(select);
     }
   }
   function openSetup() {
-    tools.open = false; draftNames = [...preferences.names]; $('#fighter-count').value = String(preferences.count);
+    tools.open = false; draftNames = [...preferences.names]; draftStyles = [...preferences.styles]; $('#fighter-count').value = String(preferences.count);
     renderNameFields(); dialog.showModal(); accumulator = 0; last = 0;
   }
   $('#fighter-count').onchange = () => { collectNames(); renderNameFields(); };
@@ -126,10 +140,10 @@ export function boot() {
   dialog.addEventListener('close', () => { accumulator = 0; last = 0; renderer.dirty = true; $('#new-match').focus({ preventScroll: true }); });
   $('#setup-form').onsubmit = event => {
     event.preventDefault(); collectNames();
-    preferences = normalizePreferences({ ...preferences, count: $('#fighter-count').value, names: draftNames }); persist();
+    preferences = normalizePreferences({ ...preferences, count: $('#fighter-count').value, names: draftNames, styles: draftStyles }); persist();
     dialog.close(); start(newSeed()); window.scrollTo({ top: 0, behavior: 'auto' });
   };
-  $('#replay').onclick = () => start(match.seed, match.showcase, { count: match.fighters.length, names: match.fighters.map(f => f.name) });
+  $('#replay').onclick = () => start(match.seed, match.showcase, { count: match.fighters.length, names: match.fighters.map(f => f.name), styles: match.fighters.map(f => f.style) });
   $('#demo').onclick = () => start(72, true, { count: 8, names: preferences.names });
   $('#pause').onclick = () => { if (match.finished) return; paused = !paused; renderer.dirty = true; $('#pause').setAttribute('aria-pressed', String(paused)); updateUI(); };
   $('#speed').onclick = () => { speed = speed === 1 ? 2 : speed === 2 ? .5 : 1; updateUI(); };
