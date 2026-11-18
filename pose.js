@@ -1,0 +1,84 @@
+import { clamp } from './random.js';
+
+const lerp = (a, b, t) => a + (b - a) * t;
+// End-effector tracks, independently authored for this unarmed auto-brawler.
+// [time, lean, crouch, main hand XY, off hand XY, front foot XY, back foot XY]
+export const TRACKS = {
+  Dash: [
+    [0, -.2, 9, -6, 17, 16, -6, 14, 0, -20, 0],
+    [.2, .65, 17, 23, -6, -28, 17, 24, -5, -31, -7],
+    [.45, .85, 7, 36, 5, -29, 14, 30, 0, -34, -10],
+    [.8, .5, 5, 33, 9, -19, 16, 27, 0, -25, 0],
+    [1, .05, 2, 19, -9, -14, 7, 15, 0, -14, 0],
+  ],
+  JumpKick: [
+    [0, -.15, 12, 20, -7, -12, 5, 15, -9, -18, 0],
+    [.22, -.35, 0, 23, -13, -26, 2, 21, -40, -24, -27],
+    [.42, -.6, 0, -2, -22, -32, 12, 55, -62, -29, -22],
+    [.66, -.48, 0, 12, -16, -28, 14, 54, -57, -31, -18],
+    [.85, .12, 5, 22, -8, -16, 6, 26, -18, -15, -13],
+    [1, .05, 4, 19, -9, -14, 7, 15, 0, -14, 0],
+  ],
+  Uppercut: [
+    [0, .05, 2, 19, -9, -14, 7, 15, 0, -14, 0],
+    [.26, -.4, 18, -12, 21, 21, -16, 20, 0, -20, 0],
+    [.44, .22, -5, 18, -43, -22, 13, 20, 0, -15, -8],
+    [.65, .35, -3, 22, -37, -20, 12, 22, 0, -16, -4],
+    [1, .05, 2, 19, -9, -14, 7, 15, 0, -14, 0],
+  ],
+  Grab: [
+    [0, -.1, 4, 19, -5, 2, 10, 14, 0, -15, 0],
+    [.2, .42, 8, 42, 7, 35, -5, 26, 0, -19, 0],
+    [.44, -.35, 14, 8, -37, -19, -28, 19, 0, -22, 0],
+    [.64, .65, -3, 40, -6, 35, 4, 30, 0, -22, -4],
+    [.82, .55, 4, 37, 14, 29, 13, 31, 0, -21, 0],
+    [1, .05, 2, 19, -9, -14, 7, 15, 0, -14, 0],
+  ],
+};
+export function sampleTrack(keys, time) {
+  if (time <= keys[0][0]) return keys[0].slice(1);
+  for (let i = 1; i < keys.length; i++) if (time <= keys[i][0]) {
+    const a = keys[i - 1], b = keys[i], t = clamp((time - a[0]) / (b[0] - a[0]), 0, 1);
+    const eased = t * t * (3 - 2 * t);
+    return a.slice(1).map((v, j) => lerp(v, b[j + 1], eased));
+  }
+  return keys.at(-1).slice(1);
+}
+export function solveLimb(root, target, upper, lower, bend = 1) {
+  const dx = target[0] - root[0], dy = target[1] - root[1];
+  const distance = clamp(Math.hypot(dx, dy), .001, upper + lower - .001), angle = Math.atan2(dy, dx);
+  const elbowAngle = angle + bend * Math.acos(clamp((upper * upper + distance * distance - lower * lower) / (2 * upper * distance), -1, 1));
+  return { joint: [root[0] + Math.cos(elbowAngle) * upper, root[1] + Math.sin(elbowAngle) * upper],
+    tip: [root[0] + Math.cos(angle) * distance, root[1] + Math.sin(angle) * distance] };
+}
+export function computePose(f) {
+  const moving = f.state === 'walk' || f.state === 'run', running = f.state === 'run';
+  const phase = f.stridePhase || 0, wave = Math.sin(phase), other = Math.sin(phase + Math.PI);
+  let lean = moving ? running ? .35 : .1 : Math.sin(f.age * 2.8 + f.id) * .025;
+  let crouch = moving ? -Math.abs(Math.sin(phase)) * (running ? 5 : 2) : 2 + Math.sin(f.age * 2.8 + f.id) * 1.2;
+  let main = [18 + (moving ? other * 17 : 0), -7 + (moving ? wave * 10 : 0)];
+  let off = [-10 + (moving ? wave * 18 : 0), 9 + (moving ? other * 10 : 0)];
+  let front = [14, 0], back = [-14, 0];
+  if (moving) {
+    const stride = running ? 31 : 18, lift = running ? 23 : 8;
+    front = [wave * stride, -Math.max(0, Math.cos(phase)) * lift];
+    back = [-wave * stride, -Math.max(0, -Math.cos(phase)) * lift];
+  } else if (f.z > 1) { front = [19, -18]; back = [-18, -8]; }
+  if (f.attack) {
+    const k = sampleTrack(TRACKS[f.attack.name], f.attack.elapsed / f.attack.duration);
+    [lean, crouch] = k; main = k.slice(2, 4); off = k.slice(4, 6); front = k.slice(6, 8); back = k.slice(8, 10);
+  }
+  let rotation = f.tumble || 0;
+  if (f.state === 'held') { rotation = -1.5; main = [20, 19]; off = [-23, 16]; front = [24, -14]; back = [-22, -7]; }
+  else if (!f.alive || f.stun > 0) {
+    const flail = Math.sin(f.age * 15 + f.id);
+    main = [18, 12 + flail * 20]; off = [-24, -4 - flail * 17]; front = [23, -8 - flail * 12]; back = [-23, -12 + flail * 8];
+    lean = -.2;
+    if (f.z === 0) rotation = f.alive ? -.8 * Math.min(1, f.stun * 3) : -1.5;
+  }
+  const hip = [0, -51 + crouch], shoulder = [Math.sin(lean) * 39, hip[1] - Math.cos(lean) * 39];
+  const head = [shoulder[0] + Math.sin(lean) * 16, shoulder[1] - Math.cos(lean) * 16];
+  const arm = target => solveLimb(shoulder, [shoulder[0] + target[0], shoulder[1] + target[1]], 23, 23, 1);
+  const leg = foot => solveLimb(hip, foot, 29, 29, -1);
+  return { hip, shoulder, head, main: arm(main), off: arm(off), front: leg(front), back: leg(back), rotation };
+}

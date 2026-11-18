@@ -8,7 +8,7 @@ export class SpectatorCamera {
     const alive = world.fighters.filter(f => f.alive);
     let actor = alive.find(f => f.id === this.focusId);
     if (closeUp && (!actor || world.time >= this.holdUntil)) {
-      const event = world.events.find(e => world.time - e.time < 2 && ['hit', 'domino', 'explosion', 'demo', 'wall', 'spike', 'bar'].includes(e.type));
+      const event = world.events.find(e => world.time - e.time < 2 && ['hit', 'grab', 'domino', 'explosion', 'demo', 'wall', 'spike', 'bar'].includes(e.type));
       actor = alive.find(f => f.id === event?.fighter) || alive.find(f => f.attack || f.stun > 0) || alive[0];
       this.focusId = actor?.id; this.holdUntil = world.time + 2;
     }

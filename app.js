@@ -77,7 +77,7 @@ if (typeof document !== 'undefined') {
     tools.open = false;
     text($('#pause'), 'Ⅱ Pause'); $('#pause').setAttribute('aria-pressed', 'false');
     text($('#seed'), String(match.seed).padStart(6, '0'));
-    $('#roster').innerHTML = match.fighters.map(f => `<article class="fighter-card" data-id="${f.id}"><span class="swatch" style="--fighter:${f.color}">${String(f.id + 1).padStart(2, '0')}</span><div class="fighter-info"><strong>${f.name}</strong><span>${f.personality}</span><div class="hp-track"><i style="background:${f.color}"></i></div></div><div class="fighter-numbers"><b><span class="hp"></span><small> / ${f.maxHp}</small></b><span>SPD ${Math.round(f.speed)} · ATK ${f.power.toFixed(2)}</span></div></article>`).join('');
+    $('#roster').innerHTML = match.fighters.map(f => `<article class="fighter-card" data-id="${f.id}"><span class="swatch" style="--fighter:${f.color}">${String(f.id + 1).padStart(2, '0')}</span><div class="fighter-info"><strong>${f.name}</strong><span>${f.personality} · ${f.gait}</span><div class="hp-track"><i style="background:${f.color}"></i></div></div><div class="fighter-numbers"><b><span class="hp"></span><small> / ${f.maxHp}</small></b><span>SPD ${Math.round(f.speed)} · ATK ${f.power.toFixed(2)}</span></div></article>`).join('');
     cards.clear();
     for (const node of $('#roster').children) cards.set(Number(node.dataset.id), { node, hp: node.querySelector('.hp'), bar: node.querySelector('.hp-track i') });
     text($('#map-info'), match.arena ? `${match.arena.name} · ${match.arena.bars.length} rotating poles · ${match.arena.traps.length} spike traps` : 'Open courtyard');

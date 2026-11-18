@@ -1,6 +1,7 @@
 import { SpectatorCamera } from './camera.js';
 import { clamp } from './random.js';
 import { barPoint } from './arena.js';
+import { computePose } from './pose.js';
 const INK = '#292b27';
 export class Renderer {
   constructor(canvas) {
@@ -95,6 +96,13 @@ export class Renderer {
   effect(e) {
     const c = this.ctx, progress = 1 - e.ttl / e.life;
     c.save(); c.globalAlpha = 1 - progress;
+    if (e.type === 'hit' && progress < .4) {
+      const x = e.x, y = e.y - e.z - 55;
+      for (let i = 0; i < 6; i++) {
+        const angle = i * Math.PI / 3 + .25, inner = 7 + progress * 20, outer = inner + 12;
+        this.line([[x + Math.cos(angle) * inner, y + Math.sin(angle) * inner], [x + Math.cos(angle) * outer, y + Math.sin(angle) * outer]], '#b26737', 2.5);
+      }
+    }
     if (e.type === 'explosion') {
       c.translate(e.x, e.y);
       c.strokeStyle = '#c75b33'; c.fillStyle = '#edbd5866'; c.lineWidth = 4 * (1 - progress) + 1;
@@ -118,38 +126,55 @@ export class Renderer {
     c.font = `bold ${e.crit || e.type === 'explosion' ? 26 : 15}px monospace`;
     c.fillText(e.text || e.type, e.x, e.y - e.z - 95 - progress * 45); c.restore();
   }
+  skeleton(p, f, ink) {
+    this.line([p.shoulder, p.off.joint, p.off.tip], ink, 4);
+    this.line([p.hip, p.back.joint, p.back.tip], ink, 4.5);
+    this.line([p.hip, p.front.joint, p.front.tip], ink, 5);
+    this.line([p.hip, p.shoulder], ink, 9);
+    this.line([p.hip, p.shoulder], f.color, 5.5);
+    this.line([p.shoulder, p.head], ink, 4);
+    const c = this.ctx, [hx, hy] = p.head;
+    c.fillStyle = '#f4efdd'; c.strokeStyle = ink; c.lineWidth = 3;
+    c.beginPath(); c.arc(hx, hy, 11, 0, Math.PI * 2); c.fill(); c.stroke();
+    this.line([p.shoulder, p.main.joint, p.main.tip], ink, 4.5);
+    c.fillStyle = ink; c.beginPath(); c.arc(...p.main.tip, 3, 0, Math.PI * 2); c.fill();
+    this.line([[hx - 10, hy - 4], [hx + 10, hy - 4]], f.color, 3.8);
+    const drag = clamp(Math.abs(f.vx) * .04, 0, 16), flutter = Math.sin(f.age * 15 + f.id) * 4;
+    c.strokeStyle = f.color; c.lineWidth = 2.5;
+    c.beginPath(); c.moveTo(hx - 9, hy - 4); c.quadraticCurveTo(hx - 20 - drag, hy - 9 + flutter, hx - 29 - drag, hy - 2 + flutter); c.stroke();
+    c.beginPath(); c.moveTo(hx - 9, hy - 3); c.quadraticCurveTo(hx - 17 - drag, hy + flutter, hx - 24 - drag, hy + 8 + flutter); c.stroke();
+    if (f.alive) this.line([[hx + 4, hy - 1], [hx + 8, hy - 2]], ink, 2);
+    else { this.line([[hx + 3, hy - 4], [hx + 8, hy + 1]], ink, 1.5); this.line([[hx + 8, hy - 4], [hx + 3, hy + 1]], ink, 1.5); }
+  }
   fighter(f, time) {
-    const c = this.ctx, scale = .83 + (f.y - 245) / 335 * .23;
-    const sy = f.y - f.z;
+    const c = this.ctx, scale = .83 + (f.y - 245) / 335 * .23, sy = f.y - f.z, p = computePose(f);
     c.save(); c.translate(f.x, f.y); c.scale(scale, scale * .3);
     c.fillStyle = '#37392c22'; c.beginPath(); c.ellipse(0, 0, Math.max(8, 23 - f.z * .04), 13, 0, 0, Math.PI * 2); c.fill(); c.restore();
-    c.save(); c.translate(f.x, sy); c.scale(scale * f.facing, scale);
-    c.lineCap = 'round'; c.lineJoin = 'round';
-    if (!f.alive || f.stun > 0) { c.translate(0, -28); c.rotate(-Math.min(1.5, .6 + f.z * .01 + (f.alive ? 0 : 1))); c.translate(0, 28); }
-    const walk = f.state === 'walk' ? Math.sin(f.age * 13) : Math.sin(f.age * 2) * .08;
-    const attacking = f.attack && f.attack.elapsed >= .08;
-    const move = f.attack?.name;
-    const bob = Math.abs(walk) * 3;
-    const hip = [0, -43 + bob], shoulder = [attacking ? 7 : 1, -77 + bob];
-    const ink = f.flash > 0 ? '#fff8e0' : INK;
-    this.line([hip, [-11 - walk * 9, -24], [-14 - walk * 19, 0]], ink);
-    const foot = attacking && move === 'JumpKick' ? [53, -57] : [15 + walk * 19, 0];
-    this.line([hip, [13 + walk * 9, -23], foot], ink, 5);
-    this.line([hip, shoulder], ink, 9);
-    this.line([hip, shoulder], f.color, 5);
-    this.line([shoulder, [-15, -59], [-5, -49]], ink, 4);
-    let hand = [23, -65];
-    if (attacking) hand = move === 'Uppercut' ? [28, -111] : move === 'Grab' ? [44, -70] : [44, -65];
-    this.line([shoulder, [20, -62], hand], ink, 4.5);
-    this.line([shoulder, [3, -88 + bob]], ink, 4);
-    c.fillStyle = '#f4efdd'; c.strokeStyle = ink; c.lineWidth = 3;
-    c.beginPath(); c.arc(3, -99 + bob, 11, 0, Math.PI * 2); c.fill(); c.stroke();
-    this.line([[-7, -102 + bob], [13, -102 + bob]], f.color, 4);
-    this.line([[-7, -102 + bob], [-21, -105 + Math.sin(time * 12 + f.id) * 4], [-30, -99]], f.color, 2.5);
-    this.line([[9, -97 + bob], [12, -97 + bob]], ink, 2);
+    if (f.state === 'run' && f.z < 2) {
+      c.save(); c.fillStyle = '#889275';
+      for (let i = 0; i < 3; i++) {
+        const t = (time * 3 + i / 3 + f.id * .13) % 1; c.globalAlpha = (1 - t) * .25;
+        c.beginPath(); c.ellipse(f.x - f.facing * (8 + t * 32), f.y - t * 6, 2 + t * 6, 1 + t * 3, 0, 0, Math.PI * 2); c.fill();
+      }
+      c.restore();
+    }
+    c.save(); c.translate(f.x, sy); c.scale(scale * f.facing, scale); c.lineCap = 'round'; c.lineJoin = 'round';
+    c.translate(...p.hip); c.rotate(p.rotation); c.translate(-p.hip[0], -p.hip[1]);
+    if (f.attack?.name === 'Dash' && f.attack.elapsed > .12 && f.attack.elapsed < .5) {
+      for (const offset of [35, 70]) {
+        c.save(); c.globalAlpha = offset === 35 ? .18 : .08; c.translate(-offset, 0); this.skeleton(p, f, INK); c.restore();
+      }
+    }
+    this.skeleton(p, f, f.flash > 0 ? '#b54c37' : INK);
+    if (f.attack && f.attack.elapsed > .16 && f.attack.elapsed < .46) {
+      c.save(); c.strokeStyle = `${f.color}88`; c.lineWidth = 3;
+      if (f.attack.name === 'JumpKick') { c.beginPath(); c.arc(1, -55, 55, -.7, .65); c.stroke(); }
+      if (f.attack.name === 'Uppercut') { c.beginPath(); c.arc(2, -90, 36, 1.2, -1.35, true); c.stroke(); }
+      c.restore();
+    }
     c.restore();
     if (f.alive) {
-      c.save(); c.translate(f.x, sy - 126 * scale); c.textAlign = 'center';
+      c.save(); c.translate(f.x, sy - 131 * scale); c.textAlign = 'center';
       c.font = '600 10px monospace'; c.fillStyle = f.color; c.fillText(f.name, 0, -7);
       c.fillStyle = '#38392b22'; c.fillRect(-22, 0, 44, 3);
       c.fillStyle = f.color; c.fillRect(-22, 0, 44 * f.hp / f.maxHp, 3); c.restore();
