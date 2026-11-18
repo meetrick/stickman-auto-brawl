@@ -1,6 +1,7 @@
 import { Fighter } from './fighter.js';
 import { seededRandom } from './random.js';
 import { Renderer } from './renderer.js';
+import { resolveDominoes } from './collisions.js';
 
 export const STEP = 1 / 120;
 export class Match {
@@ -24,6 +25,7 @@ export class Match {
     if (this.finished) return;
     this.time += dt;
     for (const fighter of this.fighters) fighter.update(dt, this);
+    resolveDominoes(this);
     for (const effect of this.effects) effect.ttl -= dt;
     this.effects = this.effects.filter(e => e.ttl > 0);
     const alive = this.fighters.filter(f => f.alive);

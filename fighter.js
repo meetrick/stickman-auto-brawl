@@ -21,6 +21,8 @@ export class Fighter {
     this.speed = range(rng, 90, 155);
     this.power = range(rng, .8, 1.25);
     this.personality = PERSONALITIES[Math.floor(rng() * PERSONALITIES.length)];
+    this.collateralActive = false;
+    this.flightHits = new Set();
   }
   get alive() { return this.hp > 0; }
   get standing() { return this.alive && this.z <= 1 && this.stun <= 0; }
@@ -39,6 +41,8 @@ export class Fighter {
     this.z = Math.max(this.z, 2);
     this.stun = .65; this.flash = .16; this.attack = null;
     this.state = this.alive ? 'down' : 'ko';
+    this.collateralActive = true;
+    this.flightHits.clear();
     return true;
   }
   hit(target, world, name) {
@@ -77,6 +81,7 @@ export class Fighter {
     }
   }
   update(dt, world) {
+    if (this.z === 0 && this.vz === 0) this.collateralActive = false;
     this.age += dt; this.flash = Math.max(0, this.flash - dt);
     this.cooldown = Math.max(0, this.cooldown - dt);
     this.stun = Math.max(0, this.stun - dt);

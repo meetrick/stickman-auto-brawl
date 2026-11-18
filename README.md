@@ -32,5 +32,5 @@ The ink outlines, colored torso strokes, round heads, fluttering headbands, and 
 
 1. Working combat foundation with deterministic simulation and automated checks.
 2. Fighter RNG: HP 80–130, speed 90–155 floor units/s, attack power 0.8–1.25×; Aggressive or Cowardly AI. Every successful attack has a 10% crit roll: 3× damage and 2× horizontal/depth/vertical knockback, with CRIT! text and a hit flash. Cowards retreat within 210 units and fight when trapped by an arena edge.
-3. Swept domino collisions (next).
+3. Swept domino collisions: thrown/knocked bodies (including flying KO bodies) hit standing fighters in floor depth and height, deal 8–24 damage, and propagate a launch. A flight cannot damage the same victim twice; ordinary jumps do not become projectiles. `collisions.js` owns the relative swept AABB checks.
 4. Dynamic landmines and health potions (next).
