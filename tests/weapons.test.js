@@ -55,9 +55,9 @@ test('connected sword strikes can chain into one short dash follow-up', () => {
   assert.equal(a.attack?.name, 'Dash'); assert.equal(a.followUp, null);
 });
 
-test('a fleeing coward can leap away rather than only running on the floor', () => {
+test('a fleeing coward backsteps without a repetitive escape jump', () => {
   const w = new Match(8, 2, { terrain: false }), [a, b] = w.fighters;
   a.x = 500; a.y = 400; b.x = 600; b.y = 400; a.personality = 'Cowardly'; w.rng = () => .1;
   a.think(1 / 120, w);
-  assert.equal(a.state, 'evade'); assert.ok(a.vx < 0); assert.equal(a.vz, 320);
+  assert.equal(a.state, 'evade'); assert.ok(a.vx < 0); assert.equal(a.vz, 0);
 });

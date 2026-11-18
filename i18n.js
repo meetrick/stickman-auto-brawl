@@ -41,6 +41,7 @@ export const MESSAGES = {
   'SPLIT RING': ['SPLIT RING', '갈라진 격투장'], 'RUIN GARDEN': ['RUIN GARDEN', '폐허 정원'],
   'CRIT!': ['CRIT!', '치명타!'], 'DOMINO!': ['DOMINO!', '연쇄 충돌!'], 'BOOM!': ['BOOM!', '폭발!'],
   'DASH CRASH!': ['DASH CRASH!', '돌진 충돌!'], 'FLYING KICK!': ['FLYING KICK!', '점프킥!'], 'UPPERCUT!': ['UPPERCUT!', '어퍼컷!'],
+  'PUNCH!': ['PUNCH!', '펀치!'], 'KICK!': ['KICK!', '발차기!'],
   'THROWN!': ['THROWN!', '던지기!'], 'GRABBED!': ['GRABBED!', '붙잡힘!'], 'SLASH!': ['SLASH!', '베기!'],
   'STAFF SWEEP!': ['STAFF SWEEP!', '봉 휘두르기!'], 'HAMMER SMASH!': ['HAMMER SMASH!', '망치 강타!'],
   'CRASH!': ['CRASH!', '파괴!'], 'LUCKY BOUNCE!': ['LUCKY BOUNCE!', '행운의 반동!'], 'SPRING!': ['SPRING!', '튕김!'],

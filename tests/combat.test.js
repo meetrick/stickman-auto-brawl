@@ -11,11 +11,12 @@ test('seeded matches reproduce a complete physics trajectory', () => {
   assert.ok(a.stats.hits > 0);
 });
 for (const name of Object.keys(MOVES)) {
-  test(`${name} damages and launches a target once`, () => {
+  test(`${name} damages a target once per attack`, () => {
     const w = new Match(5, 2, { terrain: false }), [a, b] = w.fighters;
     a.x = 500; a.y = 400; b.x = 530; b.y = 400;
     a.weapon = 'Sword'; a.cooldown = 0; b.cooldown = 10; b.readyAt = 10;
     assert.ok(a.startAttack(name, b));
+    a.readyAt = 10;
     for (let i = 0; i < 85; i++) w.update(STEP);
     assert.ok(b.hp < b.maxHp);
     assert.equal(w.stats.hits, 1);

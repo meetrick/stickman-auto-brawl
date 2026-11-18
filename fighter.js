@@ -2,10 +2,12 @@ import { clamp, range } from './random.js';
 import { WEAPONS } from './weapons.js';
 
 export const MOVES = Object.freeze({
-  Dash: { damage: 10, knockback: 300, lift: 170, reach: 54, engage: 240, windup: .12, duration: .62 },
-  JumpKick: { damage: 14, knockback: 370, lift: 240, reach: 83, engage: 155, windup: .24, activeEnd: .5, duration: .68 },
-  Uppercut: { damage: 12, knockback: 195, lift: 460, reach: 62, engage: 62, windup: .23, duration: .58 },
-  Grab: { damage: 16, knockback: 470, lift: 340, reach: 55, engage: 55, windup: .16, duration: .86 },
+  Punch: { damage: 6, knockback: 65, lift: 0, reach: 65, engage: 70, windup: .10, activeEnd: .17, duration: .28 },
+  Kick: { damage: 11, knockback: 230, lift: 0, reach: 85, engage: 90, windup: .18, activeEnd: .29, duration: .46 },
+  Dash: { damage: 10, knockback: 300, lift: 0, reach: 54, engage: 240, windup: .12, duration: .52 },
+  JumpKick: { damage: 14, knockback: 300, lift: 0, reach: 83, engage: 135, windup: .14, activeEnd: .28, duration: .48 },
+  Uppercut: { damage: 12, knockback: 195, lift: 285, reach: 62, engage: 62, windup: .23, duration: .58 },
+  Grab: { damage: 16, knockback: 400, lift: 255, reach: 55, engage: 55, windup: .16, duration: .86 },
   WeaponStrike: WEAPONS.Sword.strike,
 });
 export const COLORS = ['#bf473b', '#438477', '#b98935', '#697ea0', '#95618a', '#5e7443', '#c27443', '#577f8b'];
@@ -35,23 +37,26 @@ export class Fighter {
   get standing() { return this.alive && this.heldBy == null && this.z <= 1 && this.stun <= 0; }
   getMove(name) { return name === 'WeaponStrike' ? WEAPONS[this.weapon]?.strike || MOVES.WeaponStrike : MOVES[name]; }
   startAttack(name, target) {
-    if (!this.standing || this.attack || this.cooldown > 0 || target.heldBy != null || (name === 'WeaponStrike' && this.weapon === 'None')) return false;
+    if (!this.standing || this.landing > 0 || this.attack || this.cooldown > 0 || target.heldBy != null || (name === 'JumpKick' && this.jumpCooldown > 0) || (name === 'WeaponStrike' && this.weapon === 'None')) return false;
     const dx = target.x - this.x, dy = target.y - this.y, length = Math.hypot(dx, dy) || 1;
     this.facing = dx >= 0 ? 1 : -1;
     const variant = (this.attackVariants[name] || 0) % 2;
     this.attackVariants[name] = (this.attackVariants[name] || 0) + 1;
     this.attack = { name, targetId: target.id, elapsed: 0, duration: this.getMove(name).duration, variant, resolved: false, hitIds: [], dx: dx / length, dy: dy / length };
     this.state = 'attack'; this.vx = this.vy = 0;
-    if (name === 'JumpKick') this.vz = 305;
+    if (name === 'JumpKick') { this.vz = 195; this.jumpCooldown = 3.5; }
     return true;
   }
   receiveHit(damage, vx, vy, vz) {
     if (!this.alive) return false;
     this.hp = Math.max(0, this.hp - damage);
-    this.vx = vx; this.vy = vy; this.vz = vz; this.z = Math.max(this.z, 2);
-    this.stun = .65; this.flash = .16; this.attack = null; this.heldBy = null;
+    const airborne = vz > 0 || this.z > 1;
+    this.vx = vx; this.vy = vy; this.vz = vz;
+    if (airborne) this.z = Math.max(this.z, 2);
+    this.stun = airborne ? .42 : .16; this.flash = .12; this.attack = null; this.heldBy = null;
+    this.followUp = null; this.comboStep = 0;
     this.tumble = 0; this.angularVelocity = clamp(vx / 130, -6, 6);
-    this.state = this.alive ? 'down' : 'ko'; this.collateralActive = true; this.flightHits.clear();
+    this.state = this.alive ? airborne ? 'down' : 'hit' : 'ko'; this.collateralActive = airborne; this.flightHits.clear();
     return true;
   }
   releaseGrab(world) {
@@ -79,8 +84,8 @@ export class Fighter {
     if (!target.receiveHit(move.damage * this.power * (crit ? 3 : 1), dx / length * knockback, dy / length * knockback, lift)) return false;
     if (crit) { world.stats.crits++; target.flash = .3; }
     const text = name === 'WeaponStrike' ? { Sword: 'SLASH!', Staff: 'STAFF SWEEP!', Hammer: 'HAMMER SMASH!' }[this.weapon]
-      : { Dash: 'DASH CRASH!', JumpKick: 'FLYING KICK!', Uppercut: 'UPPERCUT!', Grab: 'THROWN!' }[name];
-    world.stats.moves ||= { Dash: 0, JumpKick: 0, Uppercut: 0, Grab: 0, WeaponStrike: 0 }; world.stats.moves[name]++;
+      : { Punch: 'PUNCH!', Kick: 'KICK!', Dash: 'DASH CRASH!', JumpKick: 'FLYING KICK!', Uppercut: 'UPPERCUT!', Grab: 'THROWN!' }[name];
+    world.stats.moves ||= Object.fromEntries(MOVE_NAMES.map(key => [key, 0])); world.stats.moves[name]++;
     if (name === 'WeaponStrike') {
       world.stats.weaponHits ||= { Sword: 0, Staff: 0, Hammer: 0 }; world.stats.weaponHits[this.weapon]++;
     }
@@ -96,7 +101,7 @@ export class Fighter {
     if (Math.abs(dx) > 4) this.facing = dx > 0 ? 1 : -1;
   }
   think(dt, world) {
-    if (world.time < (this.readyAt || 0) || !this.standing || this.attack) return;
+    if (world.time < (this.readyAt || 0) || !this.standing || this.landing > 0 || this.attack) return;
     const enemies = world.fighters.filter(f => f !== this && f.alive && f.heldBy == null);
     const target = enemies.sort((a, b) => Math.hypot(a.x - this.x, a.y - this.y) - Math.hypot(b.x - this.x, b.y - this.y))[0];
     if (!target) return;
@@ -110,7 +115,7 @@ export class Fighter {
       this.moveToward({ x: clamp(this.x - dx / distance * 150, b.left + 18, b.right - 18), y: clamp(this.y - dy / distance * 150, b.top + 18, b.bottom - 18) }, world, true);
       if (world.time >= (this.evadeAt || 0)) {
         this.evadeAt = world.time + range(world.rng, 1, 2);
-        if (distance < 145 && world.rng() < .3) { this.vz = 320; this.state = 'evade'; }
+        if (distance < 145 && world.rng() < .3) { this.vx *= 1.3; this.vy *= 1.3; this.state = 'evade'; }
       }
       return;
     }
@@ -124,13 +129,18 @@ export class Fighter {
         const name = this.followUp; this.followUp = null;
         if (this.startAttack(name, target)) { this.intent = 'combo'; return; }
       }
-      let choices = MOVE_NAMES.filter(name => distance <= this.getMove(name).engage && (name !== 'Grab' || target.standing) && (name !== 'WeaponStrike' || this.weapon !== 'None'));
-      const preferred = this.personality === 'Brawler' ? 'Grab' : this.personality === 'Trickster' ? 'JumpKick' : this.favoriteMove;
+      let choices = MOVE_NAMES.filter(name => distance <= this.getMove(name).engage && (name !== 'JumpKick' || !(this.jumpCooldown > 0)) && (name !== 'Grab' || target.standing) && (name !== 'WeaponStrike' || this.weapon !== 'None'));
+      const preferred = this.personality === 'Brawler' ? 'Grab' : this.personality === 'Trickster' ? 'Kick'
+        : this.weapon !== 'None' ? 'WeaponStrike' : 'Punch';
       // Close-range specialists must actually close in, rather than selecting
       // Dash as soon as it becomes the first available move every encounter.
       if (distance > this.getMove(preferred).engage) choices = [];
       if (choices.length) {
-        const name = choices.includes(preferred) && world.rng() < (this.personality === 'Brawler' ? .85 : .6) ? preferred : choices[Math.floor(world.rng() * choices.length)];
+        // Ground exchanges dominate; launches and short hops punctuate them.
+        const weights = choices.map(name => ({ name, weight: (name === preferred ? 5 : 1) * (['JumpKick', 'Uppercut', 'Grab'].includes(name) ? .45 : 1) * (name === this.favoriteMove ? 1.5 : 1) }));
+        let roll = world.rng() * weights.reduce((sum, item) => sum + item.weight, 0);
+        const name = weights.find(item => (roll -= item.weight) < 0)?.name || choices.at(-1);
+        this.comboStep = 0;
         if (this.startAttack(name, target)) { this.intent = 'attack'; return; }
       }
     }
@@ -141,8 +151,12 @@ export class Fighter {
   }
   updateAttack(dt, world) {
     const a = this.attack, move = this.getMove(a.name); a.elapsed += dt;
-    if (a.name === 'Dash') { const speed = a.elapsed >= move.windup && a.elapsed < .5 ? 560 : 30; this.vx = a.dx * speed; this.vy = a.dy * speed; }
-    if (a.name === 'JumpKick' && a.elapsed > .09 && a.elapsed < .5) { this.vx = a.dx * 270; this.vy = a.dy * 270; }
+    if (a.name === 'Dash') { const speed = !a.resolved && a.elapsed >= move.windup && a.elapsed < .36 ? 560 : 0; this.vx = a.dx * speed; this.vy = a.dy * speed; }
+    if (a.name === 'JumpKick') { const speed = a.elapsed > .04 && a.elapsed < .28 ? 250 : 0; this.vx = a.dx * speed; this.vy = a.dy * speed; }
+    if (a.name === 'Punch' || a.name === 'Kick') {
+      const speed = a.elapsed > move.windup * .55 && a.elapsed < move.windup + .04 ? 145 : 0;
+      this.vx = a.dx * speed; this.vy = a.dy * speed;
+    }
     if (a.name === 'WeaponStrike') {
       const lunge = a.elapsed >= move.windup * .7 && a.elapsed < move.windup + .09 ? (this.weapon === 'Hammer' ? 110 : 190) : 0;
       this.vx = a.dx * lunge; this.vy = a.dy * lunge;
@@ -177,7 +191,12 @@ export class Fighter {
       }
     }
     if (a.elapsed >= move.duration) {
-      this.releaseGrab(world); this.attack = null; this.cooldown = range(world.rng, .4, .9) * this.tempo;
+      this.releaseGrab(world); this.attack = null; this.cooldown = range(world.rng, .22, .55) * this.tempo;
+      if (a.name === 'Punch' && a.hitIds.length && (this.comboStep || 0) < 2) {
+        this.comboStep = (this.comboStep || 0) + 1;
+        this.followUp = this.comboStep === 1 ? 'Punch' : 'Kick';
+        this.followUpUntil = world.time + .65; this.cooldown = .045;
+      }
       if (a.name === 'WeaponStrike' && this.weapon === 'Sword' && a.hitIds.length && world.rng() < .35) {
         this.followUp = 'Dash'; this.followUpUntil = world.time + 1; this.cooldown = .12;
       }
@@ -188,6 +207,8 @@ export class Fighter {
     if (!this.alive && this.z === 0 && this.vz <= 0) { this.settleDeath(world); return; }
     this.previous = { x: this.x, y: this.y, z: this.z };
     this.age += dt; this.flash = Math.max(0, this.flash - dt);
+    this.jumpCooldown = Math.max(0, (this.jumpCooldown || 0) - dt);
+    this.landing = Math.max(0, (this.landing || 0) - dt);
     if (this.holdingId != null && (!this.alive || this.attack?.name !== 'Grab')) this.releaseGrab(world);
     if (this.heldBy != null) {
       const holder = world.fighters.find(f => f.id === this.heldBy);
@@ -204,9 +225,9 @@ export class Fighter {
     this.x += this.vx * dt; this.y += this.vy * dt;
     this.stridePhase += Math.hypot(this.vx, this.vy) * dt * (this.state === 'run' ? .075 : .1);
     if (this.z > 0 || this.vz > 0) {
-      this.vz -= 880 * dt; this.z += this.vz * dt;
+      this.vz -= 1280 * dt; this.z += this.vz * dt;
       if (this.collateralActive) this.tumble += this.angularVelocity * dt;
-      if (this.z <= 0) { this.z = 0; this.vz = 0; }
+      if (this.z <= 0) { this.z = 0; this.vz = 0; this.landing = .10; }
     } else if (this.alive) this.tumble *= Math.exp(-dt * 12);
     const b = world.bounds;
     if (this.x < b.left || this.x > b.right) this.vx *= -.55;

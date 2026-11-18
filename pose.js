@@ -4,6 +4,21 @@ const lerp = (a, b, t) => a + (b - a) * t;
 // End-effector tracks, independently authored for this unarmed auto-brawler.
 // [time, lean, crouch, main hand XY, off hand XY, front foot XY, back foot XY]
 export const TRACKS = {
+  Punch: [
+    [0, -.12, 5, 12, -18, -6, -13, 21, 0, -20, 0],
+    [.24, -.25, 8, -7, -12, 15, -18, 22, 0, -22, 0],
+    [.36, .48, 2, 45, -12, 9, -16, 29, 0, -23, 0],
+    [.55, .38, 4, 38, -9, 6, -18, 29, 0, -22, 0],
+    [1, .06, 4, 15, -18, -5, -14, 21, 0, -20, 0],
+  ],
+  Kick: [
+    [0, .05, 4, 17, -14, -6, -13, 21, 0, -21, 0],
+    [.24, -.22, 6, 12, -19, -14, -13, 22, -36, -16, 0],
+    [.40, -.48, 2, -3, -17, -22, -9, 54, -46, -12, 0],
+    [.57, -.4, 4, 4, -14, -20, -8, 52, -42, -13, 0],
+    [.79, -.1, 6, 15, -17, -9, -12, 23, -28, -17, 0],
+    [1, .05, 4, 17, -14, -6, -13, 21, 0, -21, 0],
+  ],
   Dash: [
     [0, -.2, 9, -6, 17, 16, -6, 14, 0, -20, 0],
     [.2, .65, 17, 23, -6, -28, 17, 24, -5, -31, -7],
@@ -143,8 +158,7 @@ export function computePose(f) {
   let rotation = f.tumble || 0;
   if (f.alive && f.attack?.name === 'JumpKick') {
     const progress = f.attack.elapsed / f.attack.duration;
-    if (f.attack.variant === 1) rotation = -Math.PI * 2 * clamp((progress - .06) / .29, 0, 1);
-    else rotation = sampleTrack([[0, 0], [.25, -.25], [.42, -.38], [.7, -.15], [1, 0]], progress)[0];
+    rotation = sampleTrack([[0, 0], [.25, -.18], [.42, -.25], [.7, -.10], [1, 0]], progress)[0];
   }
   if (!f.alive) {
     // One inert pose: no breathing, flailing, or recovery cycle after defeat.

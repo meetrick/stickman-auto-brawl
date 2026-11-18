@@ -92,10 +92,10 @@ test('weapon-specific choreography keeps IK bone lengths through both attack var
     for (const leg of [p.front, p.back]) assert.ok(Math.abs(distance(leg.joint, leg.tip) - 29) < 1e-6);
   }
 });
-test('spin kicks finish their rotation before the active hit window', () => {
+test('short jump kicks stay upright throughout both variants', () => {
   const f = new Fighter(0, 0, 0, seededRandom(1)), move = MOVES.JumpKick;
-  f.attack = { name: 'JumpKick', duration: move.duration, elapsed: move.duration * .25, variant: 1 };
-  assert.ok(Math.abs(computePose(f).rotation) > Math.PI);
-  f.attack.elapsed = move.windup;
-  assert.ok(Math.abs(computePose(f).rotation + Math.PI * 2) < 1e-8);
+  for (const variant of [0, 1]) for (let i = 0; i <= 100; i++) {
+    f.attack = { name: 'JumpKick', duration: move.duration, elapsed: move.duration * i / 100, variant };
+    assert.ok(Math.abs(computePose(f).rotation) <= .25);
+  }
 });

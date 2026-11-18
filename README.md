@@ -25,8 +25,8 @@ English is the first-visit default. The header language button and setup selecto
 
 - HP 80–130, base speed 90–155, power 0.8–1.25×, random favored attacks and tempo.
 - Aggressive, Cowardly, Brawler, and Trickster personalities; Walker, Runner, and stamina-limited Sprinter movement.
-- Dash, alternating flying/spin JumpKick, Uppercut, and a physical lift-and-throw Grab, plus weapon-specific strikes.
-- Unarmed, Sword (fast slash), Staff (long sweep, two victims maximum), or Hammer (slow heavy launch) loadouts. Sword hits can open one short dash follow-up; cowards occasionally leap away.
+- Grounded jab/cross Punch chains into Kick, a braking Dash, a short-hop JumpKick, Uppercut, and a physical lift-and-throw Grab, plus weapon-specific strikes.
+- Unarmed, Sword (fast slash), Staff (long sweep, two victims maximum), or Hammer (slow heavy launch) loadouts. Sword hits can open one short dash follow-up; cowards backstep instead of repeatedly jumping. Ordinary hits recoil on the floor; uppercuts, throws, heavy hammers, and poles retain launch physics.
 - Each attack has a 10% critical roll: 3× damage and 2× knockback. Cleave victims share the attack's critical roll.
 - Thrown and knocked bodies can bowl over standing fighters, including airborne KO bodies. Swept collision checks prevent tunneling and repeated damage to the same victim during one flight.
 - Each map rolls 2–4 rotating poles with different positions, lengths, heights, speeds, and directions. Jumping over a low pole can avoid it; contact launches a fighter along the sweep. A 12% lucky ricochet avoids pole damage and adds lift.
@@ -59,11 +59,11 @@ Browser checks include phone portrait/landscape and desktop layouts, a scrollabl
 
 ## Combat choreography
 
-Each weapon has independent hand/foot keyframes and angle tracks aligned to its active hit window: alternating descending/rising sword cuts, a full-turn staff sweep with a second-hand grip, and a two-handed overhead hammer slam with a deep follow-through. Jump kicks alternate a flying side kick and a full spin that completes before contact. The grab lift aligns the victim more closely with the holder's hands.
+Each weapon has independent hand/foot keyframes and angle tracks aligned to its active hit window: alternating descending/rising sword cuts, a full-turn staff sweep with a second-hand grip, and a two-handed overhead hammer slam with a deep follow-through. Jump kicks stay upright, use a low ballistic hop, and have a 3.5-second reuse delay plus landing recovery. The grab lift aligns the victim more closely with the holder's hands.
 
-Weapon ribbons are sampled from the actual recent hand and weapon-tip path, rather than a generic circular arc. Dash and spin afterimages sample earlier poses and travel direction; hammer contacts kick up a brief dust burst. These effects are presentation-only and are suppressed by reduced-motion preference where appropriate. Ordinary hits use sparks instead of large floating attack labels, keeping fighters legible; critical and major-event callouts remain.
+Weapon ribbons are sampled from the actual recent hand and weapon-tip path, rather than a generic circular arc. Dash and short-hop afterimages sample earlier poses and travel direction; hammer contacts kick up a brief dust burst. These effects are presentation-only and are suppressed by reduced-motion preference where appropriate. Ordinary hits use sparks instead of large floating attack labels, keeping fighters legible; critical and major-event callouts remain.
 
-Motion tests verify distinct sword directions, a continuous staff revolution, hammer overhead-to-floor travel, stable IK lengths for every weapon and variant, and spin completion before the active kick window.
+Motion tests verify distinct sword directions, a continuous staff revolution, hammer overhead-to-floor travel, stable IK lengths for every weapon and variant, upright short hops, bounded jump height, combo interruption, and a grounded-combat budget over 32 full seeded rounds.
 
 ## Copyright and license
 
