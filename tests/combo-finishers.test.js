@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Match} from '../app.js?v=20261119-fight-camera';
-import {STYLES,STYLE_NAMES} from '../styles.js?v=20261119-fight-camera';
-import {computePose} from '../pose.js?v=20261119-fight-camera';
-import {momentActorId,selectMoment} from '../impact.js?v=20261119-fight-camera';
-import {momentText,setLanguage} from '../i18n.js?v=20261119-fight-camera';
+import {Match} from '../app.js?v=20261119-crowd24';
+import {STYLES,STYLE_NAMES} from '../styles.js?v=20261119-crowd24';
+import {computePose} from '../pose.js?v=20261119-crowd24';
+import {momentActorId,selectMoment} from '../impact.js?v=20261119-crowd24';
+import {momentText,setLanguage} from '../i18n.js?v=20261119-crowd24';
 
 function setup(style){
  const w=new Match(5,3,{styles:Array(3).fill(style)}),[a,b,c]=w.fighters;

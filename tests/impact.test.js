@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {ImpactFeedback} from '../impact.js?v=20261119-fight-camera';
-import {Match} from '../app.js?v=20261119-fight-camera';
+import {ImpactFeedback} from '../impact.js?v=20261119-crowd24';
+import {Match} from '../app.js?v=20261119-crowd24';
 
 test('light hits never freeze; heavy contacts stop briefly and cannot stack per frame',()=>{
  const f=new ImpactFeedback(), light={type:'hit',move:'Punch'}, heavy={type:'hit',move:'Uppercut'};
@@ -23,7 +23,7 @@ test('feedback is bounded, reduced-motion safe, resettable and never changes rep
 });
 
 test('quiet highlights prioritize eliminations and only show real combo finishes',async()=>{
- const {selectMoment}=await import('../impact.js?v=20261119-fight-camera');const {momentText,watchMomentText,setLanguage}=await import('../i18n.js?v=20261119-fight-camera');
+ const {selectMoment}=await import('../impact.js?v=20261119-crowd24');const {momentText,watchMomentText,setLanguage}=await import('../i18n.js?v=20261119-crowd24');
  const signature={time:1,type:'hit',signature:'DYNAMITE HOOK!',finisher:true,chain:3,crit:true,text:'CRIT!'};
  const elimination={time:1.3,type:'elimination'};
  const events=[{time:1.5,type:'heal'},elimination,{time:1.2,type:'hit',crit:true},signature];

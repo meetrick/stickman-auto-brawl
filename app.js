@@ -1,10 +1,11 @@
-import { Fighter } from './fighter.js?v=20261119-fight-camera';
-import { seededRandom } from './random.js?v=20261119-fight-camera';
-import { resolveDominoes } from './collisions.js?v=20261119-fight-camera';
-import { HazardManager } from './hazards.js?v=20261119-fight-camera';
-import { Arena } from './arena.js?v=20261119-fight-camera';
-import { normalizeCount, normalizeName } from './settings.js?v=20261119-fight-camera';
-import { normalizeStyle } from './styles.js?v=20261119-fight-camera';
+import { Fighter } from './fighter.js?v=20261119-crowd24';
+import { seededRandom } from './random.js?v=20261119-crowd24';
+import { resolveDominoes } from './collisions.js?v=20261119-crowd24';
+import { HazardManager } from './hazards.js?v=20261119-crowd24';
+import { Arena } from './arena.js?v=20261119-crowd24';
+import { normalizeCount, normalizeName } from './settings.js?v=20261119-crowd24';
+import { normalizeStyle } from './styles.js?v=20261119-crowd24';
+import { CrowdNavigation } from './navigation.js?v=20261119-crowd24';
 
 export const STEP = 1 / 120;
 export class Match {
@@ -16,10 +17,16 @@ export class Match {
     this.eliminations = []; this.eliminatedIds = new Set(); this.timedOut = false;
     this.stats = { hits: 0, crits: 0, dominoes: 0, explosions: 0, heals: 0, barHits: 0, wallHits: 0, wallBreaks: 0, luckyBounces: 0, spikes: 0 };
     this.hazards = new HazardManager();
+    this.navigation = new CrowdNavigation();
     this.showcase = showcase;
     this.fighters = Array.from({ length: count }, (_, id) => {
       const angle = id / count * Math.PI * 2;
       const fighter = new Fighter(id, 600 + Math.cos(angle) * 290, 412 + Math.sin(angle) * 115, this.rng);
+      if (count > 12) {
+        const columns = Math.ceil(count / 2);
+        fighter.x = 160 + (id % columns) * 880 / (columns - 1);
+        fighter.y = id < columns ? 310 : 530;
+      }
       fighter.name = normalizeName(names[id], id);
       if (normalizeStyle(styles[id]) !== 'Random') fighter.style = styles[id];
       return fighter;
@@ -67,7 +74,9 @@ export class Match {
   update(dt = STEP) {
     if (this.finished) return;
     this.dt = dt; this.time += dt;
+    this.navigation.plan(this);
     for (const fighter of this.fighters) fighter.update(dt, this);
+    this.navigation.separate(this, dt);
     this.arena?.update(this);
     resolveDominoes(this);
     this.hazards.update(dt, this);

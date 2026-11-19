@@ -1,9 +1,9 @@
-import { SpectatorCamera } from './camera.js?v=20261119-fight-camera';
-import { clamp } from './random.js?v=20261119-fight-camera';
-import { barPoint } from './arena.js?v=20261119-fight-camera';
-import { computePose } from './pose.js?v=20261119-fight-camera';
-import { WEAPONS } from './weapons.js?v=20261119-fight-camera';
-import { t, eventText } from './i18n.js?v=20261119-fight-camera';
+import { SpectatorCamera } from './camera.js?v=20261119-crowd24';
+import { clamp } from './random.js?v=20261119-crowd24';
+import { barPoint } from './arena.js?v=20261119-crowd24';
+import { computePose } from './pose.js?v=20261119-crowd24';
+import { WEAPONS } from './weapons.js?v=20261119-crowd24';
+import { t, eventText } from './i18n.js?v=20261119-crowd24';
 const INK = '#292b27';
 export class Renderer {
   constructor(canvas) {
@@ -118,7 +118,7 @@ export class Renderer {
     }
     c.textAlign = 'center'; c.fillStyle = e.type === 'heal' ? '#43845b' : e.crit ? '#ba7c1d' : '#a44735';
     c.font = `bold ${e.crit ? 26 : 15}px monospace`;
-    // Signature names use the single moment banner; keep the arena uncluttered.
+    // Keep attack names in the optional combat feed, away from the fighters.
     if (e.type === 'heal') c.fillText(eventText(e), e.x, e.y - e.z - 95 - progress * 45);
     c.restore();
   }
@@ -305,20 +305,28 @@ export class Renderer {
     for (const e of world.effects) this.effect(e);
     c.restore();
     if (view.closeUp) {
-      const edges = { left: 0, right: 0 };
+      const edges = { left: [], right: [] };
       for (const f of world.fighters.filter(f => f.alive)) {
         const x = (f.x - view.x) * view.scale + rect.width / 2;
         const y = (f.y - f.z - 55 - view.y) * view.scale + rect.height / 2;
         if (x >= 15 && x <= rect.width - 15 && y >= 55 && y <= rect.height - 25) continue;
         const left = x < rect.width / 2, side = left ? 'left' : 'right';
-        const sx = left ? 9 : rect.width - 43;
-        const sy = clamp(75 + edges[side]++ * 28, 65, rect.height - 55);
-        c.fillStyle = '#f5f3e9e6'; c.strokeStyle = f.color; c.lineWidth = 1;
-        c.beginPath(); c.roundRect(sx, sy, 34, 22, 11); c.fill(); c.stroke();
-        c.fillStyle = f.color; c.textAlign = 'center'; c.font = '10px monospace';
         const insideX = x >= 15 && x <= rect.width - 15;
         const arrow = insideX && y < 55 ? '↑' : insideX && y > rect.height - 25 ? '↓' : left ? '‹' : '›';
-        c.fillText(`${arrow}${String(f.id + 1).padStart(2, '0')}`, sx + 17, sy + 15);
+        edges[side].push({ color: f.color, label: `${arrow}${String(f.id + 1).padStart(2, '0')}` });
+      }
+      const capacity = Math.max(1, Math.min(4, Math.floor((rect.height - 130) / 28)));
+      for (const [side, entries] of Object.entries(edges)) {
+        const markers = entries.length <= capacity ? entries : [...entries.slice(0, capacity - 1),
+          { color: INK, label: `+${entries.length - capacity + 1}` }];
+        for (const [index, marker] of markers.entries()) {
+          const sx = side === 'left' ? 9 : rect.width - 43;
+          const sy = clamp(75 + index * 28, 65, rect.height - 55);
+          c.fillStyle = '#f5f3e9e6'; c.strokeStyle = marker.color; c.lineWidth = 1;
+          c.beginPath(); c.roundRect(sx, sy, 34, 22, 11); c.fill(); c.stroke();
+          c.fillStyle = marker.color; c.textAlign = 'center'; c.font = '10px monospace';
+          c.fillText(marker.label, sx + 17, sy + 15);
+        }
       }
       c.textAlign = 'left';
     }

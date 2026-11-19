@@ -1,4 +1,4 @@
-import { clamp } from './random.js?v=20261119-fight-camera';
+import { clamp } from './random.js?v=20261119-crowd24';
 
 const lerp = (a, b, t) => a + (b - a) * t;
 export const STANCES = {

@@ -60,7 +60,7 @@ The paper palette, ink outlines, fluttering headbands, and keyframed end-effecto
 
 Node's built-in tests cover attacks/crit boundaries, IK limb lengths, attack silhouettes, grabs and interruption, weapon differences/cleave limits, sprint/evade behavior, swept body/pole collisions, trap absence, potion limits, permanent defeat, preference persistence and safe names, translations, seeded replay, and complete 2-/6-/12-/16-/24-player rounds. Integration checks run 32 full random matches and verify natural use of unarmed attacks without weapons, poles, walls, or damaging floor traps. Ranking tests cover KO-time recording, shared places, timeout survivors, event-log truncation, duplicate/unsafe names, replay reset, and deterministic complete rounds. Style tests check AI move preferences, valid combinations and interruption, legacy preference migration, resolved-style replay, distinct stances, every attack/variant's IK lengths, inert KO poses, and full rounds for all five disciplines.
 
-Browser checks include phone portrait/landscape and desktop layouts, a scrollable 12-player setup at 320×568, language/name restoration, and published GitHub Pages execution. These are browser viewport checks, not physical-device certification.
+Browser checks include phone portrait/landscape and desktop layouts, a scrollable 24-player setup at 320×568, language/name restoration, and published GitHub Pages execution. These are browser viewport checks, not physical-device certification.
 
 ## Fighting styles
 
@@ -126,3 +126,12 @@ This project is licensed under the **Apache License, Version 2.0**
 ([Apache-2.0](LICENSE)). See [NOTICE](NOTICE) for copyright and source
 acknowledgments, including the reference project
 [Stick Brawl](https://github.com/meetrick/stick_brawl).
+
+
+## Crowd movement
+
+For 13–24 participants, two spaced starting rows prevent overlapping spawn clusters. Every 0.2 seconds, a deterministic planner chooses approach positions around opponents and favors nearby free space. Aggressive fighters continue to chase the nearest opponent; cowardly fighters keep reacting to the nearest threat. Other personalities can spread pressure between opponents, while active attacks, follow-ups and counter opportunities retain their commitment.
+
+Approach distance respects each discipline: Judo closes for throws, Boxing steps into punching range, and kick specialists keep more room. Local steering and gentle separation reduce overlapping feet during free movement. They do not reposition attacks, guards, dodges, held fighters, airborne bodies, recoil, or defeated fighters. Temporary contact during a grab or rush remains intentional. The final duel uses direct pursuit. The planner consumes no combat RNG and remains reproducible with the same seed and settings.
+
+Close-up edge markers show at most four badges per side, grouping additional offscreen fighters into a `+N` badge. Full standings still include every participant. Navigation tests cover spawn spacing, reachable approach positions, protected combat/death states, deterministic 24-player rankings, and reduced sustained crowd overlap without suppressing attack activity.
