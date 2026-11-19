@@ -56,7 +56,7 @@ export function reactToThreat(f, world) {
   if (!threat) return false;
   f.reactedAttacks.add(`${threat.id}:${threat.attack.serial}`);
   const profile = DEFENSE_PROFILES[f.style] || DEFENSE_PROFILES.Kickboxing;
-  const chance = profile.reaction + (f.personality === 'Cowardly' ? .16 : f.personality === 'Trickster' ? .08 : f.personality === 'Aggressive' ? -.10 : 0);
+  const chance = profile.reaction + (f.personality === 'Counterfighter' ? .2 : f.personality === 'Cowardly' ? .16 : f.personality === 'Trickster' ? .08 : f.personality === 'Aggressive' ? -.10 : 0);
   if (world.rng() >= chance) return false;
   const kind = threat.attack.name === 'Grab' || world.rng() >= profile.guard ? 'dodge' : 'guard';
   return beginDefense(f, kind, threat, world);

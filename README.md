@@ -27,7 +27,7 @@ English is the first-visit default. The header language button and setup selecto
 
 - HP 80–130, base speed 90–155, power 0.8–1.25×, random favored attacks and tempo.
 - Random Ninja, Boxing, Judo, Kickboxing, or Taekwondo disciplines affect attack weights, punch follow-ups, and recovery footwork independently of personality.
-- Aggressive, Cowardly, Brawler, and Trickster personalities; Walker, Runner, and stamina-limited Sprinter movement.
+- Aggressive, Cowardly, Brawler, Trickster, Opportunist, and Counterfighter personalities; Walker, Runner, and stamina-limited Sprinter movement.
 - Grounded jab/cross Punch chains into Kick, a braking Dash, a grounded Uppercut, and a low physical lift-and-throw Grab. Normal AI never selects JumpKick; the legacy move remains available to direct physics tests. There are no weapon attacks in normal matches.
 - All fighters start and remain unarmed. Cowards retreat with alternating lateral steps and short grounded bursts instead of repeatedly jumping, then commit to fighting when only two participants remain. Ordinary hits and uppercuts recoil on the floor; throws retain a short, low flight for collateral collisions.
 - Each attack has a 10% critical roll: 3× damage and 2× knockback. Cleave victims share the attack's critical roll.
@@ -77,6 +77,10 @@ Each participant can use **Random style**, **Ninja**, **Boxing**, **Judo**, **Ki
 These are stylized procedural game disciplines rather than sporting-rule simulations. Styles affect choices, combinations, footwork, and presentation; they do not directly multiply HP, attack damage, or movement speed. Random base stats and personality remain independent. A follow-up requires contact, range, and recovery, and a hit cancels pending combinations. Short-hop cooldowns and grounded-combat limits still apply. Pure pose sampling consumes no simulation RNG. Fixed style selections still consume the normal spawn style roll, so they cannot shift another participant's base stat rolls.
 
 ## Defense and counters
+
+`brain.js` separates temperament from martial art. Aggressive fighters pursue the nearest opponent; Brawlers pressure and briefly retaliate against the last attacker; Cowardly fighters use bounded zigzag retreats and look for safe nearby healing when injured; Tricksters retain wide flanking routes. Opportunists prefer vulnerable opponents already occupied by another fighter, while Counterfighters circle at range and wait for visible recovery before committing. Counterfighters also attempt defense more often. No temperament predicts critical rolls or gets extra HP, damage, invulnerability, or free healing.
+
+Tactical movement plans refresh at most every 0.2 seconds, opportunists hold a valid target for 0.6 seconds, and patient waits last at most 0.45–0.65 seconds before a forced commitment. Emergency withdrawals last 0.7 seconds before 1.1 seconds of re-engagement. Flee routes score nearby opponents and walls to avoid blindly backing into another fighter. Injured survival personalities may pursue an armed potion within 230 units if opponents do not occupy it; pursuits are bounded. Real counters, connected combinations and the final duel override tactical waiting. Attack, hold, stun and KO physics continue to own their respective states. Brain calculations consume no combat RNG; the same seed and setup reproduce the round.
 
 Fighters can react once to a targeted incoming windup. Style and personality influence whether they try a frontal guard or grounded dodge. Defense costs stamina, has startup/recovery exposure, and shares a 1.15–1.65 second reuse gate. It cannot start while attacking, stunned, airborne, held, or low on stamina.
 
