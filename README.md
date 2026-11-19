@@ -154,3 +154,5 @@ Close-up edge markers show at most four badges per side, grouping additional off
 ## Motion studio
 
 Open `motion.html` for a close two-character movement study and a separate real simulated bout. The staged study is explicitly labeled as choreography with no scoring; live-bout hits and results use the existing combat rules. Effects start off. Pause, slow playback, timeline seeking and English/Korean labels support motion review. See [MOTION_PLAN.md](MOTION_PLAN.md) for the staged animation rollout and its visual acceptance criteria.
+
+The cinematic rig authors waist/chest/head angles and relative elbow/knee bends. Boxing and Taekwondo use separate run, ready, jab/cross/hook/uppercut and chambered kick tracks. The renderer-owned motion director blends clip transitions, locks contacting feet in world space while reachable, bends the stance to accommodate planted feet, and releases a support when an actual step is needed. Scrubbing or restarting resets presentation state. Knockouts, held states and legacy attacks retain their existing physics-driven poses.

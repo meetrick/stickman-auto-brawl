@@ -6,7 +6,7 @@ not health, hit timing, reach, AI, RNG, ranking or knockout physics.
 1. [x] Add an authored full-body rig and a two-character motion studio.
    Start with Boxing and Taekwondo. Separate the staged motion study from a
    real simulated bout; make effects optional and show contact frames.
-2. [ ] Author run, braking, stance and grounded attack sequences. Add foot
+2. [x] Author run, braking, stance and grounded attack sequences. Add foot
    contact locking and short pose transitions. Verify bone lengths, grounded
    support, interruption and immutable defeated bodies.
 3. [ ] Connect the motion layer to normal matches, preserving legacy styles
