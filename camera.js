@@ -1,4 +1,4 @@
-import { clamp } from './random.js?v=20261119-headline';
+import { clamp } from './random.js?v=20261119-cinema';
 
 // Presentation only: never consumes match RNG or changes the simulation.
 export class SpectatorCamera {

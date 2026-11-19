@@ -1,12 +1,12 @@
-import { Fighter } from './fighter.js?v=20261119-headline';
-import { seededRandom } from './random.js?v=20261119-headline';
-import { resolveDominoes } from './collisions.js?v=20261119-headline';
-import { HazardManager } from './hazards.js?v=20261119-headline';
-import { Arena } from './arena.js?v=20261119-headline';
-import { normalizeCount, normalizeName } from './settings.js?v=20261119-headline';
-import { normalizeStyle } from './styles.js?v=20261119-headline';
-import { CrowdNavigation } from './navigation.js?v=20261119-headline';
-import { normalizePersonality } from './brain.js?v=20261119-headline';
+import { Fighter } from './fighter.js?v=20261119-cinema';
+import { seededRandom } from './random.js?v=20261119-cinema';
+import { resolveDominoes } from './collisions.js?v=20261119-cinema';
+import { HazardManager } from './hazards.js?v=20261119-cinema';
+import { Arena } from './arena.js?v=20261119-cinema';
+import { normalizeCount, normalizeName } from './settings.js?v=20261119-cinema';
+import { normalizeStyle } from './styles.js?v=20261119-cinema';
+import { CrowdNavigation } from './navigation.js?v=20261119-cinema';
+import { normalizePersonality } from './brain.js?v=20261119-cinema';
 
 export const STEP = 1 / 120;
 export class Match {

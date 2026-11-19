@@ -5,6 +5,7 @@ export const MESSAGES = {
   newMatch: ['New match', '새 경기'], pause: ['Ⅱ Pause', 'Ⅱ 일시정지'], resume: ['▶ Resume', '▶ 계속'],
   speed: ['{speed}× Speed', '{speed}배속'], speedLabel: ['Playback speed: {speed} times', '재생 속도: {speed}배'],
   more: ['More', '더보기'], toolsTitle: ['WATCH YOUR WAY', '관전 설정'], replay: ['↺ Replay seed', '↺ 같은 경기 재생'],
+  motionStudio: ['Motion studio', '동작 검증실'],
   demo: ['✳ Chaos demo', '✳ 혼돈 시연'], demoHint: ['Demo opens with a staged collision.', '시연은 연쇄 충돌 장면으로 시작합니다.'],
   fighters: ['The fighters', '참가자'], remaining: ['remaining', '생존'], rosterNote: ['Fresh stats each round. Styles and personalities follow your setup.', '능력치는 경기마다 새로, 무술과 성격은 설정대로 적용됩니다.'],
   guide: ['Expect the unexpected.', '어떤 일이 벌어질지 모릅니다.'], poles: ['Rotating poles redirect the fight.', '회전봉이 전투의 흐름을 바꿉니다.'],

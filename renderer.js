@@ -1,15 +1,16 @@
-import { SpectatorCamera } from './camera.js?v=20261119-headline';
-import { clamp } from './random.js?v=20261119-headline';
-import { barPoint } from './arena.js?v=20261119-headline';
-import { computePose, projectPose } from './pose.js?v=20261119-headline';
-import { WEAPONS } from './weapons.js?v=20261119-headline';
-import { t, eventText } from './i18n.js?v=20261119-headline';
+import { SpectatorCamera } from './camera.js?v=20261119-cinema';
+import { clamp } from './random.js?v=20261119-cinema';
+import { barPoint } from './arena.js?v=20261119-cinema';
+import { WEAPONS } from './weapons.js?v=20261119-cinema';
+import { t, eventText } from './i18n.js?v=20261119-cinema';
+import { MotionDirector, visualPose } from './motion-director.js?v=20261119-cinema';
 const INK = '#292b27';
 export class Renderer {
   constructor(canvas) {
     this.canvas = canvas; this.ctx = canvas.getContext('2d');
     this.camera = new SpectatorCamera(); this.overview = false; this.dirty = true;
     this.nameLabels = new Map();
+    this.motion = new MotionDirector();
     this.mobile = matchMedia('(max-width: 800px), (max-width: 950px) and (max-height: 500px) and (orientation: landscape)');
     this.reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
     this.overview = this.reducedMotion.matches;
@@ -155,7 +156,8 @@ export class Renderer {
     const outer = [], inner = [];
     for (let i = 0; i <= 9; i++) {
       const elapsed = Math.max(0, f.attack.elapsed - window * (1 - i / 9));
-      const pose = computePose({ ...f, attack: { ...f.attack, elapsed } });
+      const snapshot = Object.assign(Object.create(Object.getPrototypeOf(f)), f, { attack: { ...f.attack, elapsed } });
+      const pose = visualPose(snapshot);
       const [x, y] = pose.main.tip, angle = pose.weaponAngle;
       outer.push([x + Math.cos(angle) * length, y + Math.sin(angle) * length]);
       inner.push([x + Math.cos(angle) * length * .52, y + Math.sin(angle) * length * .52]);
@@ -171,7 +173,8 @@ export class Renderer {
     if (a.elapsed < move.windup * .7 || a.elapsed > (move.activeEnd || move.duration - .05) + .04) return;
     const points = [];
     for (let i = 0; i <= 6; i++) {
-      const pose = projectPose(computePose({ ...f, attack: { ...a, elapsed: Math.max(0, a.elapsed - (a.signature ? .085 : .045) * (1 - i / 6)) } }));
+      const snapshot = Object.assign(Object.create(Object.getPrototypeOf(f)), f, { attack: { ...a, elapsed: Math.max(0, a.elapsed - (a.signature ? .085 : .045) * (1 - i / 6)) } });
+      const pose = visualPose(snapshot);
       points.push(a.name === 'Kick' ? pose.front.tip : a.variant === 1 ? pose.off.tip : pose.main.tip);
     }
     const c = this.ctx; c.save(); c.globalAlpha *= .28;
@@ -181,8 +184,9 @@ export class Renderer {
     this.line([p.shoulder, p.off.joint, p.off.tip], ink, 4);
     this.line([p.hip, p.back.joint, p.back.tip], ink, 4.5);
     this.line([p.hip, p.front.joint, p.front.tip], ink, 5);
-    this.line([p.hip, p.shoulder], ink, 9);
-    this.line([p.hip, p.shoulder], f.color, 5.5);
+    const spine = p.waist ? [p.hip, p.waist, p.shoulder] : [p.hip, p.shoulder];
+    this.line(spine, ink, 9);
+    this.line(spine, f.color, 5.5);
     this.line([p.shoulder, p.head], ink, 4);
     const c = this.ctx, [hx, hy] = p.head;
     c.fillStyle = '#f4efdd'; c.strokeStyle = ink; c.lineWidth = 3;
@@ -216,7 +220,7 @@ export class Renderer {
     else if (!f.alive) { this.line([[hx + 3, hy - 4], [hx + 8, hy + 1]], ink, 1.5); this.line([[hx + 8, hy - 4], [hx + 3, hy + 1]], ink, 1.5); }
   }
   fighter(f, time) {
-    const c = this.ctx, scale = .83 + (f.y - 245) / 335 * .23, sy = f.y - f.z, p = projectPose(computePose(f));
+    const c = this.ctx, scale = .83 + (f.y - 245) / 335 * .23, sy = f.y - f.z, p = this.motion.poseFor(f, time);
     c.save(); c.translate(f.x, f.y); c.scale(scale, scale * .3);
     c.fillStyle = '#37392c22'; c.beginPath(); c.ellipse(0, 0, Math.max(8, 23 - f.z * .04), 13, 0, 0, Math.PI * 2); c.fill(); c.restore();
     if (f.state === 'run' && f.z < 2) {
@@ -233,10 +237,10 @@ export class Renderer {
     const dodgeTrail = f.defense?.kind === 'dodge' && f.defense.elapsed > .02 && f.defense.elapsed < .18;
     if (!this.reducedMotion.matches && (dashTrail || hopTrail || signatureTrail || dodgeTrail)) {
       for (const lag of [.085, .045]) {
-        const ghost = { ...f };
+        const ghost = Object.assign(Object.create(Object.getPrototypeOf(f)), f);
         if (f.attack) ghost.attack = { ...f.attack, elapsed: Math.max(0, f.attack.elapsed - lag) };
         if (dodgeTrail) ghost.defense = { ...f.defense, elapsed: Math.max(0, f.defense.elapsed - lag) };
-        const pose = projectPose(computePose(ghost));
+        const pose = visualPose(ghost);
         c.save(); c.globalAlpha = lag > .06 ? .08 : .18;
         c.translate(f.x - f.vx * lag, sy - f.vy * lag + (hopTrail ? f.vz * lag : 0)); c.scale(scale * f.facing, scale);
         c.translate(...pose.hip); c.rotate(pose.rotation); c.translate(-pose.hip[0], -pose.hip[1]);

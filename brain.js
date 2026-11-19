@@ -1,4 +1,4 @@
-import { clamp } from './random.js?v=20261119-headline';
+import { clamp } from './random.js?v=20261119-cinema';
 
 export const PERSONALITIES = ['Aggressive', 'Cowardly', 'Brawler', 'Trickster', 'Opportunist', 'Counterfighter'];
 export const normalizePersonality = value => PERSONALITIES.includes(value) ? value : 'Random';

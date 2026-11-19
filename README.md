@@ -149,3 +149,14 @@ For 13–24 participants, two spaced starting rows prevent overlapping spawn clu
 Approach distance respects each discipline: Judo closes for throws, Boxing steps into punching range, and kick specialists keep more room. Local steering and gentle separation reduce overlapping feet during free movement. They do not reposition attacks, guards, dodges, held fighters, airborne bodies, recoil, or defeated fighters. Temporary contact during a grab or rush remains intentional. The final duel uses direct pursuit. The planner consumes no combat RNG and remains reproducible with the same seed and settings.
 
 Close-up edge markers show at most four badges per side, grouping additional offscreen fighters into a `+N` badge. Full standings still include every participant. Navigation tests cover spawn spacing, reachable approach positions, protected combat/death states, deterministic 24-player rankings, and reduced sustained crowd overlap without suppressing attack activity.
+
+
+## Motion studio
+
+Open **More → Motion studio**, or `motion.html`, for a close two-character movement study and a separate real simulated bout. The staged study is explicitly labeled as choreography with no scoring; live-bout hits and results use the existing combat rules. Effects start off. Pause, slow playback, timeline seeking and English/Korean labels support motion review. See [MOTION_PLAN.md](MOTION_PLAN.md) for the staged animation rollout and its visual acceptance criteria.
+
+The cinematic rig authors waist/chest/head angles and relative elbow/knee bends. Boxing and Taekwondo establish separate run, ready, jab/cross/hook/uppercut and chambered kick tracks. The same rig also covers low Ninja sweeps, open-hand Judo grips/hip throws and forward Kickboxing body/heel kicks. The renderer-owned motion director blends clip transitions, locks contacting feet in world space while reachable, bends the stance to accommodate planted feet, and releases a support when an actual step is needed. Scrubbing or restarting resets presentation state. Knockouts, held states and legacy attacks retain their existing physics-driven poses.
+
+All normal-match fighters use this renderer-owned layer. The simulation and the original stateless pose API stay separate. Support locking follows actual rendered world coordinates, and ordinary animation transitions do not modify a fighter. Historical snapshots retain fighter getters so an alive afterimage cannot accidentally use a defeated pose. Held/airborne bodies, direct legacy attacks and settled KOs fall back to their existing pose handling. Main-match replays reset the motion director.
+
+The studio defaults to effects off and 1× speed, has key-frame bookmarks and a seekable 12-second study, and starts paused for reduced-motion preference. Its scripted slip/block/reaction beats are illustrative only. The live-bout tab uses real seeded combat from a close starting pair; its hits and outcome are not choreographed.

@@ -1,6 +1,6 @@
-import { clamp } from './random.js?v=20261119-headline';
-import { styleProfile } from './styles.js?v=20261119-headline';
-import { MARTIAL_STANCES, MARTIAL_GUARDS, MARTIAL_DODGES, martialTrack } from './martial-motion.js?v=20261119-headline';
+import { clamp } from './random.js?v=20261119-cinema';
+import { styleProfile } from './styles.js?v=20261119-cinema';
+import { MARTIAL_STANCES, MARTIAL_GUARDS, MARTIAL_DODGES, martialTrack } from './martial-motion.js?v=20261119-cinema';
 
 const lerp = (a, b, t) => a + (b - a) * t;
 export const STANCES = MARTIAL_STANCES;
@@ -271,7 +271,7 @@ export function projectPose(p) {
   const shoulder = torso(p.shoulder), angle = p.yaw + p.torsoYaw;
   const arm = (point, depth) => [shoulder[0] + (point[0] - p.shoulder[0]) * Math.cos(angle) + depth * Math.sin(angle), point[1]];
   const leg = (point, depth) => [p.hip[0] + (point[0] - p.hip[0]) * cosine + depth * sine, point[1]];
-  return { ...p, hip: [...p.hip], shoulder, head: torso(p.head),
+  return { ...p, hip: [...p.hip], ...(p.waist ? { waist: torso(p.waist) } : {}), shoulder, head: torso(p.head),
     main: { joint: arm(p.main.joint, -5), tip: arm(p.main.tip, -9) },
     off: { joint: arm(p.off.joint, 5), tip: arm(p.off.tip, 9) },
     front: { joint: leg(p.front.joint, -4), tip: leg(p.front.tip, -7) },

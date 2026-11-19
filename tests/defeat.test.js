@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match, STEP } from '../app.js?v=20261119-headline';
-import { computePose } from '../pose.js?v=20261119-headline';
+import { Match, STEP } from '../app.js?v=20261119-cinema';
+import { computePose } from '../pose.js?v=20261119-cinema';
 
 test('a defeated fighter lands once and then freezes all motion and animation state', () => {
   const w = new Match(8, 3, { terrain: true }), f = w.fighters[0];
