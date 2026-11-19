@@ -5,14 +5,14 @@ import { Fighter } from '../fighter.js';
 import { STYLE_NAMES } from '../styles.js';
 import { seededRandom } from '../random.js';
 
-test('all four disciplines roll deterministically; explicit selections do not change other spawn stats', () => {
+test('all five disciplines roll deterministically; explicit selections do not change other spawn stats', () => {
   const seen = new Set();
   for (let seed = 0; seed < 100; seed++) {
     const a = new Fighter(0, 0, 0, seededRandom(seed)), b = new Fighter(0, 0, 0, seededRandom(seed));
     assert.equal(a.style, b.style); seen.add(a.style);
   }
   assert.deepEqual([...seen].sort(), [...STYLE_NAMES].sort());
-  const random = new Match(12, 4), fixed = new Match(12, 4, { styles: STYLE_NAMES });
+  const random = new Match(12, STYLE_NAMES.length), fixed = new Match(12, STYLE_NAMES.length, { styles: STYLE_NAMES });
   assert.deepEqual(fixed.fighters.map(f => f.style), STYLE_NAMES);
   assert.deepEqual(fixed.fighters.map(({style, ...rest}) => rest), random.fighters.map(({style, ...rest}) => rest));
 });

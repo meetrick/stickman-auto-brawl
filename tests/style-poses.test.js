@@ -12,7 +12,7 @@ test('each style has a distinct idle and running silhouette without consuming RN
       const f=new Fighter(0,0,0,seededRandom(1)); Object.assign(f,{style,state,stridePhase:.7});
       const before=structuredClone(f),pose=computePose(f); assert.deepEqual(structuredClone(f),before); return JSON.stringify(pose);
     });
-    assert.equal(new Set(poses).size,4);
+    assert.equal(new Set(poses).size,STYLE_NAMES.length);
   }
 });
 test('all style attacks and variants preserve IK lengths and finite geometry',()=>{

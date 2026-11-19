@@ -6,8 +6,17 @@ export const STANCES = {
   Boxing: [.12, 7, 16, -24, 1, -21, 20, 0, -23, 0],
   Judo: [.12, 12, 32, -4, 23, 9, 26, 0, -26, 0],
   Kickboxing: [.02, 6, 19, -20, -4, -17, 27, 0, -25, 0],
+  Taekwondo: [-.05, 7, 13, -15, -15, 6, 28, 0, -27, 0],
 };
 export const STYLE_TRACKS = {
+  Taekwondo: { Kick: [
+    [0, -.05, 7, 13, -15, -15, 6, 28, 0, -27, 0],
+    [.23, -.3, 10, 14, -18, -16, 10, 14, -36, -19, 0],
+    [.40, -.48, 5, 2, -19, -25, 10, 55, -43, -13, 0],
+    [.58, -.35, 6, 10, -17, -23, 10, 51, -39, -15, 0],
+    [.79, -.12, 9, 15, -15, -17, 6, 17, -29, -22, 0],
+    [1, -.05, 7, 13, -15, -15, 6, 28, 0, -27, 0],
+  ] },
   Ninja: { Kick: [
     [0, -.12, 13, 22, -5, -22, 12, 26, 0, -24, 0],
     [.22, -.32, 23, 14, -9, -27, 8, 14, -22, -24, 0],
@@ -32,7 +41,24 @@ const ROUNDHOUSE = [
   [.79, .13, 8, 16, -21, -4, -17, -3, -25, -21, 0],
   [1, .02, 6, 19, -20, -4, -17, 27, 0, -25, 0],
 ];
+const TAEKWONDO_ROUNDHOUSE = [
+  [0, -.05, 7, 13, -15, -15, 6, 28, 0, -27, 0],
+  [.23, -.28, 9, 10, -21, -19, 7, 10, -40, -18, 0],
+  [.40, -.38, 5, -10, -21, -27, 13, 50, -67, -12, 0],
+  [.58, -.16, 6, 3, -18, -24, 9, 48, -51, -15, 0],
+  [.79, .12, 10, 13, -17, -14, 6, -5, -27, -22, 0],
+  [1, -.05, 7, 13, -15, -15, 6, 28, 0, -27, 0],
+];
 export const SIGNATURE_TRACKS = {
+  Taekwondo: [
+    [0, -.05, 7, 13, -15, -15, 6, 28, 0, -27, 0],
+    [.23, -.42, 16, -17, -5, -24, 14, -10, -31, -20, 0],
+    [.32, -.44, 9, -21, -18, -29, 12, 19, -49, -14, 0],
+    [.38, -.28, 5, -23, -14, -27, 16, 55, -65, -12, 0],
+    [.58, .25, 8, 22, -14, -17, 5, 42, -45, -17, 0],
+    [.80, .16, 11, 17, -17, -15, 5, -8, -24, -23, 0],
+    [1, -.05, 7, 13, -15, -15, 6, 28, 0, -27, 0],
+  ],
   Ninja: [
     [0, -.15, 14, 18, -7, -22, 13, 26, 0, -24, 0],
     [.25, -.5, 25, -6, -6, -27, 12, 12, -20, -24, 0],
@@ -67,6 +93,25 @@ export const SIGNATURE_TRACKS = {
     [.54, .16, 7, 12, -18, -20, -11, 42, -43, -17, 0],
     [.77, .28, 12, 20, -22, -4, -17, -11, -22, -22, 0],
     [1, .02, 6, 19, -20, -4, -17, 27, 0, -25, 0],
+  ],
+};
+export const FINISHER_TRACKS = {
+  Ninja: [
+    [0, -.15, 17, 17, -8, -22, 13, 23, 0, -25, 0],
+    [.18, -.4, 26, -15, 8, -25, 15, 20, 0, -28, 0],
+    [.26, .85, 12, 44, -4, -30, 17, 34, 0, -30, -7],
+    [.47, .82, 8, 42, 5, -28, 15, 32, 0, -31, 0],
+    [.72, .4, 14, 28, -8, -22, 10, 25, 0, -24, 0],
+    [1, -.12, 13, 22, -5, -22, 12, 26, 0, -24, 0],
+  ],
+  Boxing: [
+    [0, .12, 7, 16, -24, 1, -21, 20, 0, -23, 0],
+    [.23, -.45, 25, -12, 20, 7, -24, 23, 0, -25, 0],
+    [.34, -.3, 20, -4, 9, 5, -24, 23, 0, -25, 0],
+    [.40, .35, 2, 20, -43, 3, -24, 24, 0, -22, 0],
+    [.57, .48, 3, 24, -37, 1, -23, 25, 0, -22, 0],
+    [.80, .15, 8, 16, -25, 1, -22, 23, 0, -23, 0],
+    [1, .12, 7, 16, -24, 1, -21, 20, 0, -23, 0],
   ],
 };
 // End-effector tracks, independently authored for this unarmed auto-brawler.
@@ -223,13 +268,18 @@ export function computePose(f) {
       } else if (f.style === 'Judo') {
         front = [wave * (running ? 26 : 20), -Math.max(0, Math.cos(phase)) * (running ? 10 : 6)];
         back = [-wave * (running ? 26 : 20), -Math.max(0, -Math.cos(phase)) * (running ? 10 : 6)];
+      } else if (f.style === 'Taekwondo') {
+        lean = running ? .17 : -.06; crouch += Math.abs(wave) * 2;
+        front = [wave * (running ? 30 : 23), -Math.max(0, Math.cos(phase)) * (running ? 17 : 9)];
+        back = [-wave * (running ? 30 : 23), -Math.max(0, -Math.cos(phase)) * (running ? 17 : 9)];
       } else { lean += running ? .2 : .05; main[1] += wave * 3; off[1] -= wave * 3; }
     } else { crouch += Math.sin(f.age * 4 + f.id) * .7; }
   }
   if (f.attack) {
     const weaponKeys = f.weapon === 'Sword' && f.attack.variant === 1 ? SWORD_RISING : WEAPON_TRACKS[f.weapon];
-    const keys = f.attack.signature ? SIGNATURE_TRACKS[f.style] || TRACKS[f.attack.name] : f.attack.name === 'WeaponStrike' ? weaponKeys || TRACKS.WeaponStrike
-      : STYLE_TRACKS[f.style]?.[f.attack.name] || (f.style === 'Kickboxing' && f.attack.name === 'Kick' && f.attack.variant === 1 ? ROUNDHOUSE
+    const keys = f.attack.signature ? (f.attack.finisher && FINISHER_TRACKS[f.style]) || SIGNATURE_TRACKS[f.style] || TRACKS[f.attack.name] : f.attack.name === 'WeaponStrike' ? weaponKeys || TRACKS.WeaponStrike
+      : f.style === 'Taekwondo' && f.attack.name === 'Kick' && f.attack.variant === 1 ? TAEKWONDO_ROUNDHOUSE
+        : STYLE_TRACKS[f.style]?.[f.attack.name] || (f.style === 'Kickboxing' && f.attack.name === 'Kick' && f.attack.variant === 1 ? ROUNDHOUSE
         : f.attack.name === 'Punch' && f.attack.variant === 1 ? CROSS : TRACKS[f.attack.name]);
     const k = sampleTrack(keys, f.attack.elapsed / f.attack.duration);
     [lean, crouch] = k; main = k.slice(2, 4); off = k.slice(4, 6); front = k.slice(6, 8); back = k.slice(8, 10);
