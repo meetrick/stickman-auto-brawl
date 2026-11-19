@@ -93,6 +93,12 @@ export class Renderer {
         this.line([[x + Math.cos(angle) * inner, y + Math.sin(angle) * inner], [x + Math.cos(angle) * outer, y + Math.sin(angle) * outer]], '#b26737', 2.5);
       }
     }
+    if (!this.reducedMotion.matches && e.type === 'hit' && (e.crit || e.signature || ['Uppercut', 'Grab'].includes(e.move)) && progress < .28) {
+      c.save(); c.translate(e.x, e.y - e.z - 52); c.scale(1, .65);
+      c.globalAlpha = (1 - progress / .28) * .65;
+      c.strokeStyle = e.crit ? '#c98a28' : '#718565'; c.lineWidth = 3 - progress * 6;
+      c.beginPath(); c.arc(0, 0, 10 + progress * 140, 0, Math.PI * 2); c.stroke(); c.restore();
+    }
     if (e.crit) {
       c.strokeStyle = '#d99524'; c.lineWidth = 2;
       for (let i = 0; i < 8; i++) {
@@ -241,7 +247,7 @@ export class Renderer {
       c.fillStyle = f.color; c.fillRect(-22, 0, 44 * f.hp / f.maxHp, 3); c.restore();
     }
   }
-  draw(world) {
+  draw(world, feedback) {
     const c = this.ctx, dpr = Math.min(globalThis.devicePixelRatio || 1, 2);
     const rect = this.rect;
     if (!rect.width || !rect.height) return;
@@ -250,7 +256,8 @@ export class Renderer {
     const view = this.camera.frame(world, rect.width, rect.height, this.mobile.matches && !this.overview, this.reducedMotion.matches);
     c.setTransform(dpr, 0, 0, dpr, 0, 0);
     c.fillStyle = '#eae6d7'; c.fillRect(0, 0, rect.width, rect.height);
-    c.save(); c.translate(rect.width / 2, rect.height / 2); c.scale(view.scale, view.scale); c.translate(-view.x, -view.y);
+    const shake = feedback?.offset(this.reducedMotion.matches) || { x: 0, y: 0 };
+    c.save(); c.translate(rect.width / 2 + shake.x, rect.height / 2 + shake.y); c.scale(view.scale, view.scale); c.translate(-view.x, -view.y);
     // Perspective lines and distant mountains are all procedural Canvas paths.
     c.fillStyle = '#d9dccf';
     for (let i = 0; i < 3; i++) {
