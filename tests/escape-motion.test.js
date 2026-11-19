@@ -40,9 +40,9 @@ test('guard, slip and side-step silhouettes preserve joints through recovery for
  }
  assert.ok(signatures.size>=3);
 });
-test('blocks do not trigger heavy hit-stop; defensive notices use one prioritized banner',()=>{
+test('blocks do not trigger heavy hit-stop; routine defensive notices stay quiet',()=>{
  const f=new ImpactFeedback();assert.equal(f.observe([{type:'hit',move:'Uppercut',blocked:true}]),false);assert.equal(f.stop,0);
- const block={type:'block',time:1};assert.equal(selectMoment([{type:'heal',time:1.1},block],1.2),block);
+ const block={type:'block',time:1};assert.equal(selectMoment([{type:'heal',time:1.1},block],1.2),null);
 });
 test('natural rounds contain bounded escape bursts while preserving complete rankings',()=>{
  let escapes=0;

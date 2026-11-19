@@ -2,7 +2,7 @@ import { Match, STEP } from './app.js?v=20261119-fight-camera';
 import { Renderer } from './renderer.js?v=20261119-fight-camera';
 import { COLORS } from './fighter.js?v=20261119-fight-camera';
 import { MIN_FIGHTERS, MAX_FIGHTERS, SETTINGS_KEY, normalizePreferences, loadPreferences, savePreferences, escapeHTML } from './settings.js?v=20261119-fight-camera';
-import { t, eventText, momentText, setLanguage, getLanguage } from './i18n.js?v=20261119-fight-camera';
+import { t, eventText, watchMomentText, setLanguage, getLanguage } from './i18n.js?v=20261119-fight-camera';
 import { firstOutNames, standingsMarkup, eliminationMarkup } from './results.js?v=20261119-fight-camera';
 import { STYLE_NAMES } from './styles.js?v=20261119-fight-camera';
 import { ImpactFeedback, selectMoment, momentActorId } from './impact.js?v=20261119-fight-camera';
@@ -93,7 +93,7 @@ export function boot() {
     }
     const moment = selectMoment(match.events, match.time);
     $('#moment').hidden = paused || match.finished || !moment || match.time - moment.time > 1.8;
-    if (moment) { text($('#moment'), `${match.fighters[momentActorId(moment)].name} · ${momentText(moment)}`); $('#moment').dataset.kind = moment.crit ? 'crit' : moment.type; }
+    if (moment) { text($('#moment'), `${match.fighters[momentActorId(moment)].name} · ${watchMomentText(moment)}`); $('#moment').dataset.kind = moment.type; }
     text($('#hits'), match.stats.hits);
     for (const key of ['crits', 'dominoes', 'heals']) text($(`#${key}`), match.stats[key]);
   }

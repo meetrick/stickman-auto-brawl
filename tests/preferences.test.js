@@ -4,12 +4,12 @@ import { Match } from '../app.js?v=20261119-fight-camera';
 import { normalizeCount, normalizeName, normalizePreferences, loadPreferences, savePreferences, escapeHTML, SETTINGS_KEY } from '../settings.js?v=20261119-fight-camera';
 import { MESSAGES, setLanguage, getLanguage, t, eventText } from '../i18n.js?v=20261119-fight-camera';
 
-test('participant counts stay within 2–12 and names are trimmed, bounded, and have unique defaults', () => {
-  assert.equal(normalizeCount(1), 2); assert.equal(normalizeCount(99), 12); assert.equal(normalizeCount('bad'), 8);
+test('participant counts stay within 2–24 and names are trimmed, bounded, and have unique defaults', () => {
+  assert.equal(normalizeCount(1), 2); assert.equal(normalizeCount(99), 24); assert.equal(normalizeCount('bad'), 8);
   assert.equal(normalizeName('  민수  ', 0), '민수'); assert.equal(normalizeName('', 8), 'FIGHTER 9');
   assert.equal(Array.from(normalizeName('🙂'.repeat(20), 0)).length, 16);
   const p = normalizePreferences({ count: 12, names: ['Alice', '민수'] });
-  assert.equal(p.count, 12); assert.equal(p.names[1], '민수'); assert.equal(new Set(p.names).size, 12);
+  assert.equal(p.count, 12); assert.equal(p.names[1], '민수'); assert.equal(new Set(p.names).size, 24);
 });
 test('user names remain literal text when included in roster and event markup', () => {
   const name = '<b>민수</b>';
@@ -44,11 +44,21 @@ test('custom names and locale do not alter seeded battle outcomes', () => {
   assert.deepEqual(a.fighters.map(({ name, ...f }) => f), b.fighters.map(({ name, ...f }) => f));
   setLanguage('en');
 });
-test('two-player, six-player and twelve-player rounds finish with valid named participants', () => {
-  for (const count of [2, 6, 12]) {
+test('two-, six-, twelve-, sixteen- and twenty-four-player rounds finish with valid named participants', () => {
+  for (const count of [2, 6, 12, 16, 24]) {
     const w = new Match(17, count, { names: Array.from({ length: count }, (_, i) => `선수${i + 1}`) });
     for (let i = 0; i < 10810 && !w.finished; i++) w.update();
     assert.equal(w.finished, true); assert.equal(w.fighters.length, count);
     for (const [i, f] of w.fighters.entries()) { assert.equal(f.name, `선수${i + 1}`); assert.ok(Number.isFinite(f.x) && f.hp >= 0); }
   }
+});
+
+test('expanding legacy twelve-fighter preferences preserves existing names, styles and count', () => {
+  const names = Array.from({ length: 12 }, (_, i) => `Friend ${i + 1}`);
+  const p = normalizePreferences({ count: 12, names, styles: Array(12).fill('Judo'), language: 'ko' });
+  assert.equal(normalizePreferences().count, 8);
+  assert.equal(p.count, 12); assert.equal(p.language, 'ko');
+  assert.deepEqual(p.names.slice(0, 12), names); assert.equal(p.names[23], 'FIGHTER 24');
+  assert.deepEqual(p.styles.slice(0, 12), Array(12).fill('Judo'));
+  assert.deepEqual(p.styles.slice(12), Array(12).fill('Random'));
 });

@@ -119,7 +119,7 @@ export class Renderer {
     c.textAlign = 'center'; c.fillStyle = e.type === 'heal' ? '#43845b' : e.crit ? '#ba7c1d' : '#a44735';
     c.font = `bold ${e.crit ? 26 : 15}px monospace`;
     // Signature names use the single moment banner; keep the arena uncluttered.
-    if (!['block', 'guardBreak', 'dodge', 'escape'].includes(e.type) && (e.type !== 'hit' || e.crit)) c.fillText(eventText(e), e.x, e.y - e.z - 95 - progress * 45);
+    if (e.type === 'heal') c.fillText(eventText(e), e.x, e.y - e.z - 95 - progress * 45);
     c.restore();
   }
   weapon(p, f) {

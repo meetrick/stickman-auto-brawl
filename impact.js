@@ -1,10 +1,8 @@
 // Presentation time only. Never mutates a match or consumes its seeded RNG.
 export function selectMoment(events, time) {
   const fresh = events.filter(event => time - event.time >= 0 && time - event.time < 1.8);
-  return fresh.find(event => event.signature) || fresh.find(event => event.type === 'elimination')
-    || fresh.find(event => event.crit) || fresh.find(event => event.chain > 1 || event.counter)
-    || fresh.find(event => ['guardBreak', 'block', 'dodge'].includes(event.type))
-    || fresh.find(event => ['domino', 'heal'].includes(event.type)) || null;
+  return fresh.find(event => event.type === 'elimination')
+    || fresh.find(event => event.type === 'hit' && event.finisher && event.chain > 1 && !event.blocked) || null;
 }
 export function momentActorId(event) {
   return event.type === 'hit' && Number.isInteger(event.source) && event.source >= 0 ? event.source : event.fighter;

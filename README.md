@@ -1,6 +1,6 @@
 # Stickman Auto Brawl
 
-A mobile-first HTML5 Canvas spectator auto-battler for 2–12 procedural fighters. Random stats, personalities, grounded unarmed combos, and flying-body collisions make each seeded match different. Normal matches have no weapons, poles, walls, or damaging floor traps.
+A mobile-first HTML5 Canvas spectator auto-battler for 2–24 procedural fighters. Random stats, personalities, grounded unarmed combos, and flying-body collisions make each seeded match different. Normal matches have no weapons, poles, walls, or damaging floor traps.
 
 [Play online](https://meetrick.github.io/stickman-auto-brawl/)
 
@@ -17,7 +17,9 @@ Open http://127.0.0.1:5173. Use `?seed=72` for a reproducible match or `?seed=72
 
 ## Match setup and language
 
-**New match** opens a setup dialog for participant count (2–12) and names (up to 16 characters). Names appear above fighters, in the roster, combat notes, and victory announcement. Blank inputs receive defaults. Changing the count preserves hidden draft names; Cancel leaves the current match unchanged. Setup pauses the simulation until dismissed.
+New installations default to eight participants; existing saved counts and names are preserved. Up to 24 participants can join.
+
+**New match** opens a setup dialog for participant count (2–24) and names (up to 16 characters). Names appear above fighters, in the roster, combat notes, and victory announcement. Blank inputs receive defaults. Changing the count preserves hidden draft names; Cancel leaves the current match unchanged. Setup pauses the simulation until dismissed.
 
 English is the first-visit default. The header language button and setup selector switch English/Korean UI and combat callouts without resetting a match. Count, names, per-fighter style choices, and language are remembered in this browser's localStorage, with an in-memory fallback. Names are rendered as text and escaped in HTML. Replay preserves the current round's seed, names, count, and resolved styles; the staged demo uses eight fighters.
 
@@ -56,7 +58,7 @@ The paper palette, ink outlines, fluttering headbands, and keyframed end-effecto
 
 ## Validation
 
-Node's built-in tests cover attacks/crit boundaries, IK limb lengths, attack silhouettes, grabs and interruption, weapon differences/cleave limits, sprint/evade behavior, swept body/pole collisions, trap absence, potion limits, permanent defeat, preference persistence and safe names, translations, seeded replay, and complete 2-/6-/12-player rounds. Integration checks run 32 full random matches and verify natural use of unarmed attacks without weapons, poles, walls, or damaging floor traps. Ranking tests cover KO-time recording, shared places, timeout survivors, event-log truncation, duplicate/unsafe names, replay reset, and deterministic complete rounds. Style tests check AI move preferences, valid combinations and interruption, legacy preference migration, resolved-style replay, distinct stances, every attack/variant's IK lengths, inert KO poses, and full rounds for all five disciplines.
+Node's built-in tests cover attacks/crit boundaries, IK limb lengths, attack silhouettes, grabs and interruption, weapon differences/cleave limits, sprint/evade behavior, swept body/pole collisions, trap absence, potion limits, permanent defeat, preference persistence and safe names, translations, seeded replay, and complete 2-/6-/12-/16-/24-player rounds. Integration checks run 32 full random matches and verify natural use of unarmed attacks without weapons, poles, walls, or damaging floor traps. Ranking tests cover KO-time recording, shared places, timeout survivors, event-log truncation, duplicate/unsafe names, replay reset, and deterministic complete rounds. Style tests check AI move preferences, valid combinations and interruption, legacy preference migration, resolved-style replay, distinct stances, every attack/variant's IK lengths, inert KO poses, and full rounds for all five disciplines.
 
 Browser checks include phone portrait/landscape and desktop layouts, a scrollable 12-player setup at 320×568, language/name restoration, and published GitHub Pages execution. These are browser viewport checks, not physical-device certification.
 
@@ -96,7 +98,7 @@ Heavy uppercuts/throws receive a 25 ms presentation hit-stop; critical or signat
 
 Each style periodically upgrades its familiar attack into a signature animation: Ninja **Shadow Kick**, Boxing **Dynamite Hook**, Judo **Hip Throw**, Kickboxing **Spinning Heel**, and Taekwondo **Spinning Hook Kick**. After 1.5 seconds of fighter age, every third use of the matching move can become a signature when its seven-second reuse gate is clear. Signatures use longer, explicit windup/contact/recovery timing, two restrained pose afterimages, and a longer fist/foot trail. The Judo victim visibly rotates across the hip before release. The attacker stays grounded; no full-body flips or extra jumps are introduced.
 
-Signature contacts use the same damage and knockback values as their base attack and retain the normal 10% critical roll. Windups can be interrupted, missed signatures deal no damage, and interrupted holds release the victim. A localized signature name uses the existing single moment banner rather than adding more floating labels. Fresh signature names take priority over routine notices for up to 1.8 seconds; critical signatures retain both the technique name and critical label. Tests exercise all five signature contacts, interruptibility, cooldowns, IK lengths, bounded body rotation, and natural signature use across 32 full matches.
+Signature contacts use the same damage and knockback values as their base attack and retain the normal 10% critical roll. Windups can be interrupted, missed signatures deal no damage, and interrupted holds release the victim. Technique names remain available in the collapsed combat notes. The arena keeps impact flashes and trails, but no floating attack names. Its single brief banner prioritizes eliminations and otherwise shows only a connected combo finisher, without naming the technique. Tests exercise all five signature contacts, interruptibility, cooldowns, IK lengths, bounded body rotation, and natural signature use across 32 full matches.
 
 Normal matches use original procedural jab/cross, side-kick, dash, short-hop kick, uppercut, and lift-and-throw poses. Jabs and rear-hand crosses alternate torso loading and extension, then finish with a planted side kick. End-effector trails follow the fist/foot path. Grounded victims recoil through their chest and head while keeping their feet planted; landing bends the knees before recovery. Jump kicks stay upright, use a low ballistic hop, and have a 3.5-second reuse delay plus landing recovery.
 
@@ -106,7 +108,7 @@ The grounded exchange direction was requested with the [Stickman Fighter Epic Ba
 
 Connected follow-ups form readable sequences: Ninja Punch → Kick → Silent Rush, Boxing Punch → Punch → Rising Uppercut, Judo Punch → Grand Hip Throw, Kickboxing Punch → Punch → Spinning Heel, and Taekwondo Kick → Kick → Spinning Hook Kick. An eligible final follow-up can use its named finisher after 1.5 seconds of fighter age while the shared seven-second signature gate is clear. Otherwise it remains a normal final attack. Ninja's low dash and Boxing's rising uppercut have dedicated finisher tracks; Judo, Kickboxing, and Taekwondo extend their existing signature choreography with the appropriate finish timing.
 
-The single moment banner shows real second/third connected hits and counter hits. Dodged or guarded contacts cannot advance a combo. Technique callouts identify the attacking fighter, while defensive callouts identify the defender; the combat feed shows attacker → victim for hits. The display does not fabricate multi-hits or add damage multipliers. All five styles retain grounded movement, defense/counterplay, and immutable settled KO poses. Tests verify finisher contact/interruption, all-style IK geometry, localized combo/counter labels, correct actor attribution, and natural finishers across 40 seeded rounds.
+The single moment banner shows eliminations and real combo finishes; routine hits, counters, guards, dodges, and critical notices stay quiet. Dodged or guarded contacts cannot advance a combo. Combo finish notices identify the attacking fighter; the combat feed shows attacker → victim for hits. The display does not fabricate multi-hits or add damage multipliers. All five styles retain grounded movement, defense/counterplay, and immutable settled KO poses. Tests verify finisher contact/interruption, all-style IK geometry, localized combo/counter labels, correct actor attribution, and natural finishers across 40 seeded rounds.
 
 ## Elimination order and standings
 
