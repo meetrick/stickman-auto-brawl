@@ -70,6 +70,9 @@ export const MESSAGES = {
   'SHADOW KICK!': ['SHADOW KICK!', '그림자 차기!'], 'DYNAMITE HOOK!': ['DYNAMITE HOOK!', '다이너마이트 훅!'],
   'HIP THROW!': ['HIP THROW!', '허리 메치기!'], 'SPINNING HEEL!': ['SPINNING HEEL!', '회전 뒤꿈치차기!'],
   'SPINNING HOOK KICK!': ['SPINNING HOOK KICK!', '태권 뒤후려차기!'],
+  'SILENT RUSH!': ['SILENT RUSH!', '그림자 돌진!'], 'RISING UPPERCUT!': ['RISING UPPERCUT!', '라이징 어퍼컷!'],
+  'GRAND HIP THROW!': ['GRAND HIP THROW!', '파워 허리 메치기!'],
+  comboCount: ['{count}-HIT COMBO', '{count}연속 명중'], counterHit: ['COUNTER!', '반격!'],
   'THROWN!': ['THROWN!', '던지기!'], 'GRABBED!': ['GRABBED!', '붙잡힘!'], 'SLASH!': ['SLASH!', '베기!'],
   'STAFF SWEEP!': ['STAFF SWEEP!', '봉 휘두르기!'], 'HAMMER SMASH!': ['HAMMER SMASH!', '망치 강타!'],
   'CRASH!': ['CRASH!', '파괴!'], 'LUCKY BOUNCE!': ['LUCKY BOUNCE!', '행운의 반동!'], 'SPRING!': ['SPRING!', '튕김!'],
@@ -91,5 +94,7 @@ export function eventText(event) {
   return heal ? t('healText', { amount: heal[1] }) : t(event.text || event.type);
 }
 export function momentText(event) {
-  return event.signature ? `${t(event.signature)}${event.crit ? ` · ${t('CRIT!')}` : ''}` : eventText(event);
+  const main = event.signature ? `${t(event.signature)}${event.crit ? ` · ${t('CRIT!')}` : ''}`
+    : event.counter ? `${t('counterHit')} · ${eventText(event)}` : eventText(event);
+  return event.chain > 1 ? `${main} · ${t('comboCount', { count: event.chain })}` : main;
 }

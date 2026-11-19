@@ -95,6 +95,25 @@ export const SIGNATURE_TRACKS = {
     [1, .02, 6, 19, -20, -4, -17, 27, 0, -25, 0],
   ],
 };
+export const FINISHER_TRACKS = {
+  Ninja: [
+    [0, -.15, 17, 17, -8, -22, 13, 23, 0, -25, 0],
+    [.18, -.4, 26, -15, 8, -25, 15, 20, 0, -28, 0],
+    [.26, .85, 12, 44, -4, -30, 17, 34, 0, -30, -7],
+    [.47, .82, 8, 42, 5, -28, 15, 32, 0, -31, 0],
+    [.72, .4, 14, 28, -8, -22, 10, 25, 0, -24, 0],
+    [1, -.12, 13, 22, -5, -22, 12, 26, 0, -24, 0],
+  ],
+  Boxing: [
+    [0, .12, 7, 16, -24, 1, -21, 20, 0, -23, 0],
+    [.23, -.45, 25, -12, 20, 7, -24, 23, 0, -25, 0],
+    [.34, -.3, 20, -4, 9, 5, -24, 23, 0, -25, 0],
+    [.40, .35, 2, 20, -43, 3, -24, 24, 0, -22, 0],
+    [.57, .48, 3, 24, -37, 1, -23, 25, 0, -22, 0],
+    [.80, .15, 8, 16, -25, 1, -22, 23, 0, -23, 0],
+    [1, .12, 7, 16, -24, 1, -21, 20, 0, -23, 0],
+  ],
+};
 // End-effector tracks, independently authored for this unarmed auto-brawler.
 // [time, lean, crouch, main hand XY, off hand XY, front foot XY, back foot XY]
 export const TRACKS = {
@@ -258,7 +277,7 @@ export function computePose(f) {
   }
   if (f.attack) {
     const weaponKeys = f.weapon === 'Sword' && f.attack.variant === 1 ? SWORD_RISING : WEAPON_TRACKS[f.weapon];
-    const keys = f.attack.signature ? SIGNATURE_TRACKS[f.style] || TRACKS[f.attack.name] : f.attack.name === 'WeaponStrike' ? weaponKeys || TRACKS.WeaponStrike
+    const keys = f.attack.signature ? (f.attack.finisher && FINISHER_TRACKS[f.style]) || SIGNATURE_TRACKS[f.style] || TRACKS[f.attack.name] : f.attack.name === 'WeaponStrike' ? weaponKeys || TRACKS.WeaponStrike
       : f.style === 'Taekwondo' && f.attack.name === 'Kick' && f.attack.variant === 1 ? TAEKWONDO_ROUNDHOUSE
         : STYLE_TRACKS[f.style]?.[f.attack.name] || (f.style === 'Kickboxing' && f.attack.name === 'Kick' && f.attack.variant === 1 ? ROUNDHOUSE
         : f.attack.name === 'Punch' && f.attack.variant === 1 ? CROSS : TRACKS[f.attack.name]);

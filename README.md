@@ -102,6 +102,12 @@ Normal matches use original procedural jab/cross, side-kick, dash, short-hop kic
 
 The grounded exchange direction was requested with the [Stickman Fighter Epic Battle reference](https://poki.com/kr/g/stickman-fighter-epic-battle). No assets or source were copied. Legacy weapon choreography remains in isolated regression tests, but weapons never spawn in browser matches.
 
+## Connected combos and finishers
+
+Connected follow-ups form readable sequences: Ninja Punch → Kick → Silent Rush, Boxing Punch → Punch → Rising Uppercut, Judo Punch → Grand Hip Throw, Kickboxing Punch → Punch → Spinning Heel, and Taekwondo Kick → Kick → Spinning Hook Kick. An eligible final follow-up can use its named finisher after 1.5 seconds of fighter age while the shared seven-second signature gate is clear. Otherwise it remains a normal final attack. Ninja's low dash and Boxing's rising uppercut have dedicated finisher tracks; Judo, Kickboxing, and Taekwondo extend their existing signature choreography with the appropriate finish timing.
+
+The single moment banner shows real second/third connected hits and counter hits. Dodged or guarded contacts cannot advance a combo. Technique callouts identify the attacking fighter, while defensive callouts identify the defender; the combat feed shows attacker → victim for hits. The display does not fabricate multi-hits or add damage multipliers. All five styles retain grounded movement, defense/counterplay, and immutable settled KO poses. Tests verify finisher contact/interruption, all-style IK geometry, localized combo/counter labels, correct actor attribution, and natural finishers across 40 seeded rounds.
+
 ## Elimination order and standings
 
 Each knockout is recorded when HP reaches zero at the end of a fixed 120 Hz physics step, even if the body is still airborne. The elimination ledger is independent of the bounded combat-event feed. First out is last place; the survivor is first. Same-step knockouts share a place and an elimination position, using competition ranking (for example, 1, 2, 2, 4). Participant IDs only order display rows inside a tie; they do not decide a winner.

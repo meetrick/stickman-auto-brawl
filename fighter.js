@@ -41,7 +41,8 @@ export class Fighter {
   get standing() { return this.alive && this.heldBy == null && this.z <= 1 && this.stun <= 0; }
   getMove(name) {
     const base = name === 'WeaponStrike' ? WEAPONS[this.weapon]?.strike || MOVES.WeaponStrike : MOVES[name];
-    return this.attack?.name === name && this.attack.signature ? { ...base, ...styleProfile(this.style).signature.timing } : base;
+    const profile = styleProfile(this.style);
+    return this.attack?.name === name && this.attack.signature ? { ...base, ...(this.attack.finisher ? profile.finisher : profile.signature).timing } : base;
   }
   startAttack(name, target) {
     if (!this.standing || this.defense || this.landing > 0 || this.attack || this.cooldown > 0 || target.heldBy != null || (name === 'JumpKick' && this.jumpCooldown > 0) || (name === 'WeaponStrike' && this.weapon === 'None')) return false;
@@ -49,11 +50,14 @@ export class Fighter {
     this.facing = dx >= 0 ? 1 : -1;
     let variant = (this.attackVariants[name] || 0) % 2;
     this.attackVariants[name] = (this.attackVariants[name] || 0) + 1;
-    const special = styleProfile(this.style).signature;
-    const signature = this.weapon === 'None' && name === special.move && this.age >= 1.5
+    const profile = styleProfile(this.style);
+    const finisher = this.weapon === 'None' && this.age >= 1.5 && this.signatureCooldown <= 0
+      && this.comboStep === profile.combo.length && name === profile.combo.at(-1);
+    const special = finisher ? profile.finisher : profile.signature;
+    const signature = finisher || this.weapon === 'None' && name === special.move && this.age >= 1.5
       && this.signatureCooldown <= 0 && this.attackVariants[name] % 3 === 0 ? special.text : null;
     if (signature) { this.signatureCooldown = 7; variant = 0; }
-    this.attack = { name, serial: ++this.attackSerial, targetId: target.id, signature, elapsed: 0, duration: signature ? special.timing.duration : this.getMove(name).duration, variant, resolved: false, connected: false, hitIds: [], dx: dx / length, dy: dy / length };
+    this.attack = { name, serial: ++this.attackSerial, targetId: target.id, signature, finisher: Boolean(finisher), chain: Math.min(3, (this.comboStep || 0) + 1), elapsed: 0, duration: signature ? special.timing.duration : this.getMove(name).duration, variant, resolved: false, connected: false, hitIds: [], dx: dx / length, dy: dy / length };
     this.state = 'attack'; this.vx = this.vy = 0;
     if (name === 'JumpKick') { this.vz = 195; this.jumpCooldown = 3.5; }
     return true;
@@ -112,7 +116,9 @@ export class Fighter {
     }
     const signature = this.attack?.name === name ? this.attack.signature : null;
     if (signature) world.stats.signatures = (world.stats.signatures || 0) + 1;
-    world.emit('hit', target, { text: crit ? 'CRIT!' : signature || text, signature, blocked: Boolean(defense?.guard), move: name, weapon: this.weapon, style: this.style, source: this.id, crit }); return true;
+    const chain = defense?.guard ? 0 : this.attack?.chain || 1;
+    if (chain > 1) world.stats.comboHits = (world.stats.comboHits || 0) + 1;
+    world.emit('hit', target, { text: crit ? 'CRIT!' : signature || text, signature, chain, finisher: Boolean(this.attack?.finisher), counter: Boolean(this.attack?.counter), blocked: Boolean(defense?.guard), move: name, weapon: this.weapon, style: this.style, source: this.id, crit }); return true;
   }
   moveToward(goal, world, hurry = false) {
     const waypoint = world.arena?.waypoint(this, goal, world) || goal;
@@ -164,7 +170,7 @@ export class Fighter {
     if (this.cooldown <= 0 && target.z < 65) {
       if (target.id === this.counterTargetId && world.time < this.counterUntil && distance <= MOVES.Punch.engage) {
         this.counterTargetId = null;
-        if (this.startAttack('Punch', target)) { this.intent = 'counter'; return; }
+        if (this.startAttack('Punch', target)) { this.attack.counter = true; this.intent = 'counter'; return; }
       }
       if (this.followUp && world.time < this.followUpUntil && distance < MOVES[this.followUp].engage) {
         const name = this.followUp; this.followUp = null;

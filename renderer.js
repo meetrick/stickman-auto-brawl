@@ -166,9 +166,9 @@ export class Renderer {
     c.globalAlpha = .45; this.line(outer, '#fdf8da', 2.5); c.restore();
   }
   strikeTrail(f) {
-    if (this.reducedMotion.matches || !['Punch', 'Kick'].includes(f.attack?.name)) return;
+    if (this.reducedMotion.matches || !['Punch', 'Kick', 'Uppercut'].includes(f.attack?.name)) return;
     const a = f.attack, move = f.getMove(a.name);
-    if (a.elapsed < move.windup * .7 || a.elapsed > move.activeEnd + .04) return;
+    if (a.elapsed < move.windup * .7 || a.elapsed > (move.activeEnd || move.duration - .05) + .04) return;
     const points = [];
     for (let i = 0; i <= 6; i++) {
       const pose = computePose({ ...f, attack: { ...a, elapsed: Math.max(0, a.elapsed - (a.signature ? .085 : .045) * (1 - i / 6)) } });

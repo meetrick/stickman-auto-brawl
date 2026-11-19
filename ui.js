@@ -5,7 +5,7 @@ import { MIN_FIGHTERS, MAX_FIGHTERS, SETTINGS_KEY, normalizePreferences, loadPre
 import { t, eventText, momentText, setLanguage, getLanguage } from './i18n.js';
 import { firstOutNames, standingsMarkup, eliminationMarkup } from './results.js';
 import { STYLE_NAMES } from './styles.js';
-import { ImpactFeedback, selectMoment } from './impact.js';
+import { ImpactFeedback, selectMoment, momentActorId } from './impact.js';
 
 export function boot() {
   const $ = selector => document.querySelector(selector), renderer = new Renderer($('canvas'));
@@ -72,7 +72,10 @@ export function boot() {
     }
     if (lastEvent !== match.events[0]) {
       lastEvent = match.events[0];
-      $('#events').innerHTML = match.events.slice(0, 5).map(e => `<li><time>${e.time.toFixed(1)}s</time><span>${escapeHTML(match.fighters[e.fighter].name)} <b>${escapeHTML(eventText(e))}</b></span></li>`).join('') || `<li class="quiet">${t('quiet')}</li>`;
+      $('#events').innerHTML = match.events.slice(0, 5).map(e => {
+        const subject = e.type === 'hit' && Number.isInteger(e.source) ? `${match.fighters[e.source].name} → ${match.fighters[e.fighter].name}` : match.fighters[e.fighter].name;
+        return `<li><time>${e.time.toFixed(1)}s</time><span>${escapeHTML(subject)} <b>${escapeHTML(eventText(e))}</b></span></li>`;
+      }).join('') || `<li class="quiet">${t('quiet')}</li>`;
     }
     text($('#map-info'), match.arena ? t('map', { name: t(match.arena.name), bars: match.arena.bars.length }) : t('openCourt'));
     text($('#status'), t(match.finished ? 'roundOver' : paused ? 'paused' : 'live'));
@@ -90,7 +93,7 @@ export function boot() {
     }
     const moment = selectMoment(match.events, match.time);
     $('#moment').hidden = paused || match.finished || !moment || match.time - moment.time > 1.8;
-    if (moment) { text($('#moment'), `${match.fighters[moment.fighter].name} · ${momentText(moment)}`); $('#moment').dataset.kind = moment.crit ? 'crit' : moment.type; }
+    if (moment) { text($('#moment'), `${match.fighters[momentActorId(moment)].name} · ${momentText(moment)}`); $('#moment').dataset.kind = moment.crit ? 'crit' : moment.type; }
     text($('#hits'), match.stats.hits);
     for (const key of ['crits', 'dominoes', 'heals']) text($(`#${key}`), match.stats[key]);
   }
