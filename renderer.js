@@ -109,6 +109,7 @@ export class Renderer {
     }
     c.textAlign = 'center'; c.fillStyle = e.type === 'heal' ? '#43845b' : e.crit ? '#ba7c1d' : '#a44735';
     c.font = `bold ${e.crit ? 26 : 15}px monospace`;
+    // Signature names use the single moment banner; keep the arena uncluttered.
     if (e.type !== 'hit' || e.crit) c.fillText(eventText(e), e.x, e.y - e.z - 95 - progress * 45);
     c.restore();
   }
@@ -161,11 +162,11 @@ export class Renderer {
     if (a.elapsed < move.windup * .7 || a.elapsed > move.activeEnd + .04) return;
     const points = [];
     for (let i = 0; i <= 6; i++) {
-      const pose = computePose({ ...f, attack: { ...a, elapsed: Math.max(0, a.elapsed - .045 * (1 - i / 6)) } });
+      const pose = computePose({ ...f, attack: { ...a, elapsed: Math.max(0, a.elapsed - (a.signature ? .085 : .045) * (1 - i / 6)) } });
       points.push(a.name === 'Kick' ? pose.front.tip : a.variant === 1 ? pose.off.tip : pose.main.tip);
     }
     const c = this.ctx; c.save(); c.globalAlpha *= .28;
-    this.line(points, f.color, a.name === 'Kick' ? 8 : 6); c.restore();
+    this.line(points, f.color, (a.name === 'Kick' ? 8 : 6) + (a.signature ? 3 : 0)); c.restore();
   }
   skeleton(p, f, ink) {
     this.line([p.shoulder, p.off.joint, p.off.tip], ink, 4);
@@ -212,7 +213,8 @@ export class Renderer {
     }
     const dashTrail = f.attack?.name === 'Dash' && f.attack.elapsed > .12 && f.attack.elapsed < .5;
     const hopTrail = f.attack?.name === 'JumpKick' && f.attack.elapsed > .05 && f.attack.elapsed < .28;
-    if (!this.reducedMotion.matches && (dashTrail || hopTrail)) {
+    const signatureTrail = f.attack?.signature && f.attack.elapsed >= f.getMove(f.attack.name).windup * .75 && f.attack.elapsed < (f.getMove(f.attack.name).activeEnd || .72);
+    if (!this.reducedMotion.matches && (dashTrail || hopTrail || signatureTrail)) {
       for (const lag of [.085, .045]) {
         const pose = computePose({ ...f, attack: { ...f.attack, elapsed: Math.max(0, f.attack.elapsed - lag) } });
         c.save(); c.globalAlpha = lag > .06 ? .08 : .18;
@@ -222,6 +224,10 @@ export class Renderer {
       }
     }
     c.save(); c.translate(f.x, sy); c.scale(scale * f.facing, scale); c.lineCap = 'round'; c.lineJoin = 'round';
+    if (f.alive && f.attack?.signature && f.attack.elapsed < f.getMove(f.attack.name).windup) {
+      c.save(); c.globalAlpha = .22; c.strokeStyle = f.color; c.lineWidth = 2;
+      c.beginPath(); c.ellipse(0, 0, 22 + f.attack.elapsed * 30, 7, 0, 0, Math.PI * 2); c.stroke(); c.restore();
+    }
     if (!f.alive && f.z === 0) c.translate(0, 37);
     c.translate(...p.hip); c.rotate(p.rotation); c.translate(-p.hip[0], -p.hip[1]);
     this.weaponTrail(f);
@@ -256,7 +262,7 @@ export class Renderer {
     const view = this.camera.frame(world, rect.width, rect.height, this.mobile.matches && !this.overview, this.reducedMotion.matches);
     c.setTransform(dpr, 0, 0, dpr, 0, 0);
     c.fillStyle = '#eae6d7'; c.fillRect(0, 0, rect.width, rect.height);
-    const shake = feedback?.offset(this.reducedMotion.matches) || { x: 0, y: 0 };
+    const shake = world.finished ? { x: 0, y: 0 } : feedback?.offset(this.reducedMotion.matches) || { x: 0, y: 0 };
     c.save(); c.translate(rect.width / 2 + shake.x, rect.height / 2 + shake.y); c.scale(view.scale, view.scale); c.translate(-view.x, -view.y);
     // Perspective lines and distant mountains are all procedural Canvas paths.
     c.fillStyle = '#d9dccf';

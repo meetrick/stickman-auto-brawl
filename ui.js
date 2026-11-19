@@ -88,7 +88,7 @@ export function boot() {
       text($('#result-first-out'), t('firstOutResult', { names: firstOutNames(match) }));
       $('#result-rankings').hidden = !match.finished;
     }
-    const moment = match.events.find(e => match.time - e.time < 1.8 && (e.crit || ['domino', 'heal', 'elimination'].includes(e.type)));
+    const moment = match.events.find(e => match.time - e.time < 1.8 && (e.crit || e.signature || ['domino', 'heal', 'elimination'].includes(e.type)));
     $('#moment').hidden = paused || match.finished || !moment || match.time - moment.time > 1.8;
     if (moment) { text($('#moment'), `${match.fighters[moment.fighter].name} · ${eventText(moment)}`); $('#moment').dataset.kind = moment.crit ? 'crit' : moment.type; }
     text($('#hits'), match.stats.hits);

@@ -81,6 +81,10 @@ Heavy uppercuts/throws receive a 25 ms presentation hit-stop; critical or signat
 
 ## Combat choreography
 
+Each style periodically upgrades its familiar attack into a signature animation: Ninja **Shadow Kick**, Boxing **Dynamite Hook**, Judo **Hip Throw**, and Kickboxing **Spinning Heel**. After 1.5 seconds of fighter age, every third use of the matching move can become a signature when its seven-second reuse gate is clear. Signatures use longer, explicit windup/contact/recovery timing, two restrained pose afterimages, and a longer fist/foot trail. The Judo victim visibly rotates across the hip before release. The attacker stays grounded; no full-body flips or extra jumps are introduced.
+
+Signature contacts use the same damage and knockback values as their base attack and retain the normal 10% critical roll. Windups can be interrupted, missed signatures deal no damage, and interrupted holds release the victim. A localized signature name uses the existing single moment banner rather than adding more floating labels. Tests exercise all four signature contacts, interruptibility, cooldowns, IK lengths, bounded body rotation, and natural signature use across 32 full matches.
+
 Normal matches use original procedural jab/cross, side-kick, dash, short-hop kick, uppercut, and lift-and-throw poses. Jabs and rear-hand crosses alternate torso loading and extension, then finish with a planted side kick. End-effector trails follow the fist/foot path. Grounded victims recoil through their chest and head while keeping their feet planted; landing bends the knees before recovery. Jump kicks stay upright, use a low ballistic hop, and have a 3.5-second reuse delay plus landing recovery.
 
 The grounded exchange direction was requested with the [Stickman Fighter Epic Battle reference](https://poki.com/kr/g/stickman-fighter-epic-battle). No assets or source were copied. Legacy weapon choreography remains in isolated regression tests, but weapons never spawn in browser matches.
