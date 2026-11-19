@@ -51,7 +51,7 @@ test('chaos demo still produces real dominoes without floor traps', () => {
 });
 test('many complete random matches stay finite and produce unscripted chaos', () => {
   const totals = { dominoes: 0, heals: 0, crits: 0 };
-  const moves = { Dash: 0, JumpKick: 0, Uppercut: 0, Grab: 0 };
+  const moves = { Dash: 0, Uppercut: 0, Grab: 0 };
   for (let seed = 0; seed < 32; seed++) {
     const w = new Match(seed);
     for (let tick = 0; tick < 10810 && !w.finished; tick++) w.update();

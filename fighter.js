@@ -8,8 +8,8 @@ export const MOVES = Object.freeze({
   Kick: { damage: 11, knockback: 230, lift: 0, reach: 85, engage: 90, windup: .18, activeEnd: .29, duration: .46 },
   Dash: { damage: 10, knockback: 300, lift: 0, reach: 54, engage: 240, windup: .12, duration: .52 },
   JumpKick: { damage: 14, knockback: 300, lift: 0, reach: 83, engage: 135, windup: .14, activeEnd: .28, duration: .48 },
-  Uppercut: { damage: 12, knockback: 195, lift: 285, reach: 62, engage: 62, windup: .23, duration: .58 },
-  Grab: { damage: 16, knockback: 400, lift: 255, reach: 55, engage: 55, windup: .16, duration: .86 },
+  Uppercut: { damage: 12, knockback: 195, lift: 0, reach: 62, engage: 62, windup: .23, duration: .58 },
+  Grab: { damage: 16, knockback: 400, lift: 145, reach: 55, engage: 55, windup: .16, duration: .86 },
   WeaponStrike: WEAPONS.Sword.strike,
 });
 export const COLORS = ['#bf473b', '#438477', '#b98935', '#697ea0', '#95618a', '#5e7443', '#c27443', '#577f8b'];

@@ -28,8 +28,8 @@ English is the first-visit default. The header language button and setup selecto
 - HP 80–130, base speed 90–155, power 0.8–1.25×, random favored attacks and tempo.
 - Random Ninja, Boxing, Judo, Kickboxing, or Taekwondo disciplines affect attack weights, punch follow-ups, and recovery footwork independently of personality.
 - Aggressive, Cowardly, Brawler, and Trickster personalities; Walker, Runner, and stamina-limited Sprinter movement.
-- Grounded jab/cross Punch chains into Kick, a braking Dash, a short-hop JumpKick, Uppercut, and a physical lift-and-throw Grab, with no weapon attacks in normal matches.
-- All fighters start and remain unarmed. Cowards retreat with alternating lateral steps and short grounded bursts instead of repeatedly jumping, then commit to fighting when only two participants remain. Ordinary hits recoil on the floor; uppercuts and throws retain launch physics.
+- Grounded jab/cross Punch chains into Kick, a braking Dash, a grounded Uppercut, and a low physical lift-and-throw Grab. Normal AI never selects JumpKick; the legacy move remains available to direct physics tests. There are no weapon attacks in normal matches.
+- All fighters start and remain unarmed. Cowards retreat with alternating lateral steps and short grounded bursts instead of repeatedly jumping, then commit to fighting when only two participants remain. Ordinary hits and uppercuts recoil on the floor; throws retain a short, low flight for collateral collisions.
 - Each attack has a 10% critical roll: 3× damage and 2× knockback. Cleave victims share the attack's critical roll.
 - Thrown and knocked bodies can bowl over standing fighters, including airborne KO bodies. Swept collision checks prevent tunneling and repeated damage to the same victim during one flight.
 - Open floor: no rotating poles or walls interrupt the fight.
@@ -100,7 +100,7 @@ Each style periodically upgrades its familiar attack into a signature animation:
 
 Signature contacts use the same damage and knockback values as their base attack and retain the normal 10% critical roll. Windups can be interrupted, missed signatures deal no damage, and interrupted holds release the victim. Technique names remain available in the collapsed combat notes. The arena keeps impact flashes and trails, but no floating attack names. Its single brief banner prioritizes eliminations and otherwise shows only a connected combo finisher, without naming the technique. Tests exercise all five signature contacts, interruptibility, cooldowns, IK lengths, bounded body rotation, and natural signature use across 32 full matches.
 
-Normal matches use original procedural jab/cross, side-kick, dash, short-hop kick, uppercut, and lift-and-throw poses. Jabs and rear-hand crosses alternate torso loading and extension, then finish with a planted side kick. End-effector trails follow the fist/foot path. Grounded victims recoil through their chest and head while keeping their feet planted; landing bends the knees before recovery. Jump kicks stay upright, use a low ballistic hop, and have a 3.5-second reuse delay plus landing recovery.
+Normal matches use original procedural jab/cross, side-kick, dash, grounded uppercut, and low lift-and-throw poses. Jabs and rear-hand crosses alternate torso loading and extension, then finish with a planted side kick. End-effector trails follow the fist/foot path. Grounded victims recoil through their chest and head while keeping their feet planted; landing bends the knees before recovery. The legacy JumpKick remains upright with a low ballistic hop and a 3.5-second reuse delay plus landing recovery, but no normal AI discipline selects it.
 
 The grounded exchange direction was requested with the [Stickman Fighter Epic Battle reference](https://poki.com/kr/g/stickman-fighter-epic-battle). No assets or source were copied. Legacy weapon choreography remains in isolated regression tests, but weapons never spawn in browser matches.
 

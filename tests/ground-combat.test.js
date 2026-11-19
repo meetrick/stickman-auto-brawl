@@ -10,7 +10,7 @@ function pair() {
   return { w, a, b };
 }
 test('ordinary punches, kicks, dashes and light weapons recoil on the floor', () => {
-  for (const name of ['Punch', 'Kick', 'Dash', 'JumpKick', 'WeaponStrike']) {
+  for (const name of ['Punch', 'Kick', 'Dash', 'JumpKick', 'Uppercut', 'WeaponStrike']) {
     const { w, a, b } = pair(); a.weapon = 'Sword';
     a.hit(b, w, name);
     assert.equal(b.z, 0); assert.equal(b.vz, 0); assert.equal(b.state, 'hit');
@@ -36,7 +36,7 @@ test('jump kick is a short hop with landing recovery and cannot immediately repe
   for (let i = 0; i < 420; i++) a.update(STEP, w);
   a.cooldown = 0; assert.equal(a.startAttack('JumpKick', b), true);
 });
-test('seeded rounds favor grounded exchanges while keeping every special move', () => {
+test('seeded rounds remove voluntary jumps while retaining grounded specials and low throws', () => {
   let airborne = 0, samples = 0; const moves = {};
   for (let seed = 1; seed <= 32; seed++) {
     const w = new Match(seed);
@@ -47,9 +47,9 @@ test('seeded rounds favor grounded exchanges while keeping every special move', 
     assert.equal(w.finished, true);
     for (const [name, n] of Object.entries(w.stats.moves || {})) moves[name] = (moves[name] || 0) + n;
   }
-  assert.ok(airborne / samples < .15);
-  assert.ok(moves.Punch + moves.Kick > moves.JumpKick * 4);
-  for (const name of ['Dash', 'JumpKick', 'Uppercut', 'Grab']) assert.ok(moves[name] > 5, name);
+  assert.ok(airborne / samples < .05);
+  assert.equal(moves.JumpKick, 0);
+  for (const name of ['Dash', 'Uppercut', 'Grab']) assert.ok(moves[name] > 5, name);
 });
 
 test('the final two commit to fighting instead of fleeing around an empty arena', () => {
