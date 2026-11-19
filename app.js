@@ -1,12 +1,12 @@
-import { Fighter } from './fighter.js?v=20261119-tactical-ai';
-import { seededRandom } from './random.js?v=20261119-tactical-ai';
-import { resolveDominoes } from './collisions.js?v=20261119-tactical-ai';
-import { HazardManager } from './hazards.js?v=20261119-tactical-ai';
-import { Arena } from './arena.js?v=20261119-tactical-ai';
-import { normalizeCount, normalizeName } from './settings.js?v=20261119-tactical-ai';
-import { normalizeStyle } from './styles.js?v=20261119-tactical-ai';
-import { CrowdNavigation } from './navigation.js?v=20261119-tactical-ai';
-import { normalizePersonality } from './brain.js?v=20261119-tactical-ai';
+import { Fighter } from './fighter.js?v=20261119-headline';
+import { seededRandom } from './random.js?v=20261119-headline';
+import { resolveDominoes } from './collisions.js?v=20261119-headline';
+import { HazardManager } from './hazards.js?v=20261119-headline';
+import { Arena } from './arena.js?v=20261119-headline';
+import { normalizeCount, normalizeName } from './settings.js?v=20261119-headline';
+import { normalizeStyle } from './styles.js?v=20261119-headline';
+import { CrowdNavigation } from './navigation.js?v=20261119-headline';
+import { normalizePersonality } from './brain.js?v=20261119-headline';
 
 export const STEP = 1 / 120;
 export class Match {

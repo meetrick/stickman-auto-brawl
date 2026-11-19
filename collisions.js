@@ -1,4 +1,4 @@
-import { clamp } from './random.js?v=20261119-tactical-ai';
+import { clamp } from './random.js?v=20261119-headline';
 
 // Swept relative AABB: check floor depth and physical height separately.
 // A jump high over someone's head must never count as a body collision.

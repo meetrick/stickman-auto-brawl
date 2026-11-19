@@ -1,9 +1,9 @@
-import { clamp, range } from './random.js?v=20261119-tactical-ai';
-import { WEAPONS } from './weapons.js?v=20261119-tactical-ai';
-import { STYLE_NAMES, styleProfile } from './styles.js?v=20261119-tactical-ai';
-import { beginDefense, updateDefense, reactToThreat, defenseContact } from './defense.js?v=20261119-tactical-ai';
-import { PERSONALITIES, chooseOpponent, retreatGoal, planBehavior } from './brain.js?v=20261119-tactical-ai';
-export { PERSONALITIES } from './brain.js?v=20261119-tactical-ai';
+import { clamp, range } from './random.js?v=20261119-headline';
+import { WEAPONS } from './weapons.js?v=20261119-headline';
+import { STYLE_NAMES, styleProfile } from './styles.js?v=20261119-headline';
+import { beginDefense, updateDefense, reactToThreat, defenseContact } from './defense.js?v=20261119-headline';
+import { PERSONALITIES, chooseOpponent, retreatGoal, planBehavior } from './brain.js?v=20261119-headline';
+export { PERSONALITIES } from './brain.js?v=20261119-headline';
 
 export const MOVES = Object.freeze({
   Punch: { damage: 6, knockback: 65, lift: 0, reach: 65, engage: 70, windup: .10, activeEnd: .17, duration: .28 },

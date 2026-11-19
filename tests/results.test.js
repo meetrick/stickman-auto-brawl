@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match } from '../app.js?v=20261119-tactical-ai';
-import { firstOutNames, rankLabel, standingsMarkup, eliminationMarkup } from '../results.js?v=20261119-tactical-ai';
-import { setLanguage, eventText } from '../i18n.js?v=20261119-tactical-ai';
+import { Match } from '../app.js?v=20261119-headline';
+import { firstOutNames, rankLabel, standingsMarkup, eliminationMarkup } from '../results.js?v=20261119-headline';
+import { setLanguage, eventText } from '../i18n.js?v=20261119-headline';
 
 test('standings and timeline escape names and retain participant numbers for identical names', () => {
   const w = new Match(2, 4, { names: ['<img src=x>', 'Alice', 'Alice', '끝'] });

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match, STEP } from '../app.js?v=20261119-tactical-ai';
+import { Match, STEP } from '../app.js?v=20261119-headline';
 
 function quiet(count = 4) {
   const w = new Match(12, count);

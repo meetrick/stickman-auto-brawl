@@ -1,4 +1,4 @@
-import { clamp } from './random.js?v=20261119-tactical-ai';
+import { clamp } from './random.js?v=20261119-headline';
 
 export const PERSONALITIES = ['Aggressive', 'Cowardly', 'Brawler', 'Trickster', 'Opportunist', 'Counterfighter'];
 export const normalizePersonality = value => PERSONALITIES.includes(value) ? value : 'Random';

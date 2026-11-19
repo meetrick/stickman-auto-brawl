@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match } from '../app.js?v=20261119-tactical-ai';
-import { resolveDominoes, sweptBodies } from '../collisions.js?v=20261119-tactical-ai';
+import { Match } from '../app.js?v=20261119-headline';
+import { resolveDominoes, sweptBodies } from '../collisions.js?v=20261119-headline';
 
 function scene() {
   const w = new Match(1, 3);

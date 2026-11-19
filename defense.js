@@ -1,4 +1,4 @@
-import { range } from './random.js?v=20261119-tactical-ai';
+import { range } from './random.js?v=20261119-headline';
 
 export const DEFENSE_PROFILES = {
   Ninja: { reaction: .46, guard: .15, speed: 300 },

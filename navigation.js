@@ -1,5 +1,5 @@
-import { clamp } from './random.js?v=20261119-tactical-ai';
-import { styleProfile } from './styles.js?v=20261119-tactical-ai';
+import { clamp } from './random.js?v=20261119-headline';
+import { styleProfile } from './styles.js?v=20261119-headline';
 
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 // Only free footwork participates. Throws, recoil, dodges and settled bodies
