@@ -1,6 +1,6 @@
 export const MESSAGES = {
   watch: ['JUST WATCH.', '편하게 관전하세요.'], eyebrow: ['A SPECTATOR SPORT', '보는 재미로 즐기는 격투'],
-  titleA: ['Small sticks.', '작은 스틱맨.'], titleB: ['Big consequences.', '예측 불가 한판.'],
+  titleA: ['Who will survive?', '누가 살아남을까?'], titleB: ['Let’s brawl!', '한판 붙어보자!'],
   intro: ['Fighters enter. Physics takes it personally.', '스틱맨들이 모이면, 예측 불가의 격투가 시작됩니다.'],
   newMatch: ['New match', '새 경기'], pause: ['Ⅱ Pause', 'Ⅱ 일시정지'], resume: ['▶ Resume', '▶ 계속'],
   speed: ['{speed}× Speed', '{speed}배속'], speedLabel: ['Playback speed: {speed} times', '재생 속도: {speed}배'],

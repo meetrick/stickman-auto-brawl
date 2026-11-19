@@ -1,9 +1,9 @@
-import { SpectatorCamera } from './camera.js?v=20261119-tactical-ai';
-import { clamp } from './random.js?v=20261119-tactical-ai';
-import { barPoint } from './arena.js?v=20261119-tactical-ai';
-import { computePose, projectPose } from './pose.js?v=20261119-tactical-ai';
-import { WEAPONS } from './weapons.js?v=20261119-tactical-ai';
-import { t, eventText } from './i18n.js?v=20261119-tactical-ai';
+import { SpectatorCamera } from './camera.js?v=20261119-headline';
+import { clamp } from './random.js?v=20261119-headline';
+import { barPoint } from './arena.js?v=20261119-headline';
+import { computePose, projectPose } from './pose.js?v=20261119-headline';
+import { WEAPONS } from './weapons.js?v=20261119-headline';
+import { t, eventText } from './i18n.js?v=20261119-headline';
 const INK = '#292b27';
 export class Renderer {
   constructor(canvas) {

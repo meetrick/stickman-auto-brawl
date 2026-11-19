@@ -1,12 +1,12 @@
-import { Match, STEP } from './app.js?v=20261119-tactical-ai';
-import { Renderer } from './renderer.js?v=20261119-tactical-ai';
-import { COLORS } from './fighter.js?v=20261119-tactical-ai';
-import { MIN_FIGHTERS, MAX_FIGHTERS, SETTINGS_KEY, normalizePreferences, loadPreferences, savePreferences, escapeHTML } from './settings.js?v=20261119-tactical-ai';
-import { t, eventText, watchMomentText, setLanguage, getLanguage } from './i18n.js?v=20261119-tactical-ai';
-import { firstOutNames, standingsMarkup, eliminationMarkup } from './results.js?v=20261119-tactical-ai';
-import { STYLE_NAMES } from './styles.js?v=20261119-tactical-ai';
-import { ImpactFeedback, selectMoment, momentActorId } from './impact.js?v=20261119-tactical-ai';
-import { PERSONALITIES } from './brain.js?v=20261119-tactical-ai';
+import { Match, STEP } from './app.js?v=20261119-headline';
+import { Renderer } from './renderer.js?v=20261119-headline';
+import { COLORS } from './fighter.js?v=20261119-headline';
+import { MIN_FIGHTERS, MAX_FIGHTERS, SETTINGS_KEY, normalizePreferences, loadPreferences, savePreferences, escapeHTML } from './settings.js?v=20261119-headline';
+import { t, eventText, watchMomentText, setLanguage, getLanguage } from './i18n.js?v=20261119-headline';
+import { firstOutNames, standingsMarkup, eliminationMarkup } from './results.js?v=20261119-headline';
+import { STYLE_NAMES } from './styles.js?v=20261119-headline';
+import { ImpactFeedback, selectMoment, momentActorId } from './impact.js?v=20261119-headline';
+import { PERSONALITIES } from './brain.js?v=20261119-headline';
 
 export function boot() {
   const $ = selector => document.querySelector(selector), renderer = new Renderer($('canvas'));

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match, STEP } from '../app.js?v=20261119-tactical-ai';
-import { chooseOpponent, retreatGoal, planBehavior, PERSONALITIES } from '../brain.js?v=20261119-tactical-ai';
+import { Match, STEP } from '../app.js?v=20261119-headline';
+import { chooseOpponent, retreatGoal, planBehavior, PERSONALITIES } from '../brain.js?v=20261119-headline';
 
 function setup(role = 'Aggressive') {
   const w = new Match(12, 3, { styles: Array(3).fill('Taekwondo') }), [f, a, b] = w.fighters;
