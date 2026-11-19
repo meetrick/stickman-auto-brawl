@@ -73,6 +73,12 @@ Each participant can use **Random style**, **Ninja**, **Boxing**, **Judo**, or *
 
 These are stylized procedural game disciplines rather than sporting-rule simulations. Styles affect choices, combinations, footwork, and presentation; they do not directly multiply HP, attack damage, or movement speed. Random base stats and personality remain independent. A follow-up requires contact, range, and recovery, and a hit cancels pending combinations. Short-hop cooldowns and grounded-combat limits still apply. Pure pose sampling consumes no simulation RNG. Fixed style selections still consume the normal spawn style roll, so they cannot shift another participant's base stat rolls.
 
+## Defense and counters
+
+Fighters can react once to a targeted incoming windup. Style and personality influence whether they try a frontal guard or grounded dodge. Defense costs stamina, has startup/recovery exposure, and shares a 1.15–1.65 second reuse gate. It cannot start while attacking, stunned, airborne, held, or low on stamina.
+
+A successful frontal guard covers one contact, takes 25% chip damage and 22% horizontal push, and prevents launch. Grabs and rear attacks bypass it; critical, signature, and dash contacts break it while retaining some damage reduction. A dodge's brief active window avoids only the specific attack it read, once; another attacker, a new attack, grabs, or a flying body remain dangerous. Dodged and successfully blocked attacks cannot open the attacker's connected combo. Successful defense opens a short counter opportunity rather than a guaranteed hit. The defender must recover and remain in range.
+
 ## Impact feedback
 
 Heavy uppercuts/throws receive a 25 ms presentation hit-stop; critical or signature contacts receive 45 ms. A shared 200 ms gate prevents overlapping contacts from stacking freezes. A short expanding contact ring and damped Canvas shake (at most 2.2 CSS pixels horizontally) emphasize the hit. Light jabs do not stop play. Reduced-motion preference disables hit-stop, shake, and the expanding ring.
