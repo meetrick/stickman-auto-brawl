@@ -5,6 +5,7 @@ export const DEFENSE_PROFILES = {
   Boxing: { reaction: .40, guard: .72, speed: 225 },
   Judo: { reaction: .34, guard: .65, speed: 230 },
   Kickboxing: { reaction: .38, guard: .55, speed: 250 },
+  Taekwondo: { reaction: .40, guard: .35, speed: 270 },
 };
 
 export function beginDefense(f, kind, threat, world) {

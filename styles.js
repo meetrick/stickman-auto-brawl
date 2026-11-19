@@ -12,6 +12,9 @@ export const STYLES = Object.freeze({
   Kickboxing: { preferred: 'Kick', flank: .25, recovery: .10, sideStep: 30,
     signature: { move: 'Kick', text: 'SPINNING HEEL!', timing: { windup: .29, activeEnd: .43, duration: .76 } },
     weights: { Punch: 4, Kick: 7, Dash: 1, JumpKick: .35, Uppercut: 1, Grab: .3 }, combo: ['Punch', 'Kick'] },
+  Taekwondo: { preferred: 'Kick', flank: .35, recovery: .12, sideStep: 45, comboStarter: 'Kick',
+    signature: { move: 'Kick', text: 'SPINNING HOOK KICK!', timing: { windup: .27, activeEnd: .42, duration: .72 } },
+    weights: { Punch: 1, Kick: 10, Dash: .6, JumpKick: .4, Uppercut: 0, Grab: 0 }, combo: ['Kick', 'Kick'] },
 });
 export const STYLE_NAMES = Object.keys(STYLES);
 export function normalizeStyle(value) { return STYLE_NAMES.includes(value) ? value : 'Random'; }

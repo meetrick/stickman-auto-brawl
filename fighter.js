@@ -243,7 +243,7 @@ export class Fighter {
     if (a.elapsed >= move.duration) {
       this.releaseGrab(world); this.attack = null; this.cooldown = range(world.rng, .22, .55) * this.tempo;
       const profile = styleProfile(this.style), step = this.comboStep || 0;
-      if (a.connected && step < profile.combo.length && a.name === (step === 0 ? 'Punch' : profile.combo[step - 1])) {
+      if (a.connected && step < profile.combo.length && a.name === (step === 0 ? profile.comboStarter || 'Punch' : profile.combo[step - 1])) {
         this.comboStep = (this.comboStep || 0) + 1;
         this.followUp = profile.combo[step];
         this.followUpUntil = world.time + .65; this.cooldown = .045;
