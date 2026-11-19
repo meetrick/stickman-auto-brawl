@@ -1,4 +1,10 @@
 // Presentation time only. Never mutates a match or consumes its seeded RNG.
+export function selectMoment(events, time) {
+  const fresh = events.filter(event => time - event.time >= 0 && time - event.time < 1.8);
+  return fresh.find(event => event.signature) || fresh.find(event => event.type === 'elimination')
+    || fresh.find(event => event.crit) || fresh.find(event => ['domino', 'heal'].includes(event.type)) || null;
+}
+
 export class ImpactFeedback {
   constructor() { this.reset(); }
   reset() { this.seen = new WeakSet(); this.clock = 0; this.stop = 0; this.nextAt = 0; this.impulse = null; }

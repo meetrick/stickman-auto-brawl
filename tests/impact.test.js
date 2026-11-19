@@ -21,3 +21,14 @@ test('feedback is bounded, reduced-motion safe, resettable and never changes rep
  f.observe([{type:'hit',crit:true}]);assert.equal(f.advance(.01,true),.01);assert.equal(f.stop,0);
  assert.deepEqual(f.offset(true),{x:0,y:0});assert.equal(f.observe([{type:'hit',crit:true}],true),false);
 });
+
+test('signature callouts survive newer routine events, expire, and retain localized critical names',async()=>{
+ const {selectMoment}=await import('../impact.js');const {momentText,setLanguage}=await import('../i18n.js');
+ const signature={time:1,type:'hit',signature:'DYNAMITE HOOK!',crit:true,text:'CRIT!'};
+ const elimination={time:1.3,type:'elimination'};
+ const events=[{time:1.5,type:'heal'},elimination,{time:1.2,type:'hit',crit:true},signature];
+ assert.equal(selectMoment(events,1.5),signature);assert.equal(selectMoment(events,2.9),elimination);
+ assert.equal(selectMoment(events,4),null);assert.equal(selectMoment([{...signature,time:10}],1),null);
+ setLanguage('en');assert.equal(momentText(signature),'DYNAMITE HOOK! · CRIT!');
+ setLanguage('ko');assert.equal(momentText(signature),'다이너마이트 훅! · 치명타!');setLanguage('en');
+});

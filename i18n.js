@@ -86,3 +86,6 @@ export function eventText(event) {
   const heal = /^\+(\d+) HP$/.exec(event.text || '');
   return heal ? t('healText', { amount: heal[1] }) : t(event.text || event.type);
 }
+export function momentText(event) {
+  return event.signature ? `${t(event.signature)}${event.crit ? ` · ${t('CRIT!')}` : ''}` : eventText(event);
+}
