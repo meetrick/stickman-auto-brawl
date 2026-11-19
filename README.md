@@ -6,7 +6,7 @@ A mobile-first HTML5 Canvas spectator auto-battler for 2–12 procedural fighter
 
 ## Run and test
 
-Requires Node.js 20.11 or later. No installation or build step is needed.
+Requires Node.js 20.11 or later. No installation or build step is needed. The HTML entry calls UI boot once, with a shared release query on module imports so existing browsers fetch a consistent action-module release. Keep that query aligned in the HTML, runtime imports, and Node tests when updating the release.
 
 ```sh
 npm start

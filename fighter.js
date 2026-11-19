@@ -1,7 +1,7 @@
-import { clamp, range } from './random.js';
-import { WEAPONS } from './weapons.js';
-import { STYLE_NAMES, styleProfile } from './styles.js';
-import { beginDefense, updateDefense, reactToThreat, defenseContact } from './defense.js';
+import { clamp, range } from './random.js?v=20261119-fight-camera';
+import { WEAPONS } from './weapons.js?v=20261119-fight-camera';
+import { STYLE_NAMES, styleProfile } from './styles.js?v=20261119-fight-camera';
+import { beginDefense, updateDefense, reactToThreat, defenseContact } from './defense.js?v=20261119-fight-camera';
 
 export const MOVES = Object.freeze({
   Punch: { damage: 6, knockback: 65, lift: 0, reach: 65, engage: 70, windup: .10, activeEnd: .17, duration: .28 },

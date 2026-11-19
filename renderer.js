@@ -1,9 +1,9 @@
-import { SpectatorCamera } from './camera.js';
-import { clamp } from './random.js';
-import { barPoint } from './arena.js';
-import { computePose } from './pose.js';
-import { WEAPONS } from './weapons.js';
-import { t, eventText } from './i18n.js';
+import { SpectatorCamera } from './camera.js?v=20261119-fight-camera';
+import { clamp } from './random.js?v=20261119-fight-camera';
+import { barPoint } from './arena.js?v=20261119-fight-camera';
+import { computePose } from './pose.js?v=20261119-fight-camera';
+import { WEAPONS } from './weapons.js?v=20261119-fight-camera';
+import { t, eventText } from './i18n.js?v=20261119-fight-camera';
 const INK = '#292b27';
 export class Renderer {
   constructor(canvas) {

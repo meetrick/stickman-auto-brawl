@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Match,STEP} from '../app.js';
-import {computePose} from '../pose.js';
-import {STYLE_NAMES} from '../styles.js';
-import {ImpactFeedback,selectMoment} from '../impact.js';
+import {Match,STEP} from '../app.js?v=20261119-fight-camera';
+import {computePose} from '../pose.js?v=20261119-fight-camera';
+import {STYLE_NAMES} from '../styles.js?v=20261119-fight-camera';
+import {ImpactFeedback,selectMoment} from '../impact.js?v=20261119-fight-camera';
 function setup(){
  const w=new Match(12,3),[f,a,c]=w.fighters;
  Object.assign(f,{x:500,y:400,cooldown:1,personality:'Cowardly',style:'Ninja'});

@@ -1,10 +1,10 @@
-import { Fighter } from './fighter.js';
-import { seededRandom } from './random.js';
-import { resolveDominoes } from './collisions.js';
-import { HazardManager } from './hazards.js';
-import { Arena } from './arena.js';
-import { normalizeCount, normalizeName } from './settings.js';
-import { normalizeStyle } from './styles.js';
+import { Fighter } from './fighter.js?v=20261119-fight-camera';
+import { seededRandom } from './random.js?v=20261119-fight-camera';
+import { resolveDominoes } from './collisions.js?v=20261119-fight-camera';
+import { HazardManager } from './hazards.js?v=20261119-fight-camera';
+import { Arena } from './arena.js?v=20261119-fight-camera';
+import { normalizeCount, normalizeName } from './settings.js?v=20261119-fight-camera';
+import { normalizeStyle } from './styles.js?v=20261119-fight-camera';
 
 export const STEP = 1 / 120;
 export class Match {
@@ -83,5 +83,3 @@ export class Match {
     }
   }
 }
-
-if (typeof document !== 'undefined') import('./ui.js').then(({ boot }) => boot());

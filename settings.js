@@ -1,5 +1,5 @@
-import { NAMES } from './fighter.js';
-import { normalizeStyle } from './styles.js';
+import { NAMES } from './fighter.js?v=20261119-fight-camera';
+import { normalizeStyle } from './styles.js?v=20261119-fight-camera';
 
 export const SETTINGS_KEY = 'stickman-auto-brawl.preferences.v1';
 export const MIN_FIGHTERS = 2, MAX_FIGHTERS = 12, MAX_NAME_LENGTH = 16;

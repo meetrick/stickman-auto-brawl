@@ -83,6 +83,9 @@
     <div class="setup-footer"><button type="button" id="setup-cancel" data-i18n="cancel">Cancel</button><button type="submit" class="start-button" data-i18n="start">Start match</button></div>
   </form>
 </dialog>
-<script type="module" src="app.js"></script>
+<script type="module">
+  import { boot } from './ui.js?v=20261119-fight-camera';
+  boot();
+</script>
 </body>
 </html>
