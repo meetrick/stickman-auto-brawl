@@ -5,9 +5,11 @@ import { MIN_FIGHTERS, MAX_FIGHTERS, SETTINGS_KEY, normalizePreferences, loadPre
 import { t, eventText, setLanguage, getLanguage } from './i18n.js';
 import { firstOutNames, standingsMarkup, eliminationMarkup } from './results.js';
 import { STYLE_NAMES } from './styles.js';
+import { ImpactFeedback } from './impact.js';
 
 export function boot() {
   const $ = selector => document.querySelector(selector), renderer = new Renderer($('canvas'));
+  const feedback = new ImpactFeedback();
   let storage = null;
   try { storage = window.localStorage; } catch { /* Storage may be disabled in private/embedded browsers. */ }
   let preferences = loadPreferences(storage), draftNames = [...preferences.names], draftStyles = [...preferences.styles];
@@ -39,6 +41,7 @@ export function boot() {
     match = new Match(seed, setup.count, { showcase, names: setup.names, styles: setup.styles }); paused = false; accumulator = 0;
     renderer.camera.reset(); renderer.dirty = true; renderer.nameLabels?.clear(); lastEvent = null; tools.open = false;
     lastRankingKey = null; resultsShown = false; $('#rankings-panel').open = false;
+    feedback.reset();
     text($('#seed'), String(match.seed).padStart(6, '0')); $('#pause').setAttribute('aria-pressed', 'false');
     renderRoster(); updateCameraLabel(); updateUI();
   }
@@ -85,7 +88,7 @@ export function boot() {
       text($('#result-first-out'), t('firstOutResult', { names: firstOutNames(match) }));
       $('#result-rankings').hidden = !match.finished;
     }
-    const moment = match.events.find(e => match.time - e.time < 1.8 && (e.crit || ['domino', 'heal', 'elimination'].includes(e.type)));
+    const moment = match.events.find(e => match.time - e.time < 1.8 && (e.crit || e.signature || ['domino', 'heal', 'elimination'].includes(e.type)));
     $('#moment').hidden = paused || match.finished || !moment || match.time - moment.time > 1.8;
     if (moment) { text($('#moment'), `${match.fighters[moment.fighter].name} · ${eventText(moment)}`); $('#moment').dataset.kind = moment.crit ? 'crit' : moment.type; }
     text($('#hits'), match.stats.hits);
@@ -167,8 +170,14 @@ export function boot() {
     if (!document.hidden) {
       let advanced = false;
       const running = !paused && !match.finished && !dialog.open;
-      if (running) { accumulator += elapsed * speed; while (accumulator >= STEP) { match.update(); accumulator -= STEP; advanced = true; } }
-      if (advanced || running || renderer.dirty) renderer.draw(match);
+      if (running) {
+        accumulator += feedback.advance(elapsed, renderer.reducedMotion.matches) * speed;
+        while (accumulator >= STEP) {
+          match.update(); accumulator -= STEP; advanced = true;
+          if (feedback.observe(match.events, renderer.reducedMotion.matches)) { accumulator = 0; break; }
+        }
+      }
+      if (advanced || running || renderer.dirty) renderer.draw(match, feedback);
       uiClock += elapsed; if (uiClock > .1) { updateUI(); uiClock = 0; }
     }
     requestAnimationFrame(frame);

@@ -32,6 +32,43 @@ const ROUNDHOUSE = [
   [.79, .13, 8, 16, -21, -4, -17, -3, -25, -21, 0],
   [1, .02, 6, 19, -20, -4, -17, 27, 0, -25, 0],
 ];
+export const SIGNATURE_TRACKS = {
+  Ninja: [
+    [0, -.15, 14, 18, -7, -22, 13, 26, 0, -24, 0],
+    [.25, -.5, 25, -6, -6, -27, 12, 12, -20, -24, 0],
+    [.345, -.4, 8, -19, -18, -30, 6, 53, -43, -14, 0],
+    [.55, -.25, 10, -13, -12, -25, 10, 50, -37, -17, 0],
+    [.78, .2, 19, 25, -7, -19, 12, 14, -20, -24, 0],
+    [1, -.12, 13, 22, -5, -22, 12, 26, 0, -24, 0],
+  ],
+  Boxing: [
+    [0, .1, 7, 16, -24, 1, -21, 20, 0, -23, 0],
+    [.2, -.45, 22, -22, 9, 8, -24, 22, 0, -24, 0],
+    [.31, -.3, 19, -14, -18, 5, -24, 24, 0, -24, 0],
+    [.385, .65, 5, 44, -13, 3, -23, 29, 0, -23, 0],
+    [.54, .5, 6, 27, -29, 1, -22, 28, 0, -22, 0],
+    [.78, .12, 9, 13, -24, 0, -21, 23, 0, -23, 0],
+    [1, .12, 7, 16, -24, 1, -21, 20, 0, -23, 0],
+  ],
+  Judo: [
+    [0, .12, 12, 32, -4, 23, 9, 26, 0, -26, 0],
+    [.2, .44, 13, 43, 2, 35, 10, 28, 0, -24, 0],
+    [.39, -.62, 28, 12, -7, 24, 3, 12, 0, -28, 0],
+    [.54, -.4, 24, 20, -12, 29, -3, 19, 0, -26, 0],
+    [.67, 1.05, 15, 42, 16, 30, 27, 33, 0, -24, 0],
+    [.81, .72, 23, 29, 30, 19, 31, 31, 0, -24, 0],
+    [1, .12, 12, 32, -4, 23, 9, 26, 0, -26, 0],
+  ],
+  Kickboxing: [
+    [0, .02, 6, 19, -20, -4, -17, 27, 0, -25, 0],
+    [.2, -.35, 13, 14, -22, -20, -9, -8, -28, -20, 0],
+    [.32, -.5, 10, -11, -20, -26, 6, 18, -43, -14, 0],
+    [.385, -.35, 5, -18, -17, -25, 11, 55, -56, -12, 0],
+    [.54, .16, 7, 12, -18, -20, -11, 42, -43, -17, 0],
+    [.77, .28, 12, 20, -22, -4, -17, -11, -22, -22, 0],
+    [1, .02, 6, 19, -20, -4, -17, 27, 0, -25, 0],
+  ],
+};
 // End-effector tracks, independently authored for this unarmed auto-brawler.
 // [time, lean, crouch, main hand XY, off hand XY, front foot XY, back foot XY]
 export const TRACKS = {
@@ -191,7 +228,7 @@ export function computePose(f) {
   }
   if (f.attack) {
     const weaponKeys = f.weapon === 'Sword' && f.attack.variant === 1 ? SWORD_RISING : WEAPON_TRACKS[f.weapon];
-    const keys = f.attack.name === 'WeaponStrike' ? weaponKeys || TRACKS.WeaponStrike
+    const keys = f.attack.signature ? SIGNATURE_TRACKS[f.style] || TRACKS[f.attack.name] : f.attack.name === 'WeaponStrike' ? weaponKeys || TRACKS.WeaponStrike
       : STYLE_TRACKS[f.style]?.[f.attack.name] || (f.style === 'Kickboxing' && f.attack.name === 'Kick' && f.attack.variant === 1 ? ROUNDHOUSE
         : f.attack.name === 'Punch' && f.attack.variant === 1 ? CROSS : TRACKS[f.attack.name]);
     const k = sampleTrack(keys, f.attack.elapsed / f.attack.duration);
@@ -233,7 +270,7 @@ export function computePose(f) {
     lean = -.08; crouch = 0; weaponAngle = .35;
     main = [21, 19]; off = [-21, 11]; front = [24, -2]; back = [-18, 1];
     rotation = f.z > 0 ? f.tumble || 0 : -Math.PI / 2;
-  } else if (f.state === 'held') { rotation = f.heldStyle === 'Judo' ? -.65 : -1.5; main = [20, 19]; off = [-23, 16]; front = [24, -14]; back = [-22, -7]; }
+  } else if (f.state === 'held') { rotation = f.heldSignature ? -.45 - clamp(f.heldProgress || 0, 0, 1) * 1.1 : f.heldStyle === 'Judo' ? -.65 : -1.5; main = [20, 19]; off = [-23, 16]; front = [24, -14]; back = [-22, -7]; }
   else if (f.stun > 0 && f.state === 'hit' && f.z === 0) {
     // A short chest/head recoil, not a knockdown or airborne flail.
     const recoil = Math.sin(clamp(f.stun / .16, 0, 1) * Math.PI * .8);
