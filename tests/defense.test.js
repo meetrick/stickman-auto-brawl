@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Match, STEP} from '../app.js?v=20261119-ground-spins';
-import {MOVES} from '../fighter.js?v=20261119-ground-spins';
-import {reactToThreat} from '../defense.js?v=20261119-ground-spins';
+import {Match, STEP} from '../app.js?v=20261119-martial-motion';
+import {MOVES} from '../fighter.js?v=20261119-martial-motion';
+import {reactToThreat} from '../defense.js?v=20261119-martial-motion';
 function pair(){
  const w=new Match(12,3),[a,b,c]=w.fighters;
  Object.assign(a,{x:500,y:400,cooldown:0,readyAt:100});Object.assign(b,{x:540,y:400,cooldown:0,readyAt:100,hp:500,maxHp:500});

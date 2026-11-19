@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match } from '../app.js?v=20261119-ground-spins';
-import { resolveDominoes, sweptBodies } from '../collisions.js?v=20261119-ground-spins';
+import { Match } from '../app.js?v=20261119-martial-motion';
+import { resolveDominoes, sweptBodies } from '../collisions.js?v=20261119-martial-motion';
 
 function scene() {
   const w = new Match(1, 3);

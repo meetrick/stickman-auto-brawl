@@ -1,5 +1,5 @@
-import { clamp } from './random.js?v=20261119-ground-spins';
-import { styleProfile } from './styles.js?v=20261119-ground-spins';
+import { clamp } from './random.js?v=20261119-martial-motion';
+import { styleProfile } from './styles.js?v=20261119-martial-motion';
 
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 // Only free footwork participates. Throws, recoil, dodges and settled bodies

@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Match,STEP} from '../app.js?v=20261119-ground-spins';
-import {computePose} from '../pose.js?v=20261119-ground-spins';
-import {STYLE_NAMES} from '../styles.js?v=20261119-ground-spins';
-import {ImpactFeedback,selectMoment} from '../impact.js?v=20261119-ground-spins';
+import {Match,STEP} from '../app.js?v=20261119-martial-motion';
+import {computePose} from '../pose.js?v=20261119-martial-motion';
+import {STYLE_NAMES} from '../styles.js?v=20261119-martial-motion';
+import {ImpactFeedback,selectMoment} from '../impact.js?v=20261119-martial-motion';
 function setup(){
  const w=new Match(12,3),[f,a,c]=w.fighters;
  Object.assign(f,{x:500,y:400,cooldown:1,personality:'Cowardly',style:'Ninja'});

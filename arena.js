@@ -1,4 +1,4 @@
-import { seededRandom, range, clamp } from './random.js?v=20261119-ground-spins';
+import { seededRandom, range, clamp } from './random.js?v=20261119-martial-motion';
 
 export const WALL_TYPES = ['stone', 'spring', 'crate'];
 export function barPoint(bar, time, offset) {

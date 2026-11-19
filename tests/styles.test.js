@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match, STEP } from '../app.js?v=20261119-ground-spins';
-import { Fighter } from '../fighter.js?v=20261119-ground-spins';
-import { STYLE_NAMES } from '../styles.js?v=20261119-ground-spins';
-import { seededRandom } from '../random.js?v=20261119-ground-spins';
+import { Match, STEP } from '../app.js?v=20261119-martial-motion';
+import { Fighter } from '../fighter.js?v=20261119-martial-motion';
+import { STYLE_NAMES } from '../styles.js?v=20261119-martial-motion';
+import { seededRandom } from '../random.js?v=20261119-martial-motion';
 
 test('all five disciplines roll deterministically; explicit selections do not change other spawn stats', () => {
   const seen = new Set();
@@ -66,7 +66,7 @@ test('every discipline finishes complete rounds with valid rankings and no weapo
 });
 
 test('style preferences validate, migrate older settings and preserve hidden participant choices', async () => {
-  const {normalizePreferences, savePreferences, loadPreferences} = await import('../settings.js?v=20261119-ground-spins');
+  const {normalizePreferences, savePreferences, loadPreferences} = await import('../settings.js?v=20261119-martial-motion');
   const old = normalizePreferences({names:['봄']}); assert.ok(old.styles.every(s => s === 'Random'));
   const p = normalizePreferences({count:2, styles:['Boxing','<bad>','Judo',...Array(9).fill('Ninja')]});
   assert.deepEqual(p.styles.slice(0,3), ['Boxing','Random','Judo']); assert.equal(p.styles.length, 24);

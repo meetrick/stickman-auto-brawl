@@ -1,6 +1,6 @@
-import { clamp } from './random.js?v=20261119-ground-spins';
-import { styleProfile } from './styles.js?v=20261119-ground-spins';
-import { MARTIAL_STANCES, martialTrack } from './martial-motion.js?v=20261119-ground-spins';
+import { clamp } from './random.js?v=20261119-martial-motion';
+import { styleProfile } from './styles.js?v=20261119-martial-motion';
+import { MARTIAL_STANCES, MARTIAL_GUARDS, MARTIAL_DODGES, martialTrack } from './martial-motion.js?v=20261119-martial-motion';
 
 const lerp = (a, b, t) => a + (b - a) * t;
 export const STANCES = MARTIAL_STANCES;
@@ -348,10 +348,8 @@ export function computePose(f) {
     const amount = guard ? clamp(Math.min(d.elapsed / .05, (d.duration - d.elapsed) / .08), 0, 1)
       : Math.sin(clamp(d.elapsed / d.duration, 0, 1) * Math.PI);
     const base = STANCES[f.style] || STANCES.Kickboxing;
-    const target = guard ? [-.13, 13, 13, -29, 6, -24, 22, 0, -23, 0]
-      : f.style === 'Ninja' ? [.4, 25, 18, -11, -22, 14, 30, -8, -26, 0]
-        : f.style === 'Boxing' ? [-.5, 23, 14, -26, 1, -21, 25, 0, -25, 0]
-          : [-.3, 18, 19, -23, -5, -17, 29, -6, -25, 0];
+    const target = (guard ? MARTIAL_GUARDS : MARTIAL_DODGES)[f.style]
+      || (guard ? MARTIAL_GUARDS.Kickboxing : MARTIAL_DODGES.Kickboxing);
     const k = base.map((v, i) => lerp(v, target[i], amount));
     [lean, crouch] = k; main = k.slice(2, 4); off = k.slice(4, 6); front = k.slice(6, 8); back = k.slice(8, 10);
   }
@@ -387,7 +385,8 @@ export function computePose(f) {
   else if (f.stun > 0 && f.state === 'hit' && f.z === 0) {
     // A short chest/head recoil, not a knockdown or airborne flail.
     const recoil = Math.sin(clamp(f.stun / .16, 0, 1) * Math.PI * .8);
-    lean = -.42 * recoil; crouch = 5 + 4 * recoil; rotation = 0;
+    lean = (f.hitSide || -1) * .85 * recoil;
+    crouch = (STANCES[f.style]?.[1] || 5) + 9 * recoil; rotation = 0;
     main = [10, -17]; off = [-10, -9]; front = [23, 0]; back = [-22, 0];
   } else if (f.stun > 0) {
     const flail = Math.sin(f.age * 15 + f.id);

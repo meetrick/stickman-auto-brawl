@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match, STEP } from '../app.js?v=20261119-ground-spins';
+import { Match, STEP } from '../app.js?v=20261119-martial-motion';
 
 function quiet(count = 4) {
   const w = new Match(12, count);

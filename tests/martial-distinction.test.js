@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Fighter, MOVES } from '../fighter.js?v=20261119-ground-spins';
-import { computePose, projectPose } from '../pose.js?v=20261119-ground-spins';
-import { STYLE_NAMES, STYLES } from '../styles.js?v=20261119-ground-spins';
-import { seededRandom } from '../random.js?v=20261119-ground-spins';
+import { Fighter, MOVES } from '../fighter.js?v=20261119-martial-motion';
+import { computePose, projectPose } from '../pose.js?v=20261119-martial-motion';
+import { STYLE_NAMES, STYLES } from '../styles.js?v=20261119-martial-motion';
+import { seededRandom } from '../random.js?v=20261119-martial-motion';
 
 function pose(style, name = STYLES[style].preferred, variant = 0) {
   const f = new Fighter(0, 0, 0, seededRandom(1)); f.style = style;
@@ -43,5 +43,36 @@ test('upright turns preserve the hip and support foot instead of sliding or coll
     const authored = computePose(f), visual = projectPose(authored);
     assert.deepEqual(visual.hip, authored.hip); assert.deepEqual(visual.back.tip, authored.back.tip);
     assert.ok(Math.abs(visual.head[0] - visual.hip[0]) >= Math.abs(authored.head[0] - authored.hip[0]) * .71);
+  }
+});
+
+test('defensive silhouettes retain low slips, compact shells and open grappling frames', () => {
+  const defenses = kind => Object.fromEntries(STYLE_NAMES.map(style => {
+    const f = new Fighter(0, 0, 0, seededRandom(1));
+    Object.assign(f, { style, defense: { kind, elapsed: .15, duration: .3 } });
+    return [style, computePose(f)];
+  }));
+  for (const kind of ['guard', 'dodge']) {
+    const poses = defenses(kind);
+    assert.equal(new Set(Object.values(poses).map(p => JSON.stringify(p))).size, 5);
+    for (const p of Object.values(poses)) {
+      assert.equal(p.rotation, 0);
+      assert.ok(Math.abs(p.back.tip[1]) < .001 && Math.abs(p.front.tip[1]) < .001);
+    }
+  }
+  const guards = defenses('guard');
+  assert.ok(guards.Ninja.head[1] > guards.Boxing.head[1] + 15);
+  assert.ok(guards.Judo.main.tip[0] > guards.Boxing.main.tip[0] + 15);
+});
+test('ground recoil visibly follows the push direction without a launch or added stun', () => {
+  for (const style of STYLE_NAMES) {
+    const react = vx => {
+      const f = new Fighter(0, 0, 0, seededRandom(1)); f.style = style; f.facing = 1;
+      f.receiveHit(1, vx, 0, 0); assert.equal(f.stun, .16); assert.equal(f.z, 0); assert.equal(f.vz, 0);
+      f.stun = .1; return computePose(f);
+    };
+    const forward = react(80), backward = react(-80);
+    assert.ok(forward.head[0] > backward.head[0] + 60);
+    for (const p of [forward, backward]) assert.ok(Math.abs(p.front.tip[1]) < .001 && Math.abs(p.back.tip[1]) < .001);
   }
 });

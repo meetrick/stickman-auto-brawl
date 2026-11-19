@@ -1,11 +1,11 @@
-import { Match, STEP } from './app.js?v=20261119-ground-spins';
-import { Renderer } from './renderer.js?v=20261119-ground-spins';
-import { COLORS } from './fighter.js?v=20261119-ground-spins';
-import { MIN_FIGHTERS, MAX_FIGHTERS, SETTINGS_KEY, normalizePreferences, loadPreferences, savePreferences, escapeHTML } from './settings.js?v=20261119-ground-spins';
-import { t, eventText, watchMomentText, setLanguage, getLanguage } from './i18n.js?v=20261119-ground-spins';
-import { firstOutNames, standingsMarkup, eliminationMarkup } from './results.js?v=20261119-ground-spins';
-import { STYLE_NAMES } from './styles.js?v=20261119-ground-spins';
-import { ImpactFeedback, selectMoment, momentActorId } from './impact.js?v=20261119-ground-spins';
+import { Match, STEP } from './app.js?v=20261119-martial-motion';
+import { Renderer } from './renderer.js?v=20261119-martial-motion';
+import { COLORS } from './fighter.js?v=20261119-martial-motion';
+import { MIN_FIGHTERS, MAX_FIGHTERS, SETTINGS_KEY, normalizePreferences, loadPreferences, savePreferences, escapeHTML } from './settings.js?v=20261119-martial-motion';
+import { t, eventText, watchMomentText, setLanguage, getLanguage } from './i18n.js?v=20261119-martial-motion';
+import { firstOutNames, standingsMarkup, eliminationMarkup } from './results.js?v=20261119-martial-motion';
+import { STYLE_NAMES } from './styles.js?v=20261119-martial-motion';
+import { ImpactFeedback, selectMoment, momentActorId } from './impact.js?v=20261119-martial-motion';
 
 export function boot() {
   const $ = selector => document.querySelector(selector), renderer = new Renderer($('canvas'));

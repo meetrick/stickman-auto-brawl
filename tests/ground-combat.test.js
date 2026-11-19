@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match, STEP } from '../app.js?v=20261119-ground-spins';
+import { Match, STEP } from '../app.js?v=20261119-martial-motion';
 
 function pair() {
   const w = new Match(5, 2, { terrain: false }), [a, b] = w.fighters;

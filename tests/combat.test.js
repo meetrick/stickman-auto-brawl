@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Fighter, MOVES } from '../fighter.js?v=20261119-ground-spins';
-import { Match, STEP } from '../app.js?v=20261119-ground-spins';
-import { seededRandom } from '../random.js?v=20261119-ground-spins';
+import { Fighter, MOVES } from '../fighter.js?v=20261119-martial-motion';
+import { Match, STEP } from '../app.js?v=20261119-martial-motion';
+import { seededRandom } from '../random.js?v=20261119-martial-motion';
 
 test('seeded matches reproduce a complete physics trajectory', () => {
   const a = new Match(72), b = new Match(72);

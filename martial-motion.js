@@ -7,6 +7,20 @@ export const MARTIAL_STANCES = {
   Kickboxing: [.14, 10, 22, -21, -8, -19, 29, 0, -25, 0],
   Taekwondo: [-.22, 2, 3, -20, -22, 7, 24, 0, -24, 0],
 };
+export const MARTIAL_GUARDS = {
+  Ninja: [-.3, 32, 20, -18, -23, 10, 33, 0, -26, 0],
+  Boxing: [-.3, 14, 12, -32, 5, -29, 21, 0, -20, 0],
+  Judo: [.1, 27, 33, -10, 28, 2, 31, 0, -29, 0],
+  Kickboxing: [-.1, 18, 18, -29, -5, -25, 31, 0, -25, 0],
+  Taekwondo: [-.45, 8, 28, -17, -20, 7, 28, 0, -24, 0],
+};
+export const MARTIAL_DODGES = {
+  Ninja: [.7, 39, 20, -8, -34, 17, 40, 0, -29, 0],
+  Boxing: [-.8, 32, 13, -30, 3, -26, 25, 0, -24, 0],
+  Judo: [-.4, 31, 32, -8, 24, 6, 29, 0, -31, 0],
+  Kickboxing: [-.5, 24, 17, -28, -7, -23, 34, 0, -26, 0],
+  Taekwondo: [-.7, 11, 13, -21, -29, 12, 34, 0, -23, 0],
+};
 const track = (style, load, contact, follow, recover) => {
   const rows = [MARTIAL_STANCES[style], load, contact, follow, recover, MARTIAL_STANCES[style]];
   return rows.map((row, i) => [[0, .27, .4, .51, .74, 1][i], ...row.slice(0, 10), row[10] || 0]);

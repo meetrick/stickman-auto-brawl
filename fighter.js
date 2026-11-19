@@ -1,7 +1,7 @@
-import { clamp, range } from './random.js?v=20261119-ground-spins';
-import { WEAPONS } from './weapons.js?v=20261119-ground-spins';
-import { STYLE_NAMES, styleProfile } from './styles.js?v=20261119-ground-spins';
-import { beginDefense, updateDefense, reactToThreat, defenseContact } from './defense.js?v=20261119-ground-spins';
+import { clamp, range } from './random.js?v=20261119-martial-motion';
+import { WEAPONS } from './weapons.js?v=20261119-martial-motion';
+import { STYLE_NAMES, styleProfile } from './styles.js?v=20261119-martial-motion';
+import { beginDefense, updateDefense, reactToThreat, defenseContact } from './defense.js?v=20261119-martial-motion';
 
 export const MOVES = Object.freeze({
   Punch: { damage: 6, knockback: 65, lift: 0, reach: 65, engage: 70, windup: .10, activeEnd: .17, duration: .28 },
@@ -69,6 +69,7 @@ export class Fighter {
     this.hp = Math.max(0, this.hp - damage);
     const airborne = vz > 0 || this.z > 1;
     this.vx = vx; this.vy = vy; this.vz = vz;
+    this.hitSide = Math.sign(vx * this.facing) || -1;
     if (airborne) this.z = Math.max(this.z, 2);
     this.stun = airborne ? .42 : .16; this.flash = .12; this.attack = null; this.heldBy = null;
     this.followUp = null; this.comboStep = 0; this.footworkUntil = 0;

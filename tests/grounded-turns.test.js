@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match } from '../app.js?v=20261119-ground-spins';
-import { computePose, projectPose } from '../pose.js?v=20261119-ground-spins';
-import { STYLES, STYLE_NAMES } from '../styles.js?v=20261119-ground-spins';
+import { Match } from '../app.js?v=20261119-martial-motion';
+import { computePose, projectPose } from '../pose.js?v=20261119-martial-motion';
+import { STYLES, STYLE_NAMES } from '../styles.js?v=20261119-martial-motion';
 
 function signature(style) {
   const w = new Match(12, 2, { styles: [style, style] }), [f, target] = w.fighters;

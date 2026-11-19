@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Match} from '../app.js?v=20261119-ground-spins';
-import {STYLES,STYLE_NAMES} from '../styles.js?v=20261119-ground-spins';
-import {computePose} from '../pose.js?v=20261119-ground-spins';
-import {momentActorId,selectMoment} from '../impact.js?v=20261119-ground-spins';
-import {momentText,setLanguage} from '../i18n.js?v=20261119-ground-spins';
+import {Match} from '../app.js?v=20261119-martial-motion';
+import {STYLES,STYLE_NAMES} from '../styles.js?v=20261119-martial-motion';
+import {computePose} from '../pose.js?v=20261119-martial-motion';
+import {momentActorId,selectMoment} from '../impact.js?v=20261119-martial-motion';
+import {momentText,setLanguage} from '../i18n.js?v=20261119-martial-motion';
 
 function setup(style){
  const w=new Match(5,3,{styles:Array(3).fill(style)}),[a,b,c]=w.fighters;
