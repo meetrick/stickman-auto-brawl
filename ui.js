@@ -2,10 +2,10 @@ import { Match, STEP } from './app.js';
 import { Renderer } from './renderer.js';
 import { COLORS } from './fighter.js';
 import { MIN_FIGHTERS, MAX_FIGHTERS, SETTINGS_KEY, normalizePreferences, loadPreferences, savePreferences, escapeHTML } from './settings.js';
-import { t, eventText, setLanguage, getLanguage } from './i18n.js';
+import { t, eventText, momentText, setLanguage, getLanguage } from './i18n.js';
 import { firstOutNames, standingsMarkup, eliminationMarkup } from './results.js';
 import { STYLE_NAMES } from './styles.js';
-import { ImpactFeedback } from './impact.js';
+import { ImpactFeedback, selectMoment } from './impact.js';
 
 export function boot() {
   const $ = selector => document.querySelector(selector), renderer = new Renderer($('canvas'));
@@ -88,9 +88,9 @@ export function boot() {
       text($('#result-first-out'), t('firstOutResult', { names: firstOutNames(match) }));
       $('#result-rankings').hidden = !match.finished;
     }
-    const moment = match.events.find(e => match.time - e.time < 1.8 && (e.crit || e.signature || ['domino', 'heal', 'elimination'].includes(e.type)));
+    const moment = selectMoment(match.events, match.time);
     $('#moment').hidden = paused || match.finished || !moment || match.time - moment.time > 1.8;
-    if (moment) { text($('#moment'), `${match.fighters[moment.fighter].name} · ${eventText(moment)}`); $('#moment').dataset.kind = moment.crit ? 'crit' : moment.type; }
+    if (moment) { text($('#moment'), `${match.fighters[moment.fighter].name} · ${momentText(moment)}`); $('#moment').dataset.kind = moment.crit ? 'crit' : moment.type; }
     text($('#hits'), match.stats.hits);
     for (const key of ['crits', 'dominoes', 'heals']) text($(`#${key}`), match.stats[key]);
   }
