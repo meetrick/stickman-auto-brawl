@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Match} from '../app.js?v=20261119-fight-camera';
-import {STYLES,STYLE_NAMES} from '../styles.js?v=20261119-fight-camera';
-import {computePose} from '../pose.js?v=20261119-fight-camera';
-import {momentActorId,selectMoment} from '../impact.js?v=20261119-fight-camera';
-import {momentText,setLanguage} from '../i18n.js?v=20261119-fight-camera';
+import {Match} from '../app.js?v=20261119-crowd24';
+import {STYLES,STYLE_NAMES} from '../styles.js?v=20261119-crowd24';
+import {computePose} from '../pose.js?v=20261119-crowd24';
+import {momentActorId,selectMoment} from '../impact.js?v=20261119-crowd24';
+import {momentText,setLanguage} from '../i18n.js?v=20261119-crowd24';
 
 function setup(style){
  const w=new Match(5,3,{styles:Array(3).fill(style)}),[a,b,c]=w.fighters;
@@ -38,7 +38,7 @@ test('combo and counter labels stay localized, identify the attacker, and keep d
  setLanguage('en');assert.equal(momentText(hit),'SPINNING HOOK KICK! · 3-HIT COMBO');
  setLanguage('ko');assert.equal(momentText(hit),'태권 뒤후려차기! · 3연속 명중');
  assert.equal(momentText({text:'PUNCH!',counter:true}),'반격! · 펀치!');setLanguage('en');
- assert.equal(selectMoment([{type:'heal',time:1.2},{type:'hit',chain:2,time:1.1}],1.3).chain,2);
+ assert.equal(selectMoment([{type:'heal',time:1.2},{type:'hit',chain:2,time:1.1}],1.3),null);
 });
 test('full random matches naturally connect combos, counters and every style finisher',()=>{
  const counts=Object.fromEntries(STYLE_NAMES.map(s=>[s,0]));let combos=0,counters=0;

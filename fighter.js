@@ -1,7 +1,7 @@
-import { clamp, range } from './random.js?v=20261119-fight-camera';
-import { WEAPONS } from './weapons.js?v=20261119-fight-camera';
-import { STYLE_NAMES, styleProfile } from './styles.js?v=20261119-fight-camera';
-import { beginDefense, updateDefense, reactToThreat, defenseContact } from './defense.js?v=20261119-fight-camera';
+import { clamp, range } from './random.js?v=20261119-crowd24';
+import { WEAPONS } from './weapons.js?v=20261119-crowd24';
+import { STYLE_NAMES, styleProfile } from './styles.js?v=20261119-crowd24';
+import { beginDefense, updateDefense, reactToThreat, defenseContact } from './defense.js?v=20261119-crowd24';
 
 export const MOVES = Object.freeze({
   Punch: { damage: 6, knockback: 65, lift: 0, reach: 65, engage: 70, windup: .10, activeEnd: .17, duration: .28 },
@@ -126,6 +126,7 @@ export class Fighter {
     const sprint = (this.gait === 'Sprinter' || hurry) && this.stamina > .2 && !this.exhausted;
     const multiplier = sprint ? 1.85 : this.gait === 'Runner' ? 1.35 : .9;
     this.vx = dx / length * this.speed * multiplier; this.vy = dy / length * this.speed * multiplier;
+    world.navigation?.steer(this, world);
     this.state = multiplier > 1.1 ? 'run' : 'walk'; this.sprinting = sprint;
     if (Math.abs(dx) > 4) this.facing = dx > 0 ? 1 : -1;
   }
@@ -133,7 +134,8 @@ export class Fighter {
     if (world.time < (this.readyAt || 0) || !this.standing || this.landing > 0 || this.attack || this.defense) return;
     if (reactToThreat(this, world)) return;
     const enemies = world.fighters.filter(f => f !== this && f.alive && f.heldBy == null);
-    const target = enemies.sort((a, b) => Math.hypot(a.x - this.x, a.y - this.y) - Math.hypot(b.x - this.x, b.y - this.y))[0];
+    const nearest = enemies.sort((a, b) => Math.hypot(a.x - this.x, a.y - this.y) - Math.hypot(b.x - this.x, b.y - this.y))[0];
+    const target = ['Cowardly', 'Aggressive'].includes(this.personality) ? nearest : world.navigation?.targetFor(this, enemies) || nearest;
     if (!target) return;
     const dx = target.x - this.x, dy = target.y - this.y, distance = Math.hypot(dx, dy) || 1, b = world.bounds;
     const discipline = styleProfile(this.style);
@@ -200,7 +202,7 @@ export class Fighter {
     if (this.flank && distance < 180 && distance > 45) {
       this.intent = 'flank';
       this.moveToward({ x: clamp(target.x - dy / distance * 85 * this.flankSide, b.left + 18, b.right - 18), y: clamp(target.y + dx / distance * 85 * this.flankSide, b.top + 18, b.bottom - 18) }, world, true);
-    } else if (distance > 37) { this.intent = 'chase'; this.moveToward(target, world, (this.personality === 'Aggressive' && distance > 170) || (this.personality === 'Brawler' && distance > 70)); }
+    } else if (distance > 37) { this.intent = 'chase'; this.moveToward(world.navigation?.goalFor(this, target) || target, world, (this.personality === 'Aggressive' && distance > 170) || (this.personality === 'Brawler' && distance > 70)); }
   }
   updateAttack(dt, world) {
     const a = this.attack, move = this.getMove(a.name); a.elapsed += dt;

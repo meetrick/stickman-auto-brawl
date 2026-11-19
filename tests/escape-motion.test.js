@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Match,STEP} from '../app.js?v=20261119-fight-camera';
-import {computePose} from '../pose.js?v=20261119-fight-camera';
-import {STYLE_NAMES} from '../styles.js?v=20261119-fight-camera';
-import {ImpactFeedback,selectMoment} from '../impact.js?v=20261119-fight-camera';
+import {Match,STEP} from '../app.js?v=20261119-crowd24';
+import {computePose} from '../pose.js?v=20261119-crowd24';
+import {STYLE_NAMES} from '../styles.js?v=20261119-crowd24';
+import {ImpactFeedback,selectMoment} from '../impact.js?v=20261119-crowd24';
 function setup(){
  const w=new Match(12,3),[f,a,c]=w.fighters;
  Object.assign(f,{x:500,y:400,cooldown:1,personality:'Cowardly',style:'Ninja'});
@@ -40,9 +40,9 @@ test('guard, slip and side-step silhouettes preserve joints through recovery for
  }
  assert.ok(signatures.size>=3);
 });
-test('blocks do not trigger heavy hit-stop; defensive notices use one prioritized banner',()=>{
+test('blocks do not trigger heavy hit-stop; routine defensive notices stay quiet',()=>{
  const f=new ImpactFeedback();assert.equal(f.observe([{type:'hit',move:'Uppercut',blocked:true}]),false);assert.equal(f.stop,0);
- const block={type:'block',time:1};assert.equal(selectMoment([{type:'heal',time:1.1},block],1.2),block);
+ const block={type:'block',time:1};assert.equal(selectMoment([{type:'heal',time:1.1},block],1.2),null);
 });
 test('natural rounds contain bounded escape bursts while preserving complete rankings',()=>{
  let escapes=0;

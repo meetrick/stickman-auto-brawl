@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {ImpactFeedback} from '../impact.js?v=20261119-fight-camera';
-import {Match} from '../app.js?v=20261119-fight-camera';
+import {ImpactFeedback} from '../impact.js?v=20261119-crowd24';
+import {Match} from '../app.js?v=20261119-crowd24';
 
 test('light hits never freeze; heavy contacts stop briefly and cannot stack per frame',()=>{
  const f=new ImpactFeedback(), light={type:'hit',move:'Punch'}, heavy={type:'hit',move:'Uppercut'};
@@ -22,13 +22,16 @@ test('feedback is bounded, reduced-motion safe, resettable and never changes rep
  assert.deepEqual(f.offset(true),{x:0,y:0});assert.equal(f.observe([{type:'hit',crit:true}],true),false);
 });
 
-test('signature callouts survive newer routine events, expire, and retain localized critical names',async()=>{
- const {selectMoment}=await import('../impact.js?v=20261119-fight-camera');const {momentText,setLanguage}=await import('../i18n.js?v=20261119-fight-camera');
- const signature={time:1,type:'hit',signature:'DYNAMITE HOOK!',crit:true,text:'CRIT!'};
+test('quiet highlights prioritize eliminations and only show real combo finishes',async()=>{
+ const {selectMoment}=await import('../impact.js?v=20261119-crowd24');const {momentText,watchMomentText,setLanguage}=await import('../i18n.js?v=20261119-crowd24');
+ const signature={time:1,type:'hit',signature:'DYNAMITE HOOK!',finisher:true,chain:3,crit:true,text:'CRIT!'};
  const elimination={time:1.3,type:'elimination'};
  const events=[{time:1.5,type:'heal'},elimination,{time:1.2,type:'hit',crit:true},signature];
- assert.equal(selectMoment(events,1.5),signature);assert.equal(selectMoment(events,2.9),elimination);
+ assert.equal(selectMoment(events,1.5),elimination);assert.equal(selectMoment(events,2.9),elimination);
  assert.equal(selectMoment(events,4),null);assert.equal(selectMoment([{...signature,time:10}],1),null);
- setLanguage('en');assert.equal(momentText(signature),'DYNAMITE HOOK! · CRIT!');
- setLanguage('ko');assert.equal(momentText(signature),'다이너마이트 훅! · 치명타!');setLanguage('en');
+ assert.equal(selectMoment([signature],1.5),signature);
+ assert.equal(selectMoment([{...signature,blocked:true}],1.5),null);
+ assert.equal(selectMoment([{...signature,finisher:false}],1.5),null);
+ setLanguage('en');assert.equal(watchMomentText(signature),'3-HIT FINISH');assert.equal(momentText(signature),'DYNAMITE HOOK! · CRIT! · 3-HIT COMBO');
+ setLanguage('ko');assert.equal(watchMomentText(signature),'3연타 마무리');assert.equal(momentText(signature),'다이너마이트 훅! · 치명타! · 3연속 명중');setLanguage('en');
 });

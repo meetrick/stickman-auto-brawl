@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match, STEP } from '../app.js?v=20261119-fight-camera';
-import { Fighter } from '../fighter.js?v=20261119-fight-camera';
-import { STYLE_NAMES } from '../styles.js?v=20261119-fight-camera';
-import { seededRandom } from '../random.js?v=20261119-fight-camera';
+import { Match, STEP } from '../app.js?v=20261119-crowd24';
+import { Fighter } from '../fighter.js?v=20261119-crowd24';
+import { STYLE_NAMES } from '../styles.js?v=20261119-crowd24';
+import { seededRandom } from '../random.js?v=20261119-crowd24';
 
 test('all five disciplines roll deterministically; explicit selections do not change other spawn stats', () => {
   const seen = new Set();
@@ -66,10 +66,10 @@ test('every discipline finishes complete rounds with valid rankings and no weapo
 });
 
 test('style preferences validate, migrate older settings and preserve hidden participant choices', async () => {
-  const {normalizePreferences, savePreferences, loadPreferences} = await import('../settings.js?v=20261119-fight-camera');
+  const {normalizePreferences, savePreferences, loadPreferences} = await import('../settings.js?v=20261119-crowd24');
   const old = normalizePreferences({names:['봄']}); assert.ok(old.styles.every(s => s === 'Random'));
   const p = normalizePreferences({count:2, styles:['Boxing','<bad>','Judo',...Array(9).fill('Ninja')]});
-  assert.deepEqual(p.styles.slice(0,3), ['Boxing','Random','Judo']); assert.equal(p.styles.length, 12);
+  assert.deepEqual(p.styles.slice(0,3), ['Boxing','Random','Judo']); assert.equal(p.styles.length, 24);
   let saved; const storage = {setItem:(_,value)=>{saved=value;}, getItem:()=>saved};
   assert.equal(savePreferences(storage,p),true); assert.equal(loadPreferences(storage).styles[2],'Judo');
 });
