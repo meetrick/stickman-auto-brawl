@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match } from '../app.js?v=20261119-martial-motion';
-import { barContact, barPoint } from '../arena.js?v=20261119-martial-motion';
+import { Match } from '../app.js?v=20261119-tactical-ai';
+import { barContact, barPoint } from '../arena.js?v=20261119-tactical-ai';
 const pole = () => ({ id: 0, x: 500, y: 400, radius: 80, height: 30, phase: 0, omega: 1.5, cooldowns: new Map() });
 test('rotating poles sweep through grounded fighters but allow jumps above the bar', () => {
   const bar = pole(), p = barPoint(bar, 1, 60);

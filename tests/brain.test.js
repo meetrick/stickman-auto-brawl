@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match, STEP } from '../app.js?v=20261119-martial-motion';
-import { chooseOpponent, retreatGoal, planBehavior, PERSONALITIES } from '../brain.js?v=20261119-martial-motion';
+import { Match, STEP } from '../app.js?v=20261119-tactical-ai';
+import { chooseOpponent, retreatGoal, planBehavior, PERSONALITIES } from '../brain.js?v=20261119-tactical-ai';
 
 function setup(role = 'Aggressive') {
   const w = new Match(12, 3, { styles: Array(3).fill('Taekwondo') }), [f, a, b] = w.fighters;
@@ -27,6 +27,12 @@ test('opportunists prefer a visible vulnerable occupied opponent and invalidate 
   assert.equal(chooseOpponent(f, [a, b], w, a), b);
   assert.equal(chooseOpponent(f, [a], w, a), a);
   f.personality = 'Aggressive'; assert.equal(chooseOpponent(f, [a, b], w, b), a);
+});
+test('pressure fighters briefly retaliate against the opponent who actually hit them', () => {
+  const { w, f, a, b } = setup('Brawler'); b.x = 650; b.y = 400; w.rng = () => .5;
+  b.hit(f, w, 'Punch');
+  assert.equal(chooseOpponent(f, [a, b], w, a), b);
+  w.time = 2.1; assert.equal(chooseOpponent(f, [a, b], w, a), a);
 });
 test('patient fighters commit after a bounded wait, and immediately use visible recovery openings', () => {
   for (const role of ['Opportunist', 'Counterfighter']) {
@@ -63,10 +69,13 @@ test('real counters, combos and final duels override patient and retreat behavio
   }
 });
 test('crowded emergency withdrawals are short and followed by a commitment to re-engage', () => {
-  const { w, f, a, b } = setup('Trickster'); f.hp = 15; b.x = 520; b.y = 480;
+  for (const role of ['Trickster', 'Cowardly']) {
+  const { w, f, a, b } = setup(role); f.hp = 15; b.x = 520; b.y = 480;
   assert.equal(planBehavior(f, a, [a, b], w).mode, 'withdraw');
   w.time = .8; assert.equal(planBehavior(f, a, [a, b], w), null);
   assert.ok(f.tacticalCommitUntil > w.time);
+  assert.ok(f.courageUntil > w.time, 'legacy cowardly retreat cannot bypass the engagement window');
+  }
 });
 test('brain decisions use no random rolls and seeded matches retain complete deterministic rankings', () => {
   const { w, f, a, b } = setup('Counterfighter'), reference = new Match(12, 3, { styles: Array(3).fill('Taekwondo') });

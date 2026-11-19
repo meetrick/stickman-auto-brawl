@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match, STEP } from '../app.js?v=20261119-martial-motion';
-import { touchesFloorItem } from '../hazards.js?v=20261119-martial-motion';
+import { Match, STEP } from '../app.js?v=20261119-tactical-ai';
+import { touchesFloorItem } from '../hazards.js?v=20261119-tactical-ai';
 function setup() {
   const w = new Match(7, 3, { terrain: false }), f = w.fighters[0];
   f.x = 500; f.y = 400; f.previous = { x: 500, y: 400, z: 0 };

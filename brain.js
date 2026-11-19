@@ -1,4 +1,4 @@
-import { clamp } from './random.js?v=20261119-martial-motion';
+import { clamp } from './random.js?v=20261119-tactical-ai';
 
 export const PERSONALITIES = ['Aggressive', 'Cowardly', 'Brawler', 'Trickster', 'Opportunist', 'Counterfighter'];
 export const normalizePersonality = value => PERSONALITIES.includes(value) ? value : 'Random';
@@ -64,7 +64,11 @@ export function planBehavior(f, target, enemies, world, cornered = false) {
       if (time >= f.healPursuitUntil) { plan = null; f.seekHealAfter = time + 1.5; f.healPursuitUntil = 0; }
     }
   }
-  if (old?.mode === 'withdraw' && time >= (f.withdrawUntil || 0)) f.tacticalCommitUntil = time + 1.1;
+  if (plan?.mode !== 'heal') f.healPursuitUntil = 0;
+  if (old?.mode === 'withdraw' && time >= (f.withdrawUntil || 0)) {
+    f.tacticalCommitUntil = time + 1.1;
+    f.courageUntil = Math.max(f.courageUntil || 0, f.tacticalCommitUntil);
+  }
   const canWithdraw = !cornered && f.stamina > .3 && !f.exhausted && time >= (f.tacticalCommitUntil || 0);
   const inDanger = hp < .25 && nearby.length >= (f.personality === 'Aggressive' ? 3 : 2);
   if (!plan && canWithdraw && inDanger) {

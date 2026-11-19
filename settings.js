@@ -1,5 +1,6 @@
-import { NAMES } from './fighter.js?v=20261119-martial-motion';
-import { normalizeStyle } from './styles.js?v=20261119-martial-motion';
+import { NAMES } from './fighter.js?v=20261119-tactical-ai';
+import { normalizeStyle } from './styles.js?v=20261119-tactical-ai';
+import { normalizePersonality } from './brain.js?v=20261119-tactical-ai';
 
 export const SETTINGS_KEY = 'stickman-auto-brawl.preferences.v1';
 export const MIN_FIGHTERS = 2, MAX_FIGHTERS = 24, MAX_NAME_LENGTH = 16;
@@ -15,7 +16,8 @@ export function normalizePreferences(value = {}) {
   if (!value || typeof value !== 'object') value = {};
   return { count: value.count == null ? 8 : normalizeCount(value.count), language: value.language === 'ko' ? 'ko' : 'en',
     names: Array.from({ length: MAX_FIGHTERS }, (_, i) => normalizeName(Array.isArray(value.names) ? value.names[i] : '', i)),
-    styles: Array.from({ length: MAX_FIGHTERS }, (_, i) => normalizeStyle(Array.isArray(value.styles) ? value.styles[i] : 'Random')) };
+    styles: Array.from({ length: MAX_FIGHTERS }, (_, i) => normalizeStyle(Array.isArray(value.styles) ? value.styles[i] : 'Random')),
+    personalities: Array.from({ length: MAX_FIGHTERS }, (_, i) => normalizePersonality(Array.isArray(value.personalities) ? value.personalities[i] : 'Random')) };
 }
 export function loadPreferences(storage) {
   try { return normalizePreferences(JSON.parse(storage.getItem(SETTINGS_KEY)) || {}); }

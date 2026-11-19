@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Match, STEP} from '../app.js?v=20261119-martial-motion';
-import {STYLES, STYLE_NAMES} from '../styles.js?v=20261119-martial-motion';
-import {computePose} from '../pose.js?v=20261119-martial-motion';
+import {Match, STEP} from '../app.js?v=20261119-tactical-ai';
+import {STYLES, STYLE_NAMES} from '../styles.js?v=20261119-tactical-ai';
+import {computePose} from '../pose.js?v=20261119-tactical-ai';
 
 function setup(style){
  const w=new Match(12,3,{styles:Array(3).fill(style)}),[a,b,c]=w.fighters;

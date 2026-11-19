@@ -1,18 +1,19 @@
-import { Match, STEP } from './app.js?v=20261119-martial-motion';
-import { Renderer } from './renderer.js?v=20261119-martial-motion';
-import { COLORS } from './fighter.js?v=20261119-martial-motion';
-import { MIN_FIGHTERS, MAX_FIGHTERS, SETTINGS_KEY, normalizePreferences, loadPreferences, savePreferences, escapeHTML } from './settings.js?v=20261119-martial-motion';
-import { t, eventText, watchMomentText, setLanguage, getLanguage } from './i18n.js?v=20261119-martial-motion';
-import { firstOutNames, standingsMarkup, eliminationMarkup } from './results.js?v=20261119-martial-motion';
-import { STYLE_NAMES } from './styles.js?v=20261119-martial-motion';
-import { ImpactFeedback, selectMoment, momentActorId } from './impact.js?v=20261119-martial-motion';
+import { Match, STEP } from './app.js?v=20261119-tactical-ai';
+import { Renderer } from './renderer.js?v=20261119-tactical-ai';
+import { COLORS } from './fighter.js?v=20261119-tactical-ai';
+import { MIN_FIGHTERS, MAX_FIGHTERS, SETTINGS_KEY, normalizePreferences, loadPreferences, savePreferences, escapeHTML } from './settings.js?v=20261119-tactical-ai';
+import { t, eventText, watchMomentText, setLanguage, getLanguage } from './i18n.js?v=20261119-tactical-ai';
+import { firstOutNames, standingsMarkup, eliminationMarkup } from './results.js?v=20261119-tactical-ai';
+import { STYLE_NAMES } from './styles.js?v=20261119-tactical-ai';
+import { ImpactFeedback, selectMoment, momentActorId } from './impact.js?v=20261119-tactical-ai';
+import { PERSONALITIES } from './brain.js?v=20261119-tactical-ai';
 
 export function boot() {
   const $ = selector => document.querySelector(selector), renderer = new Renderer($('canvas'));
   const feedback = new ImpactFeedback();
   let storage = null;
   try { storage = window.localStorage; } catch { /* Storage may be disabled in private/embedded browsers. */ }
-  let preferences = loadPreferences(storage), draftNames = [...preferences.names], draftStyles = [...preferences.styles];
+  let preferences = loadPreferences(storage), draftNames = [...preferences.names], draftStyles = [...preferences.styles], draftPersonalities = [...preferences.personalities];
   setLanguage(preferences.language);
   const mobile = matchMedia('(max-width: 800px), (max-width: 950px) and (max-height: 500px) and (orientation: landscape)');
   const rosterPanel = $('#fighters-panel'), tools = $('#tools'), dialog = $('#setup-dialog'), cards = new Map();
@@ -38,7 +39,7 @@ export function boot() {
     }
   }
   function start(seed, showcase = false, setup = preferences) {
-    match = new Match(seed, setup.count, { showcase, names: setup.names, styles: setup.styles }); paused = false; accumulator = 0;
+    match = new Match(seed, setup.count, { showcase, names: setup.names, styles: setup.styles, personalities: setup.personalities }); paused = false; accumulator = 0;
     renderer.camera.reset(); renderer.dirty = true; renderer.nameLabels?.clear(); lastEvent = null; tools.open = false;
     lastRankingKey = null; resultsShown = false; $('#rankings-panel').open = false;
     feedback.reset();
@@ -66,7 +67,8 @@ export function boot() {
     for (const f of match.fighters) {
       const card = cards.get(f.id); card.node.classList.toggle('out', !f.alive);
       text(card.hp, f.alive ? Math.ceil(f.hp) : t('ko'));
-      text(card.traits, `${t(f.personality)} · ${t(f.gait)}`); text(card.weapon, t(f.style)); card.weapon.title = t(`${f.style}Hint`);
+      text(card.traits, `${t(f.personality)} · ${t(!f.alive ? 'intent_dead' : match.finished ? 'survived' : `intent_${f.intent}`)}`); card.traits.title = `${t(`${f.personality}Hint`)} · ${t(f.gait)}`;
+      text(card.weapon, t(f.style)); card.weapon.title = t(`${f.style}Hint`);
       text(card.stats, `${t('spd')} ${Math.round(f.speed)} · ${t('atk')} ${f.power.toFixed(2)}`);
       const width = `${f.hp / f.maxHp * 100}%`; if (card.bar.style.width !== width) card.bar.style.width = width;
     }
@@ -106,8 +108,9 @@ export function boot() {
     for (const option of $('#fighter-count').options) option.textContent = t('countOption', { count: option.value });
     for (const input of document.querySelectorAll('#name-fields input')) input.setAttribute('aria-label', t('nameLabel', { number: Number(input.dataset.index) + 1 }));
     for (const select of document.querySelectorAll('#name-fields select')) {
-      select.setAttribute('aria-label', t('styleLabel', { number: Number(select.dataset.index) + 1 }));
-      for (const option of select.options) option.textContent = t(option.value);
+      const personality = select.dataset.kind === 'personality';
+      select.setAttribute('aria-label', t(personality ? 'personalityLabel' : 'styleLabel', { number: Number(select.dataset.index) + 1 }));
+      for (const option of select.options) option.textContent = t(personality && option.value === 'Random' ? 'RandomPersonality' : option.value);
     }
     lastEvent = null; renderer.dirty = true; updateCameraLabel(); updateUI();
   }
@@ -116,7 +119,9 @@ export function boot() {
   }
   function collectNames() {
     for (const input of document.querySelectorAll('#name-fields input')) draftNames[Number(input.dataset.index)] = input.value;
-    for (const select of document.querySelectorAll('#name-fields select')) draftStyles[Number(select.dataset.index)] = select.value;
+    for (const select of document.querySelectorAll('#name-fields select')) {
+      (select.dataset.kind === 'personality' ? draftPersonalities : draftStyles)[Number(select.dataset.index)] = select.value;
+    }
   }
   function renderNameFields() {
     $('#name-fields').replaceChildren();
@@ -126,16 +131,22 @@ export function boot() {
       const input = document.createElement('input'); input.type = 'text'; input.value = draftNames[i]; input.maxLength = 16;
       input.dataset.index = String(i); input.autocomplete = 'off'; input.spellcheck = false; input.setAttribute('autocapitalize', 'off');
       input.setAttribute('aria-label', t('nameLabel', { number: i + 1 })); row.append(badge, input); $('#name-fields').append(row);
-      const select = document.createElement('select'); select.dataset.index = String(i); select.id = `fighter-style-${i}`;
+      const select = document.createElement('select'); select.dataset.index = String(i); select.dataset.kind = 'style'; select.id = `fighter-style-${i}`;
       select.setAttribute('aria-label', t('styleLabel', { number: i + 1 }));
       for (const value of ['Random', ...STYLE_NAMES]) {
         const option = document.createElement('option'); option.value = value; option.textContent = t(value); select.append(option);
       }
       select.value = draftStyles[i]; row.append(select);
+      const personality = document.createElement('select'); personality.dataset.index = String(i); personality.dataset.kind = 'personality'; personality.id = `fighter-personality-${i}`;
+      personality.setAttribute('aria-label', t('personalityLabel', { number: i + 1 }));
+      for (const value of ['Random', ...PERSONALITIES]) {
+        const option = document.createElement('option'); option.value = value; option.textContent = t(value === 'Random' ? 'RandomPersonality' : value); personality.append(option);
+      }
+      personality.value = draftPersonalities[i]; row.append(personality);
     }
   }
   function openSetup() {
-    tools.open = false; draftNames = [...preferences.names]; draftStyles = [...preferences.styles]; $('#fighter-count').value = String(preferences.count);
+    tools.open = false; draftNames = [...preferences.names]; draftStyles = [...preferences.styles]; draftPersonalities = [...preferences.personalities]; $('#fighter-count').value = String(preferences.count);
     renderNameFields(); dialog.showModal(); accumulator = 0; last = 0;
   }
   $('#fighter-count').onchange = () => { collectNames(); renderNameFields(); };
@@ -146,10 +157,10 @@ export function boot() {
   dialog.addEventListener('close', () => { accumulator = 0; last = 0; renderer.dirty = true; $('#new-match').focus({ preventScroll: true }); });
   $('#setup-form').onsubmit = event => {
     event.preventDefault(); collectNames();
-    preferences = normalizePreferences({ ...preferences, count: $('#fighter-count').value, names: draftNames, styles: draftStyles }); persist();
+    preferences = normalizePreferences({ ...preferences, count: $('#fighter-count').value, names: draftNames, styles: draftStyles, personalities: draftPersonalities }); persist();
     dialog.close(); start(newSeed()); window.scrollTo({ top: 0, behavior: 'auto' });
   };
-  $('#replay').onclick = () => start(match.seed, match.showcase, { count: match.fighters.length, names: match.fighters.map(f => f.name), styles: match.fighters.map(f => f.style) });
+  $('#replay').onclick = () => start(match.seed, match.showcase, { count: match.fighters.length, names: match.fighters.map(f => f.name), styles: match.fighters.map(f => f.style), personalities: match.fighters.map(f => f.personality) });
   $('#demo').onclick = () => start(72, true, { count: 8, names: preferences.names });
   $('#pause').onclick = () => { if (match.finished) return; paused = !paused; renderer.dirty = true; $('#pause').setAttribute('aria-pressed', String(paused)); updateUI(); };
   $('#speed').onclick = () => { speed = speed === 1 ? 2 : speed === 2 ? .5 : 1; updateUI(); };
