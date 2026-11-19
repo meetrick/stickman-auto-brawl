@@ -1,9 +1,9 @@
-import { SpectatorCamera } from './camera.js?v=20261119-ground-spins';
-import { clamp } from './random.js?v=20261119-ground-spins';
-import { barPoint } from './arena.js?v=20261119-ground-spins';
-import { computePose, projectPose } from './pose.js?v=20261119-ground-spins';
-import { WEAPONS } from './weapons.js?v=20261119-ground-spins';
-import { t, eventText } from './i18n.js?v=20261119-ground-spins';
+import { SpectatorCamera } from './camera.js?v=20261119-martial-motion';
+import { clamp } from './random.js?v=20261119-martial-motion';
+import { barPoint } from './arena.js?v=20261119-martial-motion';
+import { computePose, projectPose } from './pose.js?v=20261119-martial-motion';
+import { WEAPONS } from './weapons.js?v=20261119-martial-motion';
+import { t, eventText } from './i18n.js?v=20261119-martial-motion';
 const INK = '#292b27';
 export class Renderer {
   constructor(canvas) {
@@ -195,6 +195,12 @@ export class Renderer {
     this.weapon(p, f);
     this.line([p.shoulder, p.main.joint, p.main.tip], ink, 4.5);
     c.fillStyle = ink; c.beginPath(); c.arc(...p.main.tip, 3, 0, Math.PI * 2); c.fill();
+    if (f.style === 'Judo' && f.alive) {
+      for (const [hand, elbow] of [[p.main.tip, p.main.joint], [p.off.tip, p.off.joint]]) {
+        const angle = Math.atan2(hand[1] - elbow[1], hand[0] - elbow[0]);
+        for (const spread of [-.5, .5]) this.line([hand, [hand[0] + Math.cos(angle + spread) * 7, hand[1] + Math.sin(angle + spread) * 7]], ink, 1.8);
+      }
+    }
     if (f.style === 'Boxing' || f.style === 'Kickboxing') {
       c.fillStyle = f.style === 'Boxing' ? f.color : '#e6dfc9'; c.strokeStyle = ink; c.lineWidth = 1.5;
       for (const hand of [p.main.tip, p.off.tip]) {

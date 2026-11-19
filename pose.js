@@ -1,14 +1,9 @@
-import { clamp } from './random.js?v=20261119-ground-spins';
-import { styleProfile } from './styles.js?v=20261119-ground-spins';
+import { clamp } from './random.js?v=20261119-martial-motion';
+import { styleProfile } from './styles.js?v=20261119-martial-motion';
+import { MARTIAL_STANCES, MARTIAL_GUARDS, MARTIAL_DODGES, martialTrack } from './martial-motion.js?v=20261119-martial-motion';
 
 const lerp = (a, b, t) => a + (b - a) * t;
-export const STANCES = {
-  Ninja: [-.12, 13, 22, -5, -22, 12, 26, 0, -24, 0],
-  Boxing: [.12, 7, 16, -24, 1, -21, 20, 0, -23, 0],
-  Judo: [.12, 12, 32, -4, 23, 9, 26, 0, -26, 0],
-  Kickboxing: [.02, 6, 19, -20, -4, -17, 27, 0, -25, 0],
-  Taekwondo: [-.05, 7, 13, -15, -15, 6, 28, 0, -27, 0],
-};
+export const STANCES = MARTIAL_STANCES;
 export const STYLE_TRACKS = {
   Taekwondo: { Kick: [
     [0, -.05, 7, 13, -15, -15, 6, 28, 0, -27, 0],
@@ -268,15 +263,19 @@ export function attackTurn(f) {
 // vertical coordinates never change, and Canvas stroke widths remain stable.
 export function projectPose(p) {
   if (!p.yaw && !p.torsoYaw) return p;
-  const pivot = p.back.tip[0], cosine = Math.cos(p.yaw), sine = Math.sin(p.yaw);
-  const turn = (point, depth = 0) => [pivot + (point[0] - pivot) * cosine + depth * sine, point[1]];
-  const torso = (point, depth = 0) => turn([p.hip[0] + (point[0] - p.hip[0]) * Math.cos(p.torsoYaw)
-    + depth * Math.sin(p.torsoYaw), point[1]], depth);
-  return { ...p, hip: turn(p.hip), shoulder: torso(p.shoulder), head: torso(p.head),
-    main: { joint: torso(p.main.joint, -5), tip: torso(p.main.tip, -9) },
-    off: { joint: torso(p.off.joint, 5), tip: torso(p.off.tip, 9) },
-    front: { joint: turn(p.front.joint, -4), tip: turn(p.front.tip, -7) },
-    back: { joint: turn(p.back.joint), tip: turn(p.back.tip) } };
+  const cosine = Math.cos(p.yaw), sine = Math.sin(p.yaw);
+  // Keep the spine readable edge-on. Limbs wrap around it, rather than
+  // mirroring the whole body into a thin, sliding stick.
+  const width = .72 + .28 * Math.abs(cosine * Math.cos(p.torsoYaw));
+  const torso = point => [p.hip[0] + (point[0] - p.hip[0]) * width, point[1]];
+  const shoulder = torso(p.shoulder), angle = p.yaw + p.torsoYaw;
+  const arm = (point, depth) => [shoulder[0] + (point[0] - p.shoulder[0]) * Math.cos(angle) + depth * Math.sin(angle), point[1]];
+  const leg = (point, depth) => [p.hip[0] + (point[0] - p.hip[0]) * cosine + depth * sine, point[1]];
+  return { ...p, hip: [...p.hip], shoulder, head: torso(p.head),
+    main: { joint: arm(p.main.joint, -5), tip: arm(p.main.tip, -9) },
+    off: { joint: arm(p.off.joint, 5), tip: arm(p.off.tip, 9) },
+    front: { joint: leg(p.front.joint, -4), tip: leg(p.front.tip, -7) },
+    back: { joint: [...p.back.joint], tip: [...p.back.tip] } };
 }
 export function computePose(f) {
   const moving = f.alive && ['walk', 'run', 'evade'].includes(f.state), running = f.alive && ['run', 'evade'].includes(f.state);
@@ -285,7 +284,7 @@ export function computePose(f) {
   let crouch = moving ? -Math.abs(Math.sin(phase)) * (running ? 5 : 2) : 2 + Math.sin(f.age * 2.8 + f.id) * 1.2;
   let main = [16 + (moving ? other * 17 : 0), -17 + (moving ? wave * 10 : 0)];
   let off = [-5 + (moving ? wave * 18 : 0), -12 + (moving ? other * 10 : 0)];
-  let front = [21, 0], back = [-20, 0];
+  let front = [21, 0], back = [-20, 0], drive = 0;
   if (moving) {
     const stride = running ? 31 : 18, lift = running ? 23 : 8;
     front = [wave * stride, -Math.max(0, Math.cos(phase)) * lift];
@@ -315,17 +314,25 @@ export function computePose(f) {
     } else { crouch += Math.sin(f.age * 4 + f.id) * .7; }
   }
   if (f.attack) {
+    const authored = martialTrack(f);
     const weaponKeys = f.weapon === 'Sword' && f.attack.variant === 1 ? SWORD_RISING : WEAPON_TRACKS[f.weapon];
     const keys = f.attack.signature ? (f.attack.finisher && FINISHER_TRACKS[f.style]) || SIGNATURE_TRACKS[f.style] || TRACKS[f.attack.name] : f.attack.name === 'WeaponStrike' ? weaponKeys || TRACKS.WeaponStrike
       : f.style === 'Taekwondo' && f.attack.name === 'Kick' && f.attack.variant === 1 ? TAEKWONDO_ROUNDHOUSE
         : STYLE_TRACKS[f.style]?.[f.attack.name] || (f.style === 'Kickboxing' && f.attack.name === 'Kick' && f.attack.variant === 1 ? ROUNDHOUSE
         : f.attack.name === 'Punch' && f.attack.variant === 1 ? CROSS : TRACKS[f.attack.name]);
-    const k = sampleTrack(keys, f.attack.elapsed / f.attack.duration);
+    const a = f.attack;
+    const special = a.finisher ? styleProfile(f.style).finisher : styleProfile(f.style).signature;
+    const contact = a.contactAt ?? (a.signature ? special.timing.windup : { Punch: .10, Kick: .18, Dash: .12, Uppercut: .23 }[a.name]);
+    // New ordinary and signature poses reach full extension at real contact.
+    const progress = authored && contact && a.name !== 'Grab' ? a.elapsed <= contact ? a.elapsed / contact * .4
+      : .4 + (a.elapsed - contact) / (a.duration - contact) * .6 : a.elapsed / a.duration;
+    const k = sampleTrack(authored || keys, progress);
     [lean, crouch] = k; main = k.slice(2, 4); off = k.slice(4, 6); front = k.slice(6, 8); back = k.slice(8, 10);
-    if (f.style === 'Boxing' && f.attack.name === 'Punch') {
+    drive = k[10] || 0;
+    if (!authored && f.style === 'Boxing' && f.attack.name === 'Punch') {
       if (f.attack.variant === 1) main = [11, -24]; else off = [3, -23];
     }
-    if (f.style === 'Ninja' && f.attack.name === 'Dash') { lean += .12; crouch += 8; }
+    if (!authored && f.style === 'Ninja' && f.attack.name === 'Dash') { lean += .12; crouch += 8; }
   }
   if (!moving && !f.attack) {
     if (f.weapon === 'Hammer') { main = [12, -12]; off = [2, -8]; }
@@ -341,10 +348,8 @@ export function computePose(f) {
     const amount = guard ? clamp(Math.min(d.elapsed / .05, (d.duration - d.elapsed) / .08), 0, 1)
       : Math.sin(clamp(d.elapsed / d.duration, 0, 1) * Math.PI);
     const base = STANCES[f.style] || STANCES.Kickboxing;
-    const target = guard ? [-.13, 13, 13, -29, 6, -24, 22, 0, -23, 0]
-      : f.style === 'Ninja' ? [.4, 25, 18, -11, -22, 14, 30, -8, -26, 0]
-        : f.style === 'Boxing' ? [-.5, 23, 14, -26, 1, -21, 25, 0, -25, 0]
-          : [-.3, 18, 19, -23, -5, -17, 29, -6, -25, 0];
+    const target = (guard ? MARTIAL_GUARDS : MARTIAL_DODGES)[f.style]
+      || (guard ? MARTIAL_GUARDS.Kickboxing : MARTIAL_DODGES.Kickboxing);
     const k = base.map((v, i) => lerp(v, target[i], amount));
     [lean, crouch] = k; main = k.slice(2, 4); off = k.slice(4, 6); front = k.slice(6, 8); back = k.slice(8, 10);
   }
@@ -380,7 +385,8 @@ export function computePose(f) {
   else if (f.stun > 0 && f.state === 'hit' && f.z === 0) {
     // A short chest/head recoil, not a knockdown or airborne flail.
     const recoil = Math.sin(clamp(f.stun / .16, 0, 1) * Math.PI * .8);
-    lean = -.42 * recoil; crouch = 5 + 4 * recoil; rotation = 0;
+    lean = (f.hitSide || -1) * .85 * recoil;
+    crouch = (STANCES[f.style]?.[1] || 5) + 9 * recoil; rotation = 0;
     main = [10, -17]; off = [-10, -9]; front = [23, 0]; back = [-22, 0];
   } else if (f.stun > 0) {
     const flail = Math.sin(f.age * 15 + f.id);
@@ -388,7 +394,8 @@ export function computePose(f) {
     lean = -.2;
     if (f.z === 0) rotation = f.alive ? -.8 * Math.min(1, f.stun * 3) : -1.5;
   }
-  const hip = [0, -51 + crouch], shoulder = [Math.sin(lean) * 39, hip[1] - Math.cos(lean) * 39];
+  if (!f.alive || f.stun > 0 || f.heldBy != null || f.defense || f.landing > 0) drive = 0;
+  const hip = [drive, -51 + crouch], shoulder = [hip[0] + Math.sin(lean) * 39, hip[1] - Math.cos(lean) * 39];
   const head = [shoulder[0] + Math.sin(lean) * 16, shoulder[1] - Math.cos(lean) * 16];
   const arm = target => solveLimb(shoulder, [shoulder[0] + target[0], shoulder[1] + target[1]], 23, 23, 1);
   const leg = foot => solveLimb(hip, foot, 29, 29, -1);

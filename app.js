@@ -1,11 +1,11 @@
-import { Fighter } from './fighter.js?v=20261119-ground-spins';
-import { seededRandom } from './random.js?v=20261119-ground-spins';
-import { resolveDominoes } from './collisions.js?v=20261119-ground-spins';
-import { HazardManager } from './hazards.js?v=20261119-ground-spins';
-import { Arena } from './arena.js?v=20261119-ground-spins';
-import { normalizeCount, normalizeName } from './settings.js?v=20261119-ground-spins';
-import { normalizeStyle } from './styles.js?v=20261119-ground-spins';
-import { CrowdNavigation } from './navigation.js?v=20261119-ground-spins';
+import { Fighter } from './fighter.js?v=20261119-martial-motion';
+import { seededRandom } from './random.js?v=20261119-martial-motion';
+import { resolveDominoes } from './collisions.js?v=20261119-martial-motion';
+import { HazardManager } from './hazards.js?v=20261119-martial-motion';
+import { Arena } from './arena.js?v=20261119-martial-motion';
+import { normalizeCount, normalizeName } from './settings.js?v=20261119-martial-motion';
+import { normalizeStyle } from './styles.js?v=20261119-martial-motion';
+import { CrowdNavigation } from './navigation.js?v=20261119-martial-motion';
 
 export const STEP = 1 / 120;
 export class Match {
