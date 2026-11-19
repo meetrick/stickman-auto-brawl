@@ -38,7 +38,7 @@ Legacy wall, pole, and weapon code is retained for isolated regression tests. Th
 
 ## Mobile spectator UI
 
-The arena and live crit/domino/hit/heal counters take priority. A compact first-out strip identifies last place; View standings opens the rank and elimination lists. The bottom dock uses 48px phone touch targets and safe-area padding. Roster and combat notes collapse on phones. **More** contains setup, seed replay, and the demo. Automatic close-up framing enlarges the active fight; **Overview** shows the complete arena without stretching. Edge markers identify fighters outside the close-up. Reduced-motion preference defaults to Overview and suppresses continuous panning.
+The arena and live crit/domino/hit/heal counters take priority. A compact first-out strip identifies last place; View standings opens the rank and elimination lists. The bottom dock uses 48px phone touch targets and safe-area padding. Roster and combat notes collapse on phones. **More** contains setup, seed replay, and the demo. Automatic close-up framing enlarges the active fight and briefly prioritizes a signature attacker and its target from windup, with a 1.1-second hold to avoid competing signatures stealing focus; **Overview** shows the complete arena without stretching. Edge markers identify fighters outside the close-up. Reduced-motion preference defaults to Overview and suppresses continuous panning.
 
 Pause, 0.5× / 1× / 2× speed, and camera selection affect presentation only. Physics runs at a fixed 120 Hz. A round ends with one survivor, simultaneous KO, or a 90-second draw. Hidden tabs avoid catch-up bursts; paused/finished rounds stop continuous drawing. Canvas resizing uses ResizeObserver and roster health values update in place.
 
