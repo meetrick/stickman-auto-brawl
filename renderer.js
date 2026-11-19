@@ -181,8 +181,9 @@ export class Renderer {
     this.line([p.shoulder, p.off.joint, p.off.tip], ink, 4);
     this.line([p.hip, p.back.joint, p.back.tip], ink, 4.5);
     this.line([p.hip, p.front.joint, p.front.tip], ink, 5);
-    this.line([p.hip, p.shoulder], ink, 9);
-    this.line([p.hip, p.shoulder], f.color, 5.5);
+    const spine = p.waist ? [p.hip, p.waist, p.shoulder] : [p.hip, p.shoulder];
+    this.line(spine, ink, 9);
+    this.line(spine, f.color, 5.5);
     this.line([p.shoulder, p.head], ink, 4);
     const c = this.ctx, [hx, hy] = p.head;
     c.fillStyle = '#f4efdd'; c.strokeStyle = ink; c.lineWidth = 3;

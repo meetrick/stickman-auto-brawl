@@ -149,3 +149,8 @@ For 13–24 participants, two spaced starting rows prevent overlapping spawn clu
 Approach distance respects each discipline: Judo closes for throws, Boxing steps into punching range, and kick specialists keep more room. Local steering and gentle separation reduce overlapping feet during free movement. They do not reposition attacks, guards, dodges, held fighters, airborne bodies, recoil, or defeated fighters. Temporary contact during a grab or rush remains intentional. The final duel uses direct pursuit. The planner consumes no combat RNG and remains reproducible with the same seed and settings.
 
 Close-up edge markers show at most four badges per side, grouping additional offscreen fighters into a `+N` badge. Full standings still include every participant. Navigation tests cover spawn spacing, reachable approach positions, protected combat/death states, deterministic 24-player rankings, and reduced sustained crowd overlap without suppressing attack activity.
+
+
+## Motion studio
+
+Open `motion.html` for a close two-character movement study and a separate real simulated bout. The staged study is explicitly labeled as choreography with no scoring; live-bout hits and results use the existing combat rules. Effects start off. Pause, slow playback, timeline seeking and English/Korean labels support motion review. See [MOTION_PLAN.md](MOTION_PLAN.md) for the staged animation rollout and its visual acceptance criteria.

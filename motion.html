@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#f4f0e4"><title>Motion Studio — Stickman</title><link rel="stylesheet" href="motion.css?v=20261119-headline"></head>
+<body><main>
+  <header><a href="./">← STICKMAN</a><button id="language" type="button">한국어</button></header>
+  <p class="eyebrow" id="eyebrow">MOTION STUDIO</p><h1 id="title">Every step. Every strike.</h1><p id="description">Two fighters, up close. Watch the movement without effects.</p>
+  <nav aria-label="Preview mode"><button id="study" aria-pressed="true">Movement study</button><button id="live" aria-pressed="false">Live bout</button></nav>
+  <section class="stage"><div class="stage-bar"><strong id="phase"></strong><span id="clock">00:00</span></div><canvas aria-label="Two-character movement preview"></canvas><p id="mode-note"></p></section>
+  <div class="timeline"><input id="timeline" type="range" min="0" max="18" step="0.01" value="0" aria-label="Study timeline"></div>
+  <div class="controls"><button id="pause" type="button">Pause</button><button id="speed" type="button">0.5×</button><button id="restart" type="button">Restart</button><label><input id="effects" type="checkbox"><span id="effects-label">Effects</span></label></div>
+  <p class="legend"><span id="boxer-label">BOXING</span><span id="kicker-label">TAEKWONDO</span></p>
+</main><script type="module" src="./motion-studio.js?v=20261119-headline"></script></body></html>
