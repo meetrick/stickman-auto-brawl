@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match } from '../app.js?v=20261119-martial-motion';
-import { Fighter } from '../fighter.js?v=20261119-martial-motion';
-import { seededRandom } from '../random.js?v=20261119-martial-motion';
-import { WEAPONS } from '../weapons.js?v=20261119-martial-motion';
+import { Match } from '../app.js?v=20261119-tactical-ai';
+import { Fighter } from '../fighter.js?v=20261119-tactical-ai';
+import { seededRandom } from '../random.js?v=20261119-tactical-ai';
+import { WEAPONS } from '../weapons.js?v=20261119-tactical-ai';
 
 test('all fighters spawn unarmed across seeds', () => {
   const types = new Set();

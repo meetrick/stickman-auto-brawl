@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match, STEP } from '../app.js?v=20261119-martial-motion';
-import { Arena } from '../arena.js?v=20261119-martial-motion';
+import { Match, STEP } from '../app.js?v=20261119-tactical-ai';
+import { Arena } from '../arena.js?v=20261119-tactical-ai';
 function scene(type = 'stone') {
   const w = new Match(8, 2, { terrain: false });
   w.arena = new Arena(8, w.bounds, []); w.arena.traps = []; w.arena.bars = [];

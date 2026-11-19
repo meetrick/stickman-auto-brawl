@@ -222,7 +222,8 @@ footer { display: flex; justify-content: space-between; gap: 20px; border-top: 1
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 
 .loadout { font: normal 9px monospace; color: var(--green); display: block; margin-top: 2px; }
-.fighter-card { min-height: 67px; }
+.fighter-card { height: auto; min-height: 76px; padding-block: 6px; }
+.traits { display: block; min-height: 24px; font-size: 9px; line-height: 12px; }
 .header-actions { display: flex; align-items: center; gap: 18px; }
 #language { min-width: 66px; border-radius: 6px; font-size: 12px; }
 .intro-aside { max-width: 230px; }

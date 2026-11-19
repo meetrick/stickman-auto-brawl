@@ -1,7 +1,9 @@
-import { clamp, range } from './random.js?v=20261119-martial-motion';
-import { WEAPONS } from './weapons.js?v=20261119-martial-motion';
-import { STYLE_NAMES, styleProfile } from './styles.js?v=20261119-martial-motion';
-import { beginDefense, updateDefense, reactToThreat, defenseContact } from './defense.js?v=20261119-martial-motion';
+import { clamp, range } from './random.js?v=20261119-tactical-ai';
+import { WEAPONS } from './weapons.js?v=20261119-tactical-ai';
+import { STYLE_NAMES, styleProfile } from './styles.js?v=20261119-tactical-ai';
+import { beginDefense, updateDefense, reactToThreat, defenseContact } from './defense.js?v=20261119-tactical-ai';
+import { PERSONALITIES, chooseOpponent, retreatGoal, planBehavior } from './brain.js?v=20261119-tactical-ai';
+export { PERSONALITIES } from './brain.js?v=20261119-tactical-ai';
 
 export const MOVES = Object.freeze({
   Punch: { damage: 6, knockback: 65, lift: 0, reach: 65, engage: 70, windup: .10, activeEnd: .17, duration: .28 },
@@ -14,7 +16,6 @@ export const MOVES = Object.freeze({
 });
 export const COLORS = ['#bf473b', '#438477', '#b98935', '#697ea0', '#95618a', '#5e7443', '#c27443', '#577f8b'];
 export const NAMES = ['EMBER', 'JADE', 'GOLD', 'COBALT', 'IRIS', 'MOSS', 'RUST', 'TIDE'];
-export const PERSONALITIES = ['Aggressive', 'Cowardly', 'Brawler', 'Trickster'];
 export const GAITS = ['Walker', 'Runner', 'Sprinter'];
 const MOVE_NAMES = Object.keys(MOVES);
 
@@ -59,6 +60,7 @@ export class Fighter {
     if (signature) { this.signatureCooldown = 7; variant = 0; }
     this.attack = { name, serial: ++this.attackSerial, targetId: target.id, signature, finisher: Boolean(finisher), chain: Math.min(3, (this.comboStep || 0) + 1), elapsed: 0, duration: signature ? special.timing.duration : this.getMove(name).duration, variant, resolved: false, connected: false, hitIds: [], dx: dx / length, dy: dy / length };
     this.attack.contactAt = this.getMove(name).windup;
+    this.engagementTargetId = target.id;
     this.state = 'attack'; this.vx = this.vy = 0;
     if (name === 'JumpKick') { this.vz = 195; this.jumpCooldown = 3.5; }
     return true;
@@ -104,6 +106,7 @@ export class Fighter {
     if (defense?.dodged) return true;
     const knockback = move.knockback * (crit ? 2 : 1) * (defense?.knockback ?? 1), lift = move.lift * (crit ? 2 : 1) * (defense?.lift ?? 1);
     if (!target.receiveHit(move.damage * this.power * (crit ? 3 : 1) * (defense?.damage ?? 1), dx / length * knockback, dy / length * knockback, lift)) return false;
+    target.lastAttackerId = this.id; target.retaliateUntil = world.time + 2;
     if (defense?.guard && target.alive) {
       target.defense = defense.guard; target.stun = 0; target.state = 'guard';
       target.counterTargetId = this.id; target.counterUntil = world.time + .7;
@@ -137,7 +140,7 @@ export class Fighter {
     if (reactToThreat(this, world)) return;
     const enemies = world.fighters.filter(f => f !== this && f.alive && f.heldBy == null);
     const nearest = enemies.sort((a, b) => Math.hypot(a.x - this.x, a.y - this.y) - Math.hypot(b.x - this.x, b.y - this.y))[0];
-    const target = ['Cowardly', 'Aggressive'].includes(this.personality) ? nearest : world.navigation?.targetFor(this, enemies) || nearest;
+    const target = chooseOpponent(this, enemies, world, world.navigation?.targetFor(this, enemies) || nearest);
     if (!target) return;
     const dx = target.x - this.x, dy = target.y - this.y, distance = Math.hypot(dx, dy) || 1, b = world.bounds;
     const discipline = styleProfile(this.style);
@@ -145,6 +148,14 @@ export class Fighter {
     const cornered = (this.x < b.left + 60 && dx > 0) || (this.x > b.right - 60 && dx < 0)
       || (this.y < b.top + 45 && dy > 0) || (this.y > b.bottom - 45 && dy < 0);
     if (cornered) this.courageUntil = world.time + 2.5;
+    const tactic = planBehavior(this, target, enemies, world, cornered);
+    if (tactic) {
+      this.intent = tactic.mode === 'withdraw' ? 'flee' : tactic.mode;
+      this.moveToward(tactic.goal, world, tactic.mode !== 'watch');
+      this.facing = dx >= 0 ? 1 : -1;
+      if (tactic.mode === 'watch') { this.vx *= .65; this.vy *= .65; this.state = 'evade'; }
+      return;
+    }
     if (this.personality === 'Cowardly' && enemies.length > 1 && distance < 210 && !cornered && world.time >= (this.courageUntil || 0) && this.stamina > .25 && !this.exhausted) {
       this.fleeUntil ||= world.time + range(world.rng, .8, 1.25);
       if (world.time < this.fleeUntil) {
@@ -158,8 +169,7 @@ export class Fighter {
             world.emit('escape', this, { text: 'ESCAPE!', source: target.id });
           }
         }
-        this.moveToward({ x: clamp(this.x - dx / distance * 145 - dy / distance * 65 * this.escapeSide, b.left + 18, b.right - 18),
-          y: clamp(this.y - dy / distance * 145 + dx / distance * 65 * this.escapeSide, b.top + 18, b.bottom - 18) }, world, true);
+        this.moveToward(retreatGoal(this, target, enemies, b, this.escapeSide), world, true);
         this.facing = dx >= 0 ? 1 : -1;
         if (world.time < (this.escapeUntil || 0)) { this.vx *= 1.25; this.vy *= 1.25; this.state = 'evade'; }
         return;

@@ -1,15 +1,16 @@
-import { Fighter } from './fighter.js?v=20261119-martial-motion';
-import { seededRandom } from './random.js?v=20261119-martial-motion';
-import { resolveDominoes } from './collisions.js?v=20261119-martial-motion';
-import { HazardManager } from './hazards.js?v=20261119-martial-motion';
-import { Arena } from './arena.js?v=20261119-martial-motion';
-import { normalizeCount, normalizeName } from './settings.js?v=20261119-martial-motion';
-import { normalizeStyle } from './styles.js?v=20261119-martial-motion';
-import { CrowdNavigation } from './navigation.js?v=20261119-martial-motion';
+import { Fighter } from './fighter.js?v=20261119-tactical-ai';
+import { seededRandom } from './random.js?v=20261119-tactical-ai';
+import { resolveDominoes } from './collisions.js?v=20261119-tactical-ai';
+import { HazardManager } from './hazards.js?v=20261119-tactical-ai';
+import { Arena } from './arena.js?v=20261119-tactical-ai';
+import { normalizeCount, normalizeName } from './settings.js?v=20261119-tactical-ai';
+import { normalizeStyle } from './styles.js?v=20261119-tactical-ai';
+import { CrowdNavigation } from './navigation.js?v=20261119-tactical-ai';
+import { normalizePersonality } from './brain.js?v=20261119-tactical-ai';
 
 export const STEP = 1 / 120;
 export class Match {
-  constructor(seed = 1, count = 8, { showcase = false, terrain = false, names = [], styles = [] } = {}) {
+  constructor(seed = 1, count = 8, { showcase = false, terrain = false, names = [], styles = [], personalities = [] } = {}) {
     count = normalizeCount(count);
     this.seed = seed >>> 0; this.rng = seededRandom(this.seed);
     this.bounds = { left: 100, right: 1100, top: 245, bottom: 580 };
@@ -29,6 +30,7 @@ export class Match {
       }
       fighter.name = normalizeName(names[id], id);
       if (normalizeStyle(styles[id]) !== 'Random') fighter.style = styles[id];
+      if (normalizePersonality(personalities[id]) !== 'Random') fighter.personality = personalities[id];
       return fighter;
     });
     if (showcase && count >= 4) this.stageShowcase();

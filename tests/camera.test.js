@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match } from '../app.js?v=20261119-martial-motion';
-import { SpectatorCamera } from '../camera.js?v=20261119-martial-motion';
+import { Match } from '../app.js?v=20261119-tactical-ai';
+import { SpectatorCamera } from '../camera.js?v=20261119-tactical-ai';
 
 test('overview keeps the entire arena visible without stretching in portrait and landscape', () => {
   for (const [width, height] of [[334, 430], [820, 200], [1000, 567]]) {

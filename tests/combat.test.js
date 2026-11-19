@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Fighter, MOVES } from '../fighter.js?v=20261119-martial-motion';
-import { Match, STEP } from '../app.js?v=20261119-martial-motion';
-import { seededRandom } from '../random.js?v=20261119-martial-motion';
+import { Fighter, MOVES } from '../fighter.js?v=20261119-tactical-ai';
+import { Match, STEP } from '../app.js?v=20261119-tactical-ai';
+import { seededRandom } from '../random.js?v=20261119-tactical-ai';
 
 test('seeded matches reproduce a complete physics trajectory', () => {
   const a = new Match(72), b = new Match(72);
@@ -39,7 +39,7 @@ test('spawn rolls HP, speed, attack power and varied personality traits', () => 
   const fighters = Array.from({ length: 1000 }, (_, i) => new Fighter(i, 400, 400, seededRandom(i)));
   assert.ok(fighters.every(f => f.hp === f.maxHp && f.maxHp >= 80 && f.maxHp <= 130));
   assert.ok(fighters.every(f => f.speed >= 90 && f.speed < 155 && f.power >= .8 && f.power < 1.25));
-  assert.equal(new Set(fighters.map(f => f.personality)).size, 4);
+  assert.equal(new Set(fighters.map(f => f.personality)).size, 6);
   assert.ok(new Set(fighters.map(f => f.maxHp)).size > 40);
 });
 for (const name of Object.keys(MOVES)) {

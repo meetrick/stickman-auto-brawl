@@ -1,5 +1,5 @@
-import { escapeHTML } from './settings.js?v=20261119-martial-motion';
-import { t } from './i18n.js?v=20261119-martial-motion';
+import { escapeHTML } from './settings.js?v=20261119-tactical-ai';
+import { t } from './i18n.js?v=20261119-tactical-ai';
 
 export function rankLabel(entry) {
   return entry.rank == null ? '—' : t(entry.tied ? 'tiedPlace' : 'place', { rank: entry.rank });
