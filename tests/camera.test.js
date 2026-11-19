@@ -45,3 +45,22 @@ test('paused and reduced-motion framing does not drift; new rounds reset focus',
   assert.ok(Number.isFinite(view.x) && Number.isFinite(view.scale));
   assert.notEqual(view.x, initial.x);
 });
+
+test('signature windups bring the attacking pair into portrait view and hold against competing signatures',()=>{
+ const w=new Match(12,8),camera=new SpectatorCamera();
+ w.fighters.forEach((f,i)=>{f.x=180+i*100;f.y=400;});camera.frame(w,390,464,true);
+ const actor=w.fighters[4],victim=w.fighters[5];actor.x=950;victim.x=1000;
+ actor.style='Taekwondo';actor.cooldown=0;actor.age=2;actor.attackVariants.Kick=2;actor.startAttack('Kick',victim);
+ w.time=.05;camera.frame(w,390,464,true);assert.equal(camera.focusId,actor.id);assert.equal(camera.opponentId,victim.id);
+ const rival=w.fighters[1];rival.style='Boxing';rival.age=2;rival.cooldown=0;rival.attackVariants.Punch=2;rival.startAttack('Punch',w.fighters[2]);
+ for(let i=0;i<8;i++){w.time+=.05;actor.attack.elapsed+=.05;camera.frame(w,390,464,true);}
+ assert.equal(camera.focusId,actor.id,'another signature cannot immediately steal focus');
+ for(const f of [actor,victim]){const x=(f.x-camera.view.x)*camera.view.scale+195;assert.ok(x>15&&x<375);}
+ camera.reset();assert.equal(camera.signatureKey,null);assert.equal(camera.opponentId,null);
+});
+test('overview and reduced-motion never acquire a dramatic signature target',()=>{
+ const w=new Match(1,4),a=w.fighters[0];a.style='Taekwondo';a.cooldown=0;a.age=2;a.attackVariants.Kick=2;a.startAttack('Kick',w.fighters[1]);
+ for(const [close,reduced]of [[false,false],[true,true]]){
+  const camera=new SpectatorCamera();camera.frame(w,390,464,close,reduced);assert.equal(camera.signatureKey,null);
+ }
+});
