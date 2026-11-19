@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f5f3e9">
   <meta name="description" content="Name your friends. Watch an unarmed stickman brawl. See who wins and who goes out first.">
   <title>Stickman — Auto Brawl</title>
-  <link rel="stylesheet" href="style.css?v=20261119-headline">
+  <link rel="stylesheet" href="style.css?v=20261119-cinema">
 </head>
 <body>
 <div class="shell">
@@ -47,7 +47,7 @@
           <button id="speed" aria-label="Playback speed: 1 times">1× Speed</button>
           <details class="tools" id="tools">
             <summary><span data-i18n="more">More</span> <span aria-hidden="true">⋯</span></summary>
-            <div class="tools-menu"><p data-i18n="toolsTitle">WATCH YOUR WAY</p><button id="setup" data-i18n="setupTitle">Set up your match</button><button id="replay" data-i18n="replay">↺ Replay seed</button><button id="demo" data-i18n="demo">✳ Chaos demo</button><span data-i18n="demoHint">Demo opens with a staged collision.</span></div>
+            <div class="tools-menu"><p data-i18n="toolsTitle">WATCH YOUR WAY</p><button id="setup" data-i18n="setupTitle">Set up your match</button><button id="replay" data-i18n="replay">↺ Replay seed</button><a href="./motion.html" data-i18n="motionStudio">Motion studio</a><button id="demo" data-i18n="demo">✳ Chaos demo</button><span data-i18n="demoHint">Demo opens with a staged collision.</span></div>
           </details>
         </nav>
       </section>
@@ -84,7 +84,7 @@
   </form>
 </dialog>
 <script type="module">
-  import { boot } from './ui.js?v=20261119-headline';
+  import { boot } from './ui.js?v=20261119-cinema';
   boot();
 </script>
 </body>

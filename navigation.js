@@ -1,5 +1,5 @@
-import { clamp } from './random.js?v=20261119-headline';
-import { styleProfile } from './styles.js?v=20261119-headline';
+import { clamp } from './random.js?v=20261119-cinema';
+import { styleProfile } from './styles.js?v=20261119-cinema';
 
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 // Only free footwork participates. Throws, recoil, dodges and settled bodies

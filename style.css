@@ -109,6 +109,8 @@ canvas { display: block; width: 100%; aspect-ratio: 1200 / 680; }
 .tools-menu { position: absolute; bottom: calc(100% + 12px); right: 0; width: 242px; background: var(--paper); border: 1px solid #c6ccbb; border-radius: 10px; padding: 12px; box-shadow: 0 8px 35px #29332322; z-index: 5; }
 .tools-menu p { margin: 4px 4px 9px; font: 9px monospace; letter-spacing: 1px; color: var(--muted); }
 .tools-menu button { display: block; width: 100%; text-align: left; border: 0; border-radius: 4px; font-size: 13px; }
+.tools-menu > a { display: flex; align-items: center; min-height: 48px; padding: 10px 12px; color: inherit; text-decoration: none; font-size: 13px; border-radius: 4px; }
+.tools-menu > a:hover { background: #e5e6d9; }
 .tools-menu > span { display: block; padding: 6px 4px 2px; font-size: 11px; line-height: 1.5; color: var(--muted); }
 .section-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; border-bottom: 1px solid var(--line); }
 .section-label h2 { margin: 0; font: inherit; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }

@@ -1,11 +1,17 @@
-import { cinematicSample, rigPose, contactLeg } from './cinematic-rig.js?v=20261119-headline';
-import { computePose, projectPose, attackTurn } from './pose.js?v=20261119-headline';
+import { cinematicSample, rigPose, contactLeg } from './cinematic-rig.js?v=20261119-cinema';
+import { computePose, projectPose, attackTurn } from './pose.js?v=20261119-cinema';
 
 export const fighterScale = f => .83 + (f.y - 245) / 335 * .23;
+const projectRig = (f, rig, contacts) => {
+  const turn = attackTurn(f);
+  // The new rig already authors shoulder loading and extension. Applying the
+  // old torso squash as well would shorten a fully extended jab a second time.
+  return projectPose({ ...rigPose(rig, contacts), yaw: turn.yaw, torsoYaw: 0 });
+};
 export function visualPose(f) {
   const sample = cinematicSample(f);
   if (!sample) return projectPose(computePose(f));
-  return projectPose({ ...rigPose(sample.rig, sample.contacts), ...attackTurn(f) });
+  return projectRig(f, sample.rig, sample.contacts);
 }
 
 // Renderer-owned state only: never writes to a Fighter or consumes world RNG.
@@ -34,7 +40,7 @@ export class MotionDirector {
     const rig = sample.rig.map((v, i) => state.from[i] + (v - state.from[i]) * smooth);
     const contacts = sample.contacts.map((contact, i) => contact && (mix >= .7 || state.priorContacts[i] || !state.output));
     const scale = fighterScale(f), world = p => ({ x: f.x + p[0] * scale * f.facing, y: f.y + p[1] * scale });
-    let p = projectPose({ ...rigPose(rig, contacts), ...attackTurn(f) });
+    let p = projectRig(f, rig, contacts);
     for (let i = 0; i < 2; i++) {
       if (!contacts[i] || sample.clip === 'rush') { state.anchors[i] = null; continue; }
       if (!state.anchors[i]) state.anchors[i] = world((i ? p.back : p.front).tip);
@@ -50,7 +56,7 @@ export class MotionDirector {
     });
     height = Math.min(height, (state.height ?? height) + Math.max(0, time - state.time) * 120);
     rig[1] = -height;
-    p = projectPose({ ...rigPose(rig, contacts), ...attackTurn(f) });
+    p = projectRig(f, rig, contacts);
     targets.forEach((target, i) => { if (target) p[i ? 'back' : 'front'] = contactLeg(p.hip, target); });
     p.planted = state.anchors.map(Boolean); p.clip = sample.clip;
     state.height = height; state.current = rig; state.contacts = contacts; state.time = time; state.output = p;

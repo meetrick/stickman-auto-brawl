@@ -1,6 +1,6 @@
-import { NAMES } from './fighter.js?v=20261119-headline';
-import { normalizeStyle } from './styles.js?v=20261119-headline';
-import { normalizePersonality } from './brain.js?v=20261119-headline';
+import { NAMES } from './fighter.js?v=20261119-cinema';
+import { normalizeStyle } from './styles.js?v=20261119-cinema';
+import { normalizePersonality } from './brain.js?v=20261119-cinema';
 
 export const SETTINGS_KEY = 'stickman-auto-brawl.preferences.v1';
 export const MIN_FIGHTERS = 2, MAX_FIGHTERS = 24, MAX_NAME_LENGTH = 16;

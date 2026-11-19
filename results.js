@@ -1,5 +1,5 @@
-import { escapeHTML } from './settings.js?v=20261119-headline';
-import { t } from './i18n.js?v=20261119-headline';
+import { escapeHTML } from './settings.js?v=20261119-cinema';
+import { t } from './i18n.js?v=20261119-cinema';
 
 export function rankLabel(entry) {
   return entry.rank == null ? '—' : t(entry.tied ? 'tiedPlace' : 'place', { rank: entry.rank });

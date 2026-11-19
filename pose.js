@@ -1,6 +1,6 @@
-import { clamp } from './random.js?v=20261119-headline';
-import { styleProfile } from './styles.js?v=20261119-headline';
-import { MARTIAL_STANCES, MARTIAL_GUARDS, MARTIAL_DODGES, martialTrack } from './martial-motion.js?v=20261119-headline';
+import { clamp } from './random.js?v=20261119-cinema';
+import { styleProfile } from './styles.js?v=20261119-cinema';
+import { MARTIAL_STANCES, MARTIAL_GUARDS, MARTIAL_DODGES, martialTrack } from './martial-motion.js?v=20261119-cinema';
 
 const lerp = (a, b, t) => a + (b - a) * t;
 export const STANCES = MARTIAL_STANCES;

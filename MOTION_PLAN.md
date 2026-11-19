@@ -9,10 +9,11 @@ not health, hit timing, reach, AI, RNG, ranking or knockout physics.
 2. [x] Author run, braking, stance and grounded attack sequences. Add foot
    contact locking and short pose transitions. Verify bone lengths, grounded
    support, interruption and immutable defeated bodies.
-3. [ ] Connect the motion layer to normal matches, preserving legacy styles
-   as fallbacks. Verify deterministic combat with/without rendering, mobile
-   portrait/landscape, reduced motion, replay and 24-fighter rendering cost.
-4. [ ] Test and commit each chunk, merge, publish both the game and studio,
+3. [x] Connect the motion layer to normal matches, extending the rig to all
+   five styles. Preserve held, airborne and legacy attack poses as fallbacks.
+   Verify deterministic combat with/without rendering, mobile portrait and
+   landscape, reduced motion, replay and 24-fighter rendering cost.
+4. Test and commit each chunk, merge, publish both the game and studio,
    and provide a reviewable visual result.
 
 ## Visual acceptance
@@ -27,9 +28,10 @@ not health, hit timing, reach, AI, RNG, ranking or knockout physics.
 - Staged defenses and reactions are explicitly labeled as choreography;
   simulated bout contacts are driven only by real combat events.
 
-## Subsequent expansion
+## Refinement after this rollout
 
-After this Boxing/Taekwondo foundation is visually reviewed, author the same
-rig treatment for Ninja, Judo and Kickboxing. Their existing authored poses
-remain in the game during this rollout. Do not claim film-quality motion or
-full five-style migration based only on passing geometry tests.
+The foundation was reviewed with Boxing/Taekwondo before adding Ninja's low
+sweeps, Judo's grip/hip throw and Kickboxing's body/heel kicks to the same rig.
+The studio deliberately retains the focused Boxing/Taekwondo choreography;
+normal matches use all five disciplines. Further clip polish should be judged
+in the effects-free studio first, not inferred from passing geometry tests.

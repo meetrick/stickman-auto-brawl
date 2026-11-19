@@ -1,8 +1,8 @@
-import { Match, STEP } from './app.js?v=20261119-headline';
-import { Renderer } from './renderer.js?v=20261119-headline';
-import { loadPreferences } from './settings.js?v=20261119-headline';
-import { MotionDirector, fighterScale } from './motion-director.js?v=20261119-headline';
-import { sampleStudyActor, studyPhase, STUDY_DURATION, STUDY_MARKS } from './motion-study.js?v=20261119-headline';
+import { Match, STEP } from './app.js?v=20261119-cinema';
+import { Renderer } from './renderer.js?v=20261119-cinema';
+import { loadPreferences } from './settings.js?v=20261119-cinema';
+import { MotionDirector, fighterScale } from './motion-director.js?v=20261119-cinema';
+import { sampleStudyActor, studyPhase, STUDY_DURATION, STUDY_MARKS } from './motion-study.js?v=20261119-cinema';
 
 const $ = s => document.querySelector(s), canvas = $('canvas'), renderer = new Renderer(canvas), ctx = renderer.ctx;
 let storage; try { storage = localStorage; } catch { /* Embedded browser. */ }
@@ -47,18 +47,19 @@ function draw() {
   ctx.strokeStyle = '#c4c9b5'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, floor + 2); ctx.lineTo(rect.width, floor + 2); ctx.stroke();
   const fighters = mode === 'study' ? actors.map((f, i) => sampleStudyActor(f, i, time)) : world.fighters;
   const extent = mode === 'study' ? time < 2 ? 440 - 140 * time / 2 : 300 : Math.max(300, Math.abs(fighters[0].x - fighters[1].x) + 150);
-  const scale = Math.min(2.2, rect.width / extent, rect.height / 220);
+  const centerY = (fighters[0].y + fighters[1].y) / 2;
+  const scale = Math.min(2.2, rect.width / extent, rect.height / (220 + Math.abs(fighters[0].y - fighters[1].y)));
   const center = mode === 'study' ? 0 : (fighters[0].x + fighters[1].x) / 2;
   for (const [index, f] of fighters.entries()) {
     const p = director.poseFor(f, mode === 'study' ? time : world.time, mode === 'study' ? actors[index] : f);
     const x = rect.width / 2 + (f.x - center) * scale;
-    ctx.save(); ctx.translate(x, floor - f.z * scale); ctx.scale(scale * fighterScale(f) * f.facing, scale * fighterScale(f));
+    ctx.save(); ctx.translate(x, floor + (f.y - centerY - f.z) * scale); ctx.scale(scale * fighterScale(f) * f.facing, scale * fighterScale(f));
     if (!f.alive && f.z === 0) ctx.translate(0, 37);
     ctx.translate(...p.hip); ctx.rotate(p.rotation); ctx.translate(-p.hip[0], -p.hip[1]);
     ctx.lineCap = 'round'; ctx.lineJoin = 'round'; renderer.skeleton(p, f, '#292b27'); ctx.restore();
   }
   if (mode === 'live' && $('#effects').checked) {
-    ctx.save(); ctx.translate(rect.width / 2 - center * scale, floor - 400 * scale); ctx.scale(scale, scale);
+    ctx.save(); ctx.translate(rect.width / 2 - center * scale, floor - centerY * scale); ctx.scale(scale, scale);
     for (const effect of world.effects) renderer.effect(effect); ctx.restore();
   }
   $('#phase').textContent = tr(mode === 'live' ? world.finished ? 'ended' : 'bout' : studyPhase(time));
