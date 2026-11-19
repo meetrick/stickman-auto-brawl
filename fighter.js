@@ -1,7 +1,7 @@
-import { clamp, range } from './random.js?v=20261119-crowd24';
-import { WEAPONS } from './weapons.js?v=20261119-crowd24';
-import { STYLE_NAMES, styleProfile } from './styles.js?v=20261119-crowd24';
-import { beginDefense, updateDefense, reactToThreat, defenseContact } from './defense.js?v=20261119-crowd24';
+import { clamp, range } from './random.js?v=20261119-ground-spins';
+import { WEAPONS } from './weapons.js?v=20261119-ground-spins';
+import { STYLE_NAMES, styleProfile } from './styles.js?v=20261119-ground-spins';
+import { beginDefense, updateDefense, reactToThreat, defenseContact } from './defense.js?v=20261119-ground-spins';
 
 export const MOVES = Object.freeze({
   Punch: { damage: 6, knockback: 65, lift: 0, reach: 65, engage: 70, windup: .10, activeEnd: .17, duration: .28 },
@@ -58,6 +58,7 @@ export class Fighter {
       && this.signatureCooldown <= 0 && this.attackVariants[name] % 3 === 0 ? special.text : null;
     if (signature) { this.signatureCooldown = 7; variant = 0; }
     this.attack = { name, serial: ++this.attackSerial, targetId: target.id, signature, finisher: Boolean(finisher), chain: Math.min(3, (this.comboStep || 0) + 1), elapsed: 0, duration: signature ? special.timing.duration : this.getMove(name).duration, variant, resolved: false, connected: false, hitIds: [], dx: dx / length, dy: dy / length };
+    this.attack.contactAt = this.getMove(name).windup;
     this.state = 'attack'; this.vx = this.vy = 0;
     if (name === 'JumpKick') { this.vz = 195; this.jumpCooldown = 3.5; }
     return true;
@@ -249,7 +250,8 @@ export class Fighter {
       }
     }
     if (a.elapsed >= move.duration) {
-      this.releaseGrab(world); this.attack = null; this.cooldown = range(world.rng, .22, .55) * this.tempo;
+      this.releaseGrab(world); this.attack = null;
+      this.cooldown = (this.weapon === 'None' ? range(world.rng, .18, .42) : range(world.rng, .22, .55)) * this.tempo;
       const profile = styleProfile(this.style), step = this.comboStep || 0;
       if (a.connected && step < profile.combo.length && a.name === (step === 0 ? profile.comboStarter || 'Punch' : profile.combo[step - 1])) {
         this.comboStep = (this.comboStep || 0) + 1;

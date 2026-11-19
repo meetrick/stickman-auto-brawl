@@ -1,4 +1,4 @@
-import { range } from './random.js?v=20261119-crowd24';
+import { range } from './random.js?v=20261119-ground-spins';
 
 export const DEFENSE_PROFILES = {
   Ninja: { reaction: .46, guard: .15, speed: 300 },

@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Fighter, MOVES} from '../fighter.js?v=20261119-crowd24';
-import {computePose} from '../pose.js?v=20261119-crowd24';
-import {STYLE_NAMES} from '../styles.js?v=20261119-crowd24';
-import {seededRandom} from '../random.js?v=20261119-crowd24';
+import {Fighter, MOVES} from '../fighter.js?v=20261119-ground-spins';
+import {computePose} from '../pose.js?v=20261119-ground-spins';
+import {STYLE_NAMES} from '../styles.js?v=20261119-ground-spins';
+import {seededRandom} from '../random.js?v=20261119-ground-spins';
 const distance=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 
 test('each style has a distinct idle and running silhouette without consuming RNG',()=>{

@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match } from '../app.js?v=20261119-crowd24';
-import { normalizeCount, normalizeName, normalizePreferences, loadPreferences, savePreferences, escapeHTML, SETTINGS_KEY } from '../settings.js?v=20261119-crowd24';
-import { MESSAGES, setLanguage, getLanguage, t, eventText } from '../i18n.js?v=20261119-crowd24';
+import { Match } from '../app.js?v=20261119-ground-spins';
+import { normalizeCount, normalizeName, normalizePreferences, loadPreferences, savePreferences, escapeHTML, SETTINGS_KEY } from '../settings.js?v=20261119-ground-spins';
+import { MESSAGES, setLanguage, getLanguage, t, eventText } from '../i18n.js?v=20261119-ground-spins';
 
 test('participant counts stay within 2–24 and names are trimmed, bounded, and have unique defaults', () => {
   assert.equal(normalizeCount(1), 2); assert.equal(normalizeCount(99), 24); assert.equal(normalizeCount('bad'), 8);

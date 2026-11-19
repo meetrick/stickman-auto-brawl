@@ -1,9 +1,9 @@
-import { SpectatorCamera } from './camera.js?v=20261119-crowd24';
-import { clamp } from './random.js?v=20261119-crowd24';
-import { barPoint } from './arena.js?v=20261119-crowd24';
-import { computePose } from './pose.js?v=20261119-crowd24';
-import { WEAPONS } from './weapons.js?v=20261119-crowd24';
-import { t, eventText } from './i18n.js?v=20261119-crowd24';
+import { SpectatorCamera } from './camera.js?v=20261119-ground-spins';
+import { clamp } from './random.js?v=20261119-ground-spins';
+import { barPoint } from './arena.js?v=20261119-ground-spins';
+import { computePose, projectPose } from './pose.js?v=20261119-ground-spins';
+import { WEAPONS } from './weapons.js?v=20261119-ground-spins';
+import { t, eventText } from './i18n.js?v=20261119-ground-spins';
 const INK = '#292b27';
 export class Renderer {
   constructor(canvas) {
@@ -171,7 +171,7 @@ export class Renderer {
     if (a.elapsed < move.windup * .7 || a.elapsed > (move.activeEnd || move.duration - .05) + .04) return;
     const points = [];
     for (let i = 0; i <= 6; i++) {
-      const pose = computePose({ ...f, attack: { ...a, elapsed: Math.max(0, a.elapsed - (a.signature ? .085 : .045) * (1 - i / 6)) } });
+      const pose = projectPose(computePose({ ...f, attack: { ...a, elapsed: Math.max(0, a.elapsed - (a.signature ? .085 : .045) * (1 - i / 6)) } }));
       points.push(a.name === 'Kick' ? pose.front.tip : a.variant === 1 ? pose.off.tip : pose.main.tip);
     }
     const c = this.ctx; c.save(); c.globalAlpha *= .28;
@@ -206,11 +206,11 @@ export class Renderer {
     c.strokeStyle = f.color; c.lineWidth = 2.5;
     c.beginPath(); c.moveTo(hx - 9, hy - 4); c.quadraticCurveTo(hx - 20 - drag, hy - 9 + flutter, hx - 29 - drag, hy - 2 + flutter); c.stroke();
     c.beginPath(); c.moveTo(hx - 9, hy - 3); c.quadraticCurveTo(hx - 17 - drag, hy + flutter, hx - 24 - drag, hy + 8 + flutter); c.stroke();
-    if (f.alive) this.line([[hx + 4, hy - 1], [hx + 8, hy - 2]], ink, 2);
-    else { this.line([[hx + 3, hy - 4], [hx + 8, hy + 1]], ink, 1.5); this.line([[hx + 8, hy - 4], [hx + 3, hy + 1]], ink, 1.5); }
+    if (f.alive && Math.cos(p.yaw || 0) >= 0) this.line([[hx + 4, hy - 1], [hx + 8, hy - 2]], ink, 2);
+    else if (!f.alive) { this.line([[hx + 3, hy - 4], [hx + 8, hy + 1]], ink, 1.5); this.line([[hx + 8, hy - 4], [hx + 3, hy + 1]], ink, 1.5); }
   }
   fighter(f, time) {
-    const c = this.ctx, scale = .83 + (f.y - 245) / 335 * .23, sy = f.y - f.z, p = computePose(f);
+    const c = this.ctx, scale = .83 + (f.y - 245) / 335 * .23, sy = f.y - f.z, p = projectPose(computePose(f));
     c.save(); c.translate(f.x, f.y); c.scale(scale, scale * .3);
     c.fillStyle = '#37392c22'; c.beginPath(); c.ellipse(0, 0, Math.max(8, 23 - f.z * .04), 13, 0, 0, Math.PI * 2); c.fill(); c.restore();
     if (f.state === 'run' && f.z < 2) {
@@ -230,7 +230,7 @@ export class Renderer {
         const ghost = { ...f };
         if (f.attack) ghost.attack = { ...f.attack, elapsed: Math.max(0, f.attack.elapsed - lag) };
         if (dodgeTrail) ghost.defense = { ...f.defense, elapsed: Math.max(0, f.defense.elapsed - lag) };
-        const pose = computePose(ghost);
+        const pose = projectPose(computePose(ghost));
         c.save(); c.globalAlpha = lag > .06 ? .08 : .18;
         c.translate(f.x - f.vx * lag, sy - f.vy * lag + (hopTrail ? f.vz * lag : 0)); c.scale(scale * f.facing, scale);
         c.translate(...pose.hip); c.rotate(pose.rotation); c.translate(-pose.hip[0], -pose.hip[1]);

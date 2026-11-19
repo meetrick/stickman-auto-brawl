@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Match, STEP} from '../app.js?v=20261119-crowd24';
-import {STYLES, STYLE_NAMES} from '../styles.js?v=20261119-crowd24';
-import {computePose} from '../pose.js?v=20261119-crowd24';
+import {Match, STEP} from '../app.js?v=20261119-ground-spins';
+import {STYLES, STYLE_NAMES} from '../styles.js?v=20261119-ground-spins';
+import {computePose} from '../pose.js?v=20261119-ground-spins';
 
 function setup(style){
  const w=new Match(12,3,{styles:Array(3).fill(style)}),[a,b,c]=w.fighters;

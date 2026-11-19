@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match } from '../app.js?v=20261119-crowd24';
-import { firstOutNames, rankLabel, standingsMarkup, eliminationMarkup } from '../results.js?v=20261119-crowd24';
-import { setLanguage, eventText } from '../i18n.js?v=20261119-crowd24';
+import { Match } from '../app.js?v=20261119-ground-spins';
+import { firstOutNames, rankLabel, standingsMarkup, eliminationMarkup } from '../results.js?v=20261119-ground-spins';
+import { setLanguage, eventText } from '../i18n.js?v=20261119-ground-spins';
 
 test('standings and timeline escape names and retain participant numbers for identical names', () => {
   const w = new Match(2, 4, { names: ['<img src=x>', 'Alice', 'Alice', '끝'] });
