@@ -64,6 +64,8 @@ export const MESSAGES = {
   'CRIT!': ['CRIT!', '치명타!'], 'DOMINO!': ['DOMINO!', '연쇄 충돌!'], 'BOOM!': ['BOOM!', '폭발!'],
   'DASH CRASH!': ['DASH CRASH!', '돌진 충돌!'], 'FLYING KICK!': ['FLYING KICK!', '점프킥!'], 'UPPERCUT!': ['UPPERCUT!', '어퍼컷!'],
   'PUNCH!': ['PUNCH!', '펀치!'], 'KICK!': ['KICK!', '발차기!'],
+  'BLOCK!': ['BLOCK!', '가드!'], 'DODGED!': ['DODGED!', '회피!'],
+  'GUARD BREAK!': ['GUARD BREAK!', '가드 붕괴!'], 'ESCAPE!': ['ESCAPE!', '긴급 회피!'],
   'SHADOW KICK!': ['SHADOW KICK!', '그림자 차기!'], 'DYNAMITE HOOK!': ['DYNAMITE HOOK!', '다이너마이트 훅!'],
   'HIP THROW!': ['HIP THROW!', '허리 메치기!'], 'SPINNING HEEL!': ['SPINNING HEEL!', '회전 뒤꿈치차기!'],
   'THROWN!': ['THROWN!', '던지기!'], 'GRABBED!': ['GRABBED!', '붙잡힘!'], 'SLASH!': ['SLASH!', '베기!'],

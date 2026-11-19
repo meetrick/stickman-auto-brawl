@@ -196,7 +196,7 @@ export function solveLimb(root, target, upper, lower, bend = 1) {
 }
 export function computePose(f) {
   const moving = f.alive && ['walk', 'run', 'evade'].includes(f.state), running = f.alive && ['run', 'evade'].includes(f.state);
-  const phase = f.stridePhase || 0, wave = Math.sin(phase), other = Math.sin(phase + Math.PI);
+  const phase = (f.stridePhase || 0) * (f.intent === 'flee' ? -1 : 1), wave = Math.sin(phase), other = Math.sin(phase + Math.PI);
   let lean = moving ? running ? .35 : .1 : Math.sin(f.age * 2.8 + f.id) * .025;
   let crouch = moving ? -Math.abs(Math.sin(phase)) * (running ? 5 : 2) : 2 + Math.sin(f.age * 2.8 + f.id) * 1.2;
   let main = [16 + (moving ? other * 17 : 0), -17 + (moving ? wave * 10 : 0)];
@@ -241,6 +241,23 @@ export function computePose(f) {
   if (!moving && !f.attack) {
     if (f.weapon === 'Hammer') { main = [12, -12]; off = [2, -8]; }
     if (f.weapon === 'Staff') main = [17, 2];
+  }
+  if (f.alive && moving && f.intent === 'flee' && !f.attack && !f.defense && f.z === 0) {
+    lean = (f.style === 'Ninja' ? -.38 : -.22) + Math.sin(f.age * 8) * .06;
+    crouch = 8 + Math.abs(wave) * 3;
+    main = [17, -21 + wave * 3]; off = [-8, -12 - wave * 5];
+  }
+  if (f.alive && f.defense && f.z === 0) {
+    const d = f.defense, guard = d.kind === 'guard';
+    const amount = guard ? clamp(Math.min(d.elapsed / .05, (d.duration - d.elapsed) / .08), 0, 1)
+      : Math.sin(clamp(d.elapsed / d.duration, 0, 1) * Math.PI);
+    const base = STANCES[f.style] || STANCES.Kickboxing;
+    const target = guard ? [-.13, 13, 13, -29, 6, -24, 22, 0, -23, 0]
+      : f.style === 'Ninja' ? [.4, 25, 18, -11, -22, 14, 30, -8, -26, 0]
+        : f.style === 'Boxing' ? [-.5, 23, 14, -26, 1, -21, 25, 0, -25, 0]
+          : [-.3, 18, 19, -23, -5, -17, 29, -6, -25, 0];
+    const k = base.map((v, i) => lerp(v, target[i], amount));
+    [lean, crouch] = k; main = k.slice(2, 4); off = k.slice(4, 6); front = k.slice(6, 8); back = k.slice(8, 10);
   }
   let weaponAngle = moving ? -.65 + wave * .18 : f.weapon === 'Hammer' ? -1.05 : f.weapon === 'Staff' ? -.7 : -.75;
   if (f.attack?.name === 'Dash' && f.attack.elapsed > .12 && f.attack.elapsed < .5) weaponAngle = .05;

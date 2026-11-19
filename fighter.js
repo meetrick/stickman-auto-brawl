@@ -1,6 +1,7 @@
 import { clamp, range } from './random.js';
 import { WEAPONS } from './weapons.js';
 import { STYLE_NAMES, styleProfile } from './styles.js';
+import { beginDefense, updateDefense, reactToThreat, defenseContact } from './defense.js';
 
 export const MOVES = Object.freeze({
   Punch: { damage: 6, knockback: 65, lift: 0, reach: 65, engage: 70, windup: .10, activeEnd: .17, duration: .28 },
@@ -23,6 +24,7 @@ export class Fighter {
       state: 'idle', stun: 0, attack: null, cooldown: range(rng, .1, .8),
       flash: 0, age: 0, attackVariants: {}, stridePhase: rng() * Math.PI * 2, tumble: 0, angularVelocity: 0,
       stamina: 1, intent: 'chase', heldBy: null, holdingId: null, signatureCooldown: 0,
+      defense: null, defenseCooldown: 0, reactedAttacks: new Set(), attackSerial: 0,
       color: COLORS[id % COLORS.length], name: NAMES[id % NAMES.length] });
     this.maxHp = 80 + Math.floor(rng() * 51); this.hp = this.maxHp;
     this.speed = range(rng, 90, 155); this.power = range(rng, .8, 1.25);
@@ -42,7 +44,7 @@ export class Fighter {
     return this.attack?.name === name && this.attack.signature ? { ...base, ...styleProfile(this.style).signature.timing } : base;
   }
   startAttack(name, target) {
-    if (!this.standing || this.landing > 0 || this.attack || this.cooldown > 0 || target.heldBy != null || (name === 'JumpKick' && this.jumpCooldown > 0) || (name === 'WeaponStrike' && this.weapon === 'None')) return false;
+    if (!this.standing || this.defense || this.landing > 0 || this.attack || this.cooldown > 0 || target.heldBy != null || (name === 'JumpKick' && this.jumpCooldown > 0) || (name === 'WeaponStrike' && this.weapon === 'None')) return false;
     const dx = target.x - this.x, dy = target.y - this.y, length = Math.hypot(dx, dy) || 1;
     this.facing = dx >= 0 ? 1 : -1;
     let variant = (this.attackVariants[name] || 0) % 2;
@@ -51,11 +53,12 @@ export class Fighter {
     const signature = this.weapon === 'None' && name === special.move && this.age >= 1.5
       && this.signatureCooldown <= 0 && this.attackVariants[name] % 3 === 0 ? special.text : null;
     if (signature) { this.signatureCooldown = 7; variant = 0; }
-    this.attack = { name, targetId: target.id, signature, elapsed: 0, duration: signature ? special.timing.duration : this.getMove(name).duration, variant, resolved: false, hitIds: [], dx: dx / length, dy: dy / length };
+    this.attack = { name, serial: ++this.attackSerial, targetId: target.id, signature, elapsed: 0, duration: signature ? special.timing.duration : this.getMove(name).duration, variant, resolved: false, connected: false, hitIds: [], dx: dx / length, dy: dy / length };
     this.state = 'attack'; this.vx = this.vy = 0;
     if (name === 'JumpKick') { this.vz = 195; this.jumpCooldown = 3.5; }
     return true;
   }
+  startDefense(kind, threat, world) { return beginDefense(this, kind, threat, world); }
   receiveHit(damage, vx, vy, vz) {
     if (!this.alive) return false;
     this.hp = Math.max(0, this.hp - damage);
@@ -64,6 +67,7 @@ export class Fighter {
     if (airborne) this.z = Math.max(this.z, 2);
     this.stun = airborne ? .42 : .16; this.flash = .12; this.attack = null; this.heldBy = null;
     this.followUp = null; this.comboStep = 0; this.footworkUntil = 0;
+    this.defense = null; this.counterTargetId = null;
     this.tumble = 0; this.angularVelocity = clamp(vx / 130, -6, 6);
     this.state = this.alive ? airborne ? 'down' : 'hit' : 'ko'; this.collateralActive = airborne; this.flightHits.clear();
     return true;
@@ -79,6 +83,7 @@ export class Fighter {
     if (this.alive) return;
     if (this.holdingId != null) this.releaseGrab(world);
     this.heldBy = null; this.attack = null; this.state = 'ko'; this.intent = 'dead';
+    this.defense = null; this.counterTargetId = null;
     this.z = 0; this.vx = this.vy = this.vz = this.angularVelocity = 0;
     this.tumble = -Math.PI / 2; this.stun = this.flash = 0; this.sprinting = false;
     this.collateralActive = false; this.flightHits.clear(); this.settled = true;
@@ -89,8 +94,15 @@ export class Fighter {
     if (world.arena && !world.arena.attackClear(this, target)) return false;
     const move = this.getMove(name), dx = target.x - this.x, dy = target.y - this.y, length = Math.hypot(dx, dy) || 1;
     const crit = this.attack?.name === name ? (this.attack.crit ??= world.rng() < .1) : world.rng() < .1;
-    const knockback = move.knockback * (crit ? 2 : 1), lift = move.lift * (crit ? 2 : 1);
-    if (!target.receiveHit(move.damage * this.power * (crit ? 3 : 1), dx / length * knockback, dy / length * knockback, lift)) return false;
+    const defense = defenseContact(target, this, name, world, crit);
+    if (defense?.dodged) return true;
+    const knockback = move.knockback * (crit ? 2 : 1) * (defense?.knockback ?? 1), lift = move.lift * (crit ? 2 : 1) * (defense?.lift ?? 1);
+    if (!target.receiveHit(move.damage * this.power * (crit ? 3 : 1) * (defense?.damage ?? 1), dx / length * knockback, dy / length * knockback, lift)) return false;
+    if (defense?.guard && target.alive) {
+      target.defense = defense.guard; target.stun = 0; target.state = 'guard';
+      target.counterTargetId = this.id; target.counterUntil = world.time + .7;
+    }
+    if (this.attack && !defense?.guard) this.attack.connected = true;
     if (crit) { world.stats.crits++; target.flash = .3; }
     const text = name === 'WeaponStrike' ? { Sword: 'SLASH!', Staff: 'STAFF SWEEP!', Hammer: 'HAMMER SMASH!' }[this.weapon]
       : { Punch: 'PUNCH!', Kick: 'KICK!', Dash: 'DASH CRASH!', JumpKick: 'FLYING KICK!', Uppercut: 'UPPERCUT!', Grab: 'THROWN!' }[name];
@@ -100,7 +112,7 @@ export class Fighter {
     }
     const signature = this.attack?.name === name ? this.attack.signature : null;
     if (signature) world.stats.signatures = (world.stats.signatures || 0) + 1;
-    world.emit('hit', target, { text: crit ? 'CRIT!' : signature || text, signature, move: name, weapon: this.weapon, style: this.style, source: this.id, crit }); return true;
+    world.emit('hit', target, { text: crit ? 'CRIT!' : signature || text, signature, blocked: Boolean(defense?.guard), move: name, weapon: this.weapon, style: this.style, source: this.id, crit }); return true;
   }
   moveToward(goal, world, hurry = false) {
     const waypoint = world.arena?.waypoint(this, goal, world) || goal;
@@ -112,7 +124,8 @@ export class Fighter {
     if (Math.abs(dx) > 4) this.facing = dx > 0 ? 1 : -1;
   }
   think(dt, world) {
-    if (world.time < (this.readyAt || 0) || !this.standing || this.landing > 0 || this.attack) return;
+    if (world.time < (this.readyAt || 0) || !this.standing || this.landing > 0 || this.attack || this.defense) return;
+    if (reactToThreat(this, world)) return;
     const enemies = world.fighters.filter(f => f !== this && f.alive && f.heldBy == null);
     const target = enemies.sort((a, b) => Math.hypot(a.x - this.x, a.y - this.y) - Math.hypot(b.x - this.x, b.y - this.y))[0];
     if (!target) return;
@@ -122,15 +135,26 @@ export class Fighter {
     const cornered = (this.x < b.left + 60 && dx > 0) || (this.x > b.right - 60 && dx < 0)
       || (this.y < b.top + 45 && dy > 0) || (this.y > b.bottom - 45 && dy < 0);
     if (cornered) this.courageUntil = world.time + 2.5;
-    if (this.personality === 'Cowardly' && enemies.length > 1 && distance < 210 && !cornered && world.time >= (this.courageUntil || 0)) {
-      this.intent = 'flee';
-      this.moveToward({ x: clamp(this.x - dx / distance * 150, b.left + 18, b.right - 18), y: clamp(this.y - dy / distance * 150, b.top + 18, b.bottom - 18) }, world, true);
-      this.facing = dx >= 0 ? 1 : -1;
-      if (world.time >= (this.evadeAt || 0)) {
-        this.evadeAt = world.time + range(world.rng, 1, 2);
-        if (distance < 145 && world.rng() < .3) { this.vx *= 1.3; this.vy *= 1.3; this.state = 'evade'; }
+    if (this.personality === 'Cowardly' && enemies.length > 1 && distance < 210 && !cornered && world.time >= (this.courageUntil || 0) && this.stamina > .25 && !this.exhausted) {
+      this.fleeUntil ||= world.time + range(world.rng, .8, 1.25);
+      if (world.time < this.fleeUntil) {
+        this.intent = 'flee';
+        if (world.time >= (this.evadeAt || 0)) {
+          this.evadeAt = world.time + range(world.rng, .45, .75);
+          this.escapeSide = -(this.escapeSide || (world.rng() < .5 ? -1 : 1));
+          if (distance < 145 && this.stamina > .4 && world.rng() < .55) {
+            this.escapeUntil = world.time + .16;
+            world.stats.escapes = (world.stats.escapes || 0) + 1;
+            world.emit('escape', this, { text: 'ESCAPE!', source: target.id });
+          }
+        }
+        this.moveToward({ x: clamp(this.x - dx / distance * 145 - dy / distance * 65 * this.escapeSide, b.left + 18, b.right - 18),
+          y: clamp(this.y - dy / distance * 145 + dx / distance * 65 * this.escapeSide, b.top + 18, b.bottom - 18) }, world, true);
+        this.facing = dx >= 0 ? 1 : -1;
+        if (world.time < (this.escapeUntil || 0)) { this.vx *= 1.25; this.vy *= 1.25; this.state = 'evade'; }
+        return;
       }
-      return;
+      this.fleeUntil = 0; this.courageUntil = world.time + 1.2;
     }
     if (world.time >= (this.decisionAt || 0)) {
       this.decisionAt = world.time + range(world.rng, .55, 1.1);
@@ -138,6 +162,10 @@ export class Fighter {
       this.flank = world.rng() < Math.min(.85, discipline.flank + (this.personality === 'Trickster' ? .2 : 0));
     }
     if (this.cooldown <= 0 && target.z < 65) {
+      if (target.id === this.counterTargetId && world.time < this.counterUntil && distance <= MOVES.Punch.engage) {
+        this.counterTargetId = null;
+        if (this.startAttack('Punch', target)) { this.intent = 'counter'; return; }
+      }
       if (this.followUp && world.time < this.followUpUntil && distance < MOVES[this.followUp].engage) {
         const name = this.followUp; this.followUp = null;
         if (this.startAttack(name, target)) { this.intent = 'combo'; return; }
@@ -187,6 +215,7 @@ export class Fighter {
         a.attempted = true;
         if (target?.standing && Math.hypot(target.x - this.x, target.y - this.y) < move.reach + 12 && (!world.arena || world.arena.attackClear(this, target))) {
           this.holdingId = target.id; target.heldBy = this.id; target.heldStyle = this.style; target.heldSignature = a.signature; target.attack = null; target.collateralActive = false;
+          target.defense = null; target.counterTargetId = null;
           world.emit('grab', target, { text: 'GRABBED!', source: this.id });
         }
       }
@@ -214,7 +243,7 @@ export class Fighter {
     if (a.elapsed >= move.duration) {
       this.releaseGrab(world); this.attack = null; this.cooldown = range(world.rng, .22, .55) * this.tempo;
       const profile = styleProfile(this.style), step = this.comboStep || 0;
-      if (a.hitIds.length && step < profile.combo.length && a.name === (step === 0 ? 'Punch' : profile.combo[step - 1])) {
+      if (a.connected && step < profile.combo.length && a.name === (step === 0 ? 'Punch' : profile.combo[step - 1])) {
         this.comboStep = (this.comboStep || 0) + 1;
         this.followUp = profile.combo[step];
         this.followUpUntil = world.time + .65; this.cooldown = .045;
@@ -222,7 +251,7 @@ export class Fighter {
         this.footworkUntil = world.time + profile.recovery;
         this.flankSide ||= this.id % 2 ? -1 : 1;
       }
-      if (a.name === 'WeaponStrike' && this.weapon === 'Sword' && a.hitIds.length && world.rng() < .35) {
+      if (a.name === 'WeaponStrike' && this.weapon === 'Sword' && a.connected && world.rng() < .35) {
         this.followUp = 'Dash'; this.followUpUntil = world.time + 1; this.cooldown = .12;
       }
     }
@@ -235,6 +264,7 @@ export class Fighter {
     this.signatureCooldown = Math.max(0, this.signatureCooldown - dt);
     this.jumpCooldown = Math.max(0, (this.jumpCooldown || 0) - dt);
     this.landing = Math.max(0, (this.landing || 0) - dt);
+    updateDefense(this, dt);
     if (this.holdingId != null && (!this.alive || this.attack?.name !== 'Grab')) this.releaseGrab(world);
     if (this.heldBy != null) {
       const holder = world.fighters.find(f => f.id === this.heldBy);

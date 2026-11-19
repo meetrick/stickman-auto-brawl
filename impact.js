@@ -2,7 +2,8 @@
 export function selectMoment(events, time) {
   const fresh = events.filter(event => time - event.time >= 0 && time - event.time < 1.8);
   return fresh.find(event => event.signature) || fresh.find(event => event.type === 'elimination')
-    || fresh.find(event => event.crit) || fresh.find(event => ['domino', 'heal'].includes(event.type)) || null;
+    || fresh.find(event => event.crit) || fresh.find(event => ['guardBreak', 'block', 'dodge'].includes(event.type))
+    || fresh.find(event => ['domino', 'heal'].includes(event.type)) || null;
 }
 
 export class ImpactFeedback {
@@ -19,7 +20,7 @@ export class ImpactFeedback {
     for (const event of events) {
       if (this.seen.has(event)) continue;
       this.seen.add(event);
-      if (event.type !== 'hit') continue;
+      if (event.type !== 'hit' || event.blocked) continue;
       const strength = event.crit || event.signature ? 1 : ['Uppercut', 'Grab'].includes(event.move) ? .65 : 0;
       strongest = Math.max(strongest, strength);
     }
