@@ -27,7 +27,7 @@ English is the first-visit default. The header language button and setup selecto
 - Random Ninja, Boxing, Judo, or Kickboxing disciplines affect attack weights, punch follow-ups, and recovery footwork independently of personality.
 - Aggressive, Cowardly, Brawler, and Trickster personalities; Walker, Runner, and stamina-limited Sprinter movement.
 - Grounded jab/cross Punch chains into Kick, a braking Dash, a short-hop JumpKick, Uppercut, and a physical lift-and-throw Grab, with no weapon attacks in normal matches.
-- All fighters start and remain unarmed. Cowards backstep instead of repeatedly jumping, then commit to fighting when only two participants remain. Ordinary hits recoil on the floor; uppercuts and throws retain launch physics.
+- All fighters start and remain unarmed. Cowards retreat with alternating lateral steps and short grounded bursts instead of repeatedly jumping, then commit to fighting when only two participants remain. Ordinary hits recoil on the floor; uppercuts and throws retain launch physics.
 - Each attack has a 10% critical roll: 3× damage and 2× knockback. Cleave victims share the attack's critical roll.
 - Thrown and knocked bodies can bowl over standing fighters, including airborne KO bodies. Swept collision checks prevent tunneling and repeated damage to the same victim during one flight.
 - Open floor: no rotating poles or walls interrupt the fight.
@@ -44,7 +44,7 @@ Pause, 0.5× / 1× / 2× speed, and camera selection affect presentation only. P
 
 ## Architecture and reference
 
-- `styles.js`: discipline profiles and style validation.
+- `styles.js`: discipline profiles and style validation. `defense.js`: timed guards/dodges, reaction reads, and directional contact resolution.
 - `app.js`: deterministic match simulation. `fighter.js`: combat, AI, movement, and defeat.
 - `pose.js`: keyframed hand/foot targets and two-bone IK. `renderer.js`: articulated drawing, trails, effects, and depth sorting.
 - `arena.js`: legacy obstacle physics for isolated tests. `hazards.js`: potion spawning and floor pickup contact.
@@ -78,6 +78,12 @@ These are stylized procedural game disciplines rather than sporting-rule simulat
 Fighters can react once to a targeted incoming windup. Style and personality influence whether they try a frontal guard or grounded dodge. Defense costs stamina, has startup/recovery exposure, and shares a 1.15–1.65 second reuse gate. It cannot start while attacking, stunned, airborne, held, or low on stamina.
 
 A successful frontal guard covers one contact, takes 25% chip damage and 22% horizontal push, and prevents launch. Grabs and rear attacks bypass it; critical, signature, and dash contacts break it while retaining some damage reduction. A dodge's brief active window avoids only the specific attack it read, once; another attacker, a new attack, grabs, or a flying body remain dangerous. Dodged and successfully blocked attacks cannot open the attacker's connected combo. Successful defense opens a short counter opportunity rather than a guaranteed hit. The defender must recover and remain in range.
+
+Cowardly fighters face their nearest opponent while retreating along alternating diagonal routes. Short escape accelerations stay on the floor and use the existing stamina-limited sprint. A retreat lasts 0.8–1.25 seconds before a 1.2-second commitment to re-engage; exhaustion, corners, successful defensive counter opportunities, and the final duel also prevent endless fleeing. These behaviors apply when the random Cowardly personality is assigned; no participant receives a forced personality.
+
+Guard poses raise both forearms, boxing dodges duck through the torso, and ninja dodges use a low side-step. Grounded backward run cycles look toward the threat. Dodge afterimages and short motion streaks obey reduced-motion preference. A small guard crescent and one localized BLOCK / DODGED / GUARD BREAK notice explain defensive contacts without adding another floating label. Chip hits on a successful guard do not trigger heavy hit-stop.
+
+Defense tests cover directional chip damage, guard breaks/bypasses, one-attack dodge windows, recovery exposure, resource/cooldown gates, counters, natural defense and escape use, deterministic full-round rankings, and IK geometry for every style's defense and recovery.
 
 ## Impact feedback
 

@@ -86,14 +86,23 @@ export class Renderer {
       }
       c.globalAlpha = 1 - progress;
     }
-    if (e.type === 'hit' && progress < .4) {
+    if (e.type === 'hit' && !e.blocked && progress < .4) {
       const x = e.x, y = e.y - e.z - 55;
       for (let i = 0; i < 6; i++) {
         const angle = i * Math.PI / 3 + .25, inner = 7 + progress * 20, outer = inner + 12;
         this.line([[x + Math.cos(angle) * inner, y + Math.sin(angle) * inner], [x + Math.cos(angle) * outer, y + Math.sin(angle) * outer]], '#b26737', 2.5);
       }
     }
-    if (!this.reducedMotion.matches && e.type === 'hit' && (e.crit || e.signature || ['Uppercut', 'Grab'].includes(e.move)) && progress < .28) {
+    if (['block', 'guardBreak'].includes(e.type) && progress < .35) {
+      const x = e.x, y = e.y - e.z - 80;
+      c.strokeStyle = e.type === 'block' ? '#548c8b' : '#b96c48'; c.lineWidth = 3;
+      c.beginPath(); c.arc(x, y, 20 + (this.reducedMotion.matches ? 0 : progress * 12), -.95, .95); c.stroke();
+      if (e.type === 'guardBreak') this.line([[x + 16, y - 15], [x + 6, y], [x + 21, y + 13]], '#b96c48', 2);
+    }
+    if (!this.reducedMotion.matches && ['dodge', 'escape'].includes(e.type) && progress < .25) {
+      for (let i = 0; i < 3; i++) this.line([[e.x - 24 - progress * 35, e.y - 55 + i * 9], [e.x - 10 - progress * 35, e.y - 55 + i * 9]], '#718b7b', 2);
+    }
+    if (!this.reducedMotion.matches && e.type === 'hit' && !e.blocked && (e.crit || e.signature || ['Uppercut', 'Grab'].includes(e.move)) && progress < .28) {
       c.save(); c.translate(e.x, e.y - e.z - 52); c.scale(1, .65);
       c.globalAlpha = (1 - progress / .28) * .65;
       c.strokeStyle = e.crit ? '#c98a28' : '#718565'; c.lineWidth = 3 - progress * 6;
@@ -110,7 +119,7 @@ export class Renderer {
     c.textAlign = 'center'; c.fillStyle = e.type === 'heal' ? '#43845b' : e.crit ? '#ba7c1d' : '#a44735';
     c.font = `bold ${e.crit ? 26 : 15}px monospace`;
     // Signature names use the single moment banner; keep the arena uncluttered.
-    if (e.type !== 'hit' || e.crit) c.fillText(eventText(e), e.x, e.y - e.z - 95 - progress * 45);
+    if (!['block', 'guardBreak', 'dodge', 'escape'].includes(e.type) && (e.type !== 'hit' || e.crit)) c.fillText(eventText(e), e.x, e.y - e.z - 95 - progress * 45);
     c.restore();
   }
   weapon(p, f) {
@@ -214,9 +223,13 @@ export class Renderer {
     const dashTrail = f.attack?.name === 'Dash' && f.attack.elapsed > .12 && f.attack.elapsed < .5;
     const hopTrail = f.attack?.name === 'JumpKick' && f.attack.elapsed > .05 && f.attack.elapsed < .28;
     const signatureTrail = f.attack?.signature && f.attack.elapsed >= f.getMove(f.attack.name).windup * .75 && f.attack.elapsed < (f.getMove(f.attack.name).activeEnd || .72);
-    if (!this.reducedMotion.matches && (dashTrail || hopTrail || signatureTrail)) {
+    const dodgeTrail = f.defense?.kind === 'dodge' && f.defense.elapsed > .02 && f.defense.elapsed < .18;
+    if (!this.reducedMotion.matches && (dashTrail || hopTrail || signatureTrail || dodgeTrail)) {
       for (const lag of [.085, .045]) {
-        const pose = computePose({ ...f, attack: { ...f.attack, elapsed: Math.max(0, f.attack.elapsed - lag) } });
+        const ghost = { ...f };
+        if (f.attack) ghost.attack = { ...f.attack, elapsed: Math.max(0, f.attack.elapsed - lag) };
+        if (dodgeTrail) ghost.defense = { ...f.defense, elapsed: Math.max(0, f.defense.elapsed - lag) };
+        const pose = computePose(ghost);
         c.save(); c.globalAlpha = lag > .06 ? .08 : .18;
         c.translate(f.x - f.vx * lag, sy - f.vy * lag + (hopTrail ? f.vz * lag : 0)); c.scale(scale * f.facing, scale);
         c.translate(...pose.hip); c.rotate(pose.rotation); c.translate(-pose.hip[0], -pose.hip[1]);

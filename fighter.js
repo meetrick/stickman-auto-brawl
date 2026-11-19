@@ -135,15 +135,26 @@ export class Fighter {
     const cornered = (this.x < b.left + 60 && dx > 0) || (this.x > b.right - 60 && dx < 0)
       || (this.y < b.top + 45 && dy > 0) || (this.y > b.bottom - 45 && dy < 0);
     if (cornered) this.courageUntil = world.time + 2.5;
-    if (this.personality === 'Cowardly' && enemies.length > 1 && distance < 210 && !cornered && world.time >= (this.courageUntil || 0)) {
-      this.intent = 'flee';
-      this.moveToward({ x: clamp(this.x - dx / distance * 150, b.left + 18, b.right - 18), y: clamp(this.y - dy / distance * 150, b.top + 18, b.bottom - 18) }, world, true);
-      this.facing = dx >= 0 ? 1 : -1;
-      if (world.time >= (this.evadeAt || 0)) {
-        this.evadeAt = world.time + range(world.rng, 1, 2);
-        if (distance < 145 && world.rng() < .3) { this.vx *= 1.3; this.vy *= 1.3; this.state = 'evade'; }
+    if (this.personality === 'Cowardly' && enemies.length > 1 && distance < 210 && !cornered && world.time >= (this.courageUntil || 0) && this.stamina > .25 && !this.exhausted) {
+      this.fleeUntil ||= world.time + range(world.rng, .8, 1.25);
+      if (world.time < this.fleeUntil) {
+        this.intent = 'flee';
+        if (world.time >= (this.evadeAt || 0)) {
+          this.evadeAt = world.time + range(world.rng, .45, .75);
+          this.escapeSide = -(this.escapeSide || (world.rng() < .5 ? -1 : 1));
+          if (distance < 145 && this.stamina > .4 && world.rng() < .55) {
+            this.escapeUntil = world.time + .16;
+            world.stats.escapes = (world.stats.escapes || 0) + 1;
+            world.emit('escape', this, { text: 'ESCAPE!', source: target.id });
+          }
+        }
+        this.moveToward({ x: clamp(this.x - dx / distance * 145 - dy / distance * 65 * this.escapeSide, b.left + 18, b.right - 18),
+          y: clamp(this.y - dy / distance * 145 + dx / distance * 65 * this.escapeSide, b.top + 18, b.bottom - 18) }, world, true);
+        this.facing = dx >= 0 ? 1 : -1;
+        if (world.time < (this.escapeUntil || 0)) { this.vx *= 1.25; this.vy *= 1.25; this.state = 'evade'; }
+        return;
       }
-      return;
+      this.fleeUntil = 0; this.courageUntil = world.time + 1.2;
     }
     if (world.time >= (this.decisionAt || 0)) {
       this.decisionAt = world.time + range(world.rng, .55, 1.1);
