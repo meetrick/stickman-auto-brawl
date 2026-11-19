@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match, STEP } from '../app.js';
-import { Fighter, MOVES, GAITS } from '../fighter.js';
-import { seededRandom } from '../random.js';
-import { computePose } from '../pose.js';
+import { Match, STEP } from '../app.js?v=20261119-fight-camera';
+import { Fighter, MOVES, GAITS } from '../fighter.js?v=20261119-fight-camera';
+import { seededRandom } from '../random.js?v=20261119-fight-camera';
+import { computePose } from '../pose.js?v=20261119-fight-camera';
 const distance = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 test('keyframed attacks preserve limb lengths and have distinct evolving silhouettes', () => {
   const f = new Fighter(0, 400, 400, seededRandom(1)), strikes = new Set();

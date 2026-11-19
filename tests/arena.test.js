@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match } from '../app.js';
+import { Match } from '../app.js?v=20261119-fight-camera';
 
 test('each seed reproduces its map and different seeds vary pole counts and placement', () => {
   assert.deepEqual(new Match(72, 8, { terrain: true }).arena, new Match(72, 8, { terrain: true }).arena);

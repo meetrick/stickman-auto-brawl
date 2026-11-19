@@ -1,11 +1,11 @@
-import { Match, STEP } from './app.js';
-import { Renderer } from './renderer.js';
-import { COLORS } from './fighter.js';
-import { MIN_FIGHTERS, MAX_FIGHTERS, SETTINGS_KEY, normalizePreferences, loadPreferences, savePreferences, escapeHTML } from './settings.js';
-import { t, eventText, momentText, setLanguage, getLanguage } from './i18n.js';
-import { firstOutNames, standingsMarkup, eliminationMarkup } from './results.js';
-import { STYLE_NAMES } from './styles.js';
-import { ImpactFeedback, selectMoment, momentActorId } from './impact.js';
+import { Match, STEP } from './app.js?v=20261119-fight-camera';
+import { Renderer } from './renderer.js?v=20261119-fight-camera';
+import { COLORS } from './fighter.js?v=20261119-fight-camera';
+import { MIN_FIGHTERS, MAX_FIGHTERS, SETTINGS_KEY, normalizePreferences, loadPreferences, savePreferences, escapeHTML } from './settings.js?v=20261119-fight-camera';
+import { t, eventText, momentText, setLanguage, getLanguage } from './i18n.js?v=20261119-fight-camera';
+import { firstOutNames, standingsMarkup, eliminationMarkup } from './results.js?v=20261119-fight-camera';
+import { STYLE_NAMES } from './styles.js?v=20261119-fight-camera';
+import { ImpactFeedback, selectMoment, momentActorId } from './impact.js?v=20261119-fight-camera';
 
 export function boot() {
   const $ = selector => document.querySelector(selector), renderer = new Renderer($('canvas'));

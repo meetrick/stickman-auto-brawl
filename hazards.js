@@ -1,4 +1,4 @@
-import { clamp, range } from './random.js';
+import { clamp, range } from './random.js?v=20261119-fight-camera';
 
 // Segment/circle intersection clipped to the part of a step near the floor.
 // Walking, fast dashes, and landings trigger items; flying over them does not.

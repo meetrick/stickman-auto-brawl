@@ -1,5 +1,5 @@
-import { escapeHTML } from './settings.js';
-import { t } from './i18n.js';
+import { escapeHTML } from './settings.js?v=20261119-fight-camera';
+import { t } from './i18n.js?v=20261119-fight-camera';
 
 export function rankLabel(entry) {
   return entry.rank == null ? '—' : t(entry.tied ? 'tiedPlace' : 'place', { rank: entry.rank });
