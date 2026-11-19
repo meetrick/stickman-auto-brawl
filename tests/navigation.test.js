@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match, STEP } from '../app.js?v=20261119-crowd24';
+import { Match, STEP } from '../app.js?v=20261119-ground-spins';
 
 test('large matches spawn in two spaced rows within floor bounds', () => {
   for (const count of [13, 16, 23, 24]) {

@@ -1,4 +1,5 @@
-import { clamp } from './random.js?v=20261119-crowd24';
+import { clamp } from './random.js?v=20261119-ground-spins';
+import { styleProfile } from './styles.js?v=20261119-ground-spins';
 
 const lerp = (a, b, t) => a + (b - a) * t;
 export const STANCES = {
@@ -121,7 +122,8 @@ export const TRACKS = {
     [0, -.12, 5, 12, -18, -6, -13, 21, 0, -20, 0],
     [.24, -.25, 8, -7, -12, 15, -18, 22, 0, -22, 0],
     [.36, .48, 2, 45, -12, 9, -16, 29, 0, -23, 0],
-    [.55, .38, 4, 38, -9, 6, -18, 29, 0, -22, 0],
+    [.43, .55, 3, 43, -10, 7, -20, 29, 0, -23, 0],
+    [.64, .12, 9, 14, -23, 3, -21, 24, 0, -23, 0],
     [1, .06, 4, 15, -18, -5, -14, 21, 0, -20, 0],
   ],
   Kick: [
@@ -239,6 +241,43 @@ export function solveLimb(root, target, upper, lower, bend = 1) {
   return { joint: [root[0] + Math.cos(elbowAngle) * upper, root[1] + Math.sin(elbowAngle) * upper],
     tip: [root[0] + Math.cos(angle) * distance, root[1] + Math.sin(angle) * distance] };
 }
+
+// Yaw turns around the upright axis, not a screen-space somersault.
+// Finish the turn at the actual contact time so the strike still faces its target.
+export function attackTurn(f) {
+  const a = f.attack;
+  if (!f.alive || !a || f.weapon !== 'None' || f.z > 1 || f.stun > 0 || f.heldBy != null) return { yaw: 0, torsoYaw: 0 };
+  const profile = styleProfile(f.style);
+  const special = a.finisher ? profile.finisher : profile.signature;
+  const contact = a.contactAt ?? (a.signature ? special.timing.windup : { Punch: .10, Kick: .18, Uppercut: .23, Grab: .16, Dash: .12 }[a.name]);
+  if (!contact) return { yaw: 0, torsoYaw: 0 };
+  const t = a.elapsed, end = a.duration;
+  const spin = a.name === 'Kick' && ['Ninja', 'Kickboxing', 'Taekwondo'].includes(f.style)
+    && (a.signature || a.variant === 1 && f.style !== 'Ninja');
+  const yaw = spin ? sampleTrack([[0, 0], [contact * .25, -.22], [contact * .58, Math.PI * .8],
+    [contact * .85, Math.PI * 1.7], [contact, Math.PI * 2],
+    [Math.min(end - .03, contact + .08), Math.PI * 2 + .16], [end, Math.PI * 2]], t)[0] : 0;
+  const twist = a.name === 'Punch' ? .72 : a.name === 'Uppercut' ? .58 : a.name === 'Grab' ? .8 : a.name === 'Kick' ? .45 : .28;
+  const direction = a.name === 'Punch' && a.variant === 1 ? -1 : 1;
+  const torsoYaw = sampleTrack([[0, 0], [contact * .65, -twist], [contact, twist * .85],
+    [contact + (end - contact) * .28, twist * .3], [end, 0]], t)[0] * direction;
+  return { yaw, torsoYaw };
+}
+
+// Project authored IK into a shallow 3D turn. The support foot is the pivot;
+// vertical coordinates never change, and Canvas stroke widths remain stable.
+export function projectPose(p) {
+  if (!p.yaw && !p.torsoYaw) return p;
+  const pivot = p.back.tip[0], cosine = Math.cos(p.yaw), sine = Math.sin(p.yaw);
+  const turn = (point, depth = 0) => [pivot + (point[0] - pivot) * cosine + depth * sine, point[1]];
+  const torso = (point, depth = 0) => turn([p.hip[0] + (point[0] - p.hip[0]) * Math.cos(p.torsoYaw)
+    + depth * Math.sin(p.torsoYaw), point[1]], depth);
+  return { ...p, hip: turn(p.hip), shoulder: torso(p.shoulder), head: torso(p.head),
+    main: { joint: torso(p.main.joint, -5), tip: torso(p.main.tip, -9) },
+    off: { joint: torso(p.off.joint, 5), tip: torso(p.off.tip, 9) },
+    front: { joint: turn(p.front.joint, -4), tip: turn(p.front.tip, -7) },
+    back: { joint: turn(p.back.joint), tip: turn(p.back.tip) } };
+}
 export function computePose(f) {
   const moving = f.alive && ['walk', 'run', 'evade'].includes(f.state), running = f.alive && ['run', 'evade'].includes(f.state);
   const phase = (f.stridePhase || 0) * (f.intent === 'flee' ? -1 : 1), wave = Math.sin(phase), other = Math.sin(phase + Math.PI);
@@ -353,5 +392,5 @@ export function computePose(f) {
   const head = [shoulder[0] + Math.sin(lean) * 16, shoulder[1] - Math.cos(lean) * 16];
   const arm = target => solveLimb(shoulder, [shoulder[0] + target[0], shoulder[1] + target[1]], 23, 23, 1);
   const leg = foot => solveLimb(hip, foot, 29, 29, -1);
-  return { hip, shoulder, head, main: arm(main), off: arm(off), front: leg(front), back: leg(back), rotation, weaponAngle };
+  return { hip, shoulder, head, main: arm(main), off: arm(off), front: leg(front), back: leg(back), rotation, weaponAngle, ...attackTurn(f) };
 }

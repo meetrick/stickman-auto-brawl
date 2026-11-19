@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Match} from '../app.js?v=20261119-crowd24';
-import {normalizePreferences} from '../settings.js?v=20261119-crowd24';
-import {computePose} from '../pose.js?v=20261119-crowd24';
+import {Match} from '../app.js?v=20261119-ground-spins';
+import {normalizePreferences} from '../settings.js?v=20261119-ground-spins';
+import {computePose} from '../pose.js?v=20261119-ground-spins';
 
 test('Taekwondo can be selected, persisted and replayed without weapons',()=>{
  const prefs=normalizePreferences({styles:['Taekwondo']});assert.equal(prefs.styles[0],'Taekwondo');

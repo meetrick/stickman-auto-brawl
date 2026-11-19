@@ -1,15 +1,15 @@
-import { clamp, range } from './random.js?v=20261119-crowd24';
-import { WEAPONS } from './weapons.js?v=20261119-crowd24';
-import { STYLE_NAMES, styleProfile } from './styles.js?v=20261119-crowd24';
-import { beginDefense, updateDefense, reactToThreat, defenseContact } from './defense.js?v=20261119-crowd24';
+import { clamp, range } from './random.js?v=20261119-ground-spins';
+import { WEAPONS } from './weapons.js?v=20261119-ground-spins';
+import { STYLE_NAMES, styleProfile } from './styles.js?v=20261119-ground-spins';
+import { beginDefense, updateDefense, reactToThreat, defenseContact } from './defense.js?v=20261119-ground-spins';
 
 export const MOVES = Object.freeze({
   Punch: { damage: 6, knockback: 65, lift: 0, reach: 65, engage: 70, windup: .10, activeEnd: .17, duration: .28 },
   Kick: { damage: 11, knockback: 230, lift: 0, reach: 85, engage: 90, windup: .18, activeEnd: .29, duration: .46 },
   Dash: { damage: 10, knockback: 300, lift: 0, reach: 54, engage: 240, windup: .12, duration: .52 },
   JumpKick: { damage: 14, knockback: 300, lift: 0, reach: 83, engage: 135, windup: .14, activeEnd: .28, duration: .48 },
-  Uppercut: { damage: 12, knockback: 195, lift: 285, reach: 62, engage: 62, windup: .23, duration: .58 },
-  Grab: { damage: 16, knockback: 400, lift: 255, reach: 55, engage: 55, windup: .16, duration: .86 },
+  Uppercut: { damage: 12, knockback: 195, lift: 0, reach: 62, engage: 62, windup: .23, duration: .58 },
+  Grab: { damage: 16, knockback: 400, lift: 145, reach: 55, engage: 55, windup: .16, duration: .86 },
   WeaponStrike: WEAPONS.Sword.strike,
 });
 export const COLORS = ['#bf473b', '#438477', '#b98935', '#697ea0', '#95618a', '#5e7443', '#c27443', '#577f8b'];
@@ -58,6 +58,7 @@ export class Fighter {
       && this.signatureCooldown <= 0 && this.attackVariants[name] % 3 === 0 ? special.text : null;
     if (signature) { this.signatureCooldown = 7; variant = 0; }
     this.attack = { name, serial: ++this.attackSerial, targetId: target.id, signature, finisher: Boolean(finisher), chain: Math.min(3, (this.comboStep || 0) + 1), elapsed: 0, duration: signature ? special.timing.duration : this.getMove(name).duration, variant, resolved: false, connected: false, hitIds: [], dx: dx / length, dy: dy / length };
+    this.attack.contactAt = this.getMove(name).windup;
     this.state = 'attack'; this.vx = this.vy = 0;
     if (name === 'JumpKick') { this.vz = 195; this.jumpCooldown = 3.5; }
     return true;
@@ -249,7 +250,8 @@ export class Fighter {
       }
     }
     if (a.elapsed >= move.duration) {
-      this.releaseGrab(world); this.attack = null; this.cooldown = range(world.rng, .22, .55) * this.tempo;
+      this.releaseGrab(world); this.attack = null;
+      this.cooldown = (this.weapon === 'None' ? range(world.rng, .18, .42) : range(world.rng, .22, .55)) * this.tempo;
       const profile = styleProfile(this.style), step = this.comboStep || 0;
       if (a.connected && step < profile.combo.length && a.name === (step === 0 ? profile.comboStarter || 'Punch' : profile.combo[step - 1])) {
         this.comboStep = (this.comboStep || 0) + 1;

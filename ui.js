@@ -1,11 +1,11 @@
-import { Match, STEP } from './app.js?v=20261119-crowd24';
-import { Renderer } from './renderer.js?v=20261119-crowd24';
-import { COLORS } from './fighter.js?v=20261119-crowd24';
-import { MIN_FIGHTERS, MAX_FIGHTERS, SETTINGS_KEY, normalizePreferences, loadPreferences, savePreferences, escapeHTML } from './settings.js?v=20261119-crowd24';
-import { t, eventText, watchMomentText, setLanguage, getLanguage } from './i18n.js?v=20261119-crowd24';
-import { firstOutNames, standingsMarkup, eliminationMarkup } from './results.js?v=20261119-crowd24';
-import { STYLE_NAMES } from './styles.js?v=20261119-crowd24';
-import { ImpactFeedback, selectMoment, momentActorId } from './impact.js?v=20261119-crowd24';
+import { Match, STEP } from './app.js?v=20261119-ground-spins';
+import { Renderer } from './renderer.js?v=20261119-ground-spins';
+import { COLORS } from './fighter.js?v=20261119-ground-spins';
+import { MIN_FIGHTERS, MAX_FIGHTERS, SETTINGS_KEY, normalizePreferences, loadPreferences, savePreferences, escapeHTML } from './settings.js?v=20261119-ground-spins';
+import { t, eventText, watchMomentText, setLanguage, getLanguage } from './i18n.js?v=20261119-ground-spins';
+import { firstOutNames, standingsMarkup, eliminationMarkup } from './results.js?v=20261119-ground-spins';
+import { STYLE_NAMES } from './styles.js?v=20261119-ground-spins';
+import { ImpactFeedback, selectMoment, momentActorId } from './impact.js?v=20261119-ground-spins';
 
 export function boot() {
   const $ = selector => document.querySelector(selector), renderer = new Renderer($('canvas'));

@@ -1,5 +1,5 @@
-import { NAMES } from './fighter.js?v=20261119-crowd24';
-import { normalizeStyle } from './styles.js?v=20261119-crowd24';
+import { NAMES } from './fighter.js?v=20261119-ground-spins';
+import { normalizeStyle } from './styles.js?v=20261119-ground-spins';
 
 export const SETTINGS_KEY = 'stickman-auto-brawl.preferences.v1';
 export const MIN_FIGHTERS = 2, MAX_FIGHTERS = 24, MAX_NAME_LENGTH = 16;

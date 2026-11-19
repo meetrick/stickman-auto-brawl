@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match, STEP } from '../app.js?v=20261119-crowd24';
-import { touchesFloorItem } from '../hazards.js?v=20261119-crowd24';
+import { Match, STEP } from '../app.js?v=20261119-ground-spins';
+import { touchesFloorItem } from '../hazards.js?v=20261119-ground-spins';
 function setup() {
   const w = new Match(7, 3, { terrain: false }), f = w.fighters[0];
   f.x = 500; f.y = 400; f.previous = { x: 500, y: 400, z: 0 };
@@ -51,7 +51,7 @@ test('chaos demo still produces real dominoes without floor traps', () => {
 });
 test('many complete random matches stay finite and produce unscripted chaos', () => {
   const totals = { dominoes: 0, heals: 0, crits: 0 };
-  const moves = { Dash: 0, JumpKick: 0, Uppercut: 0, Grab: 0 };
+  const moves = { Dash: 0, Uppercut: 0, Grab: 0 };
   for (let seed = 0; seed < 32; seed++) {
     const w = new Match(seed);
     for (let tick = 0; tick < 10810 && !w.finished; tick++) w.update();
