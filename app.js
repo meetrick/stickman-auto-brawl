@@ -1,13 +1,13 @@
-import { Fighter } from './fighter.js?v=20261119-cinema';
-import { seededRandom } from './random.js?v=20261119-cinema';
-import { resolveDominoes } from './collisions.js?v=20261119-cinema';
-import { HazardManager } from './hazards.js?v=20261119-cinema';
-import { Arena } from './arena.js?v=20261119-cinema';
-import { normalizeCount, normalizeName } from './settings.js?v=20261119-cinema';
-import { normalizeStyle } from './styles.js?v=20261119-cinema';
-import { CrowdNavigation } from './navigation.js?v=20261119-cinema';
-import { normalizePersonality } from './brain.js?v=20261119-cinema';
-import { buildTeams } from './teams.js?v=20261119-cinema';
+import { Fighter } from './fighter.js?v=20261121-name-teams';
+import { seededRandom } from './random.js?v=20261121-name-teams';
+import { resolveDominoes } from './collisions.js?v=20261121-name-teams';
+import { HazardManager } from './hazards.js?v=20261121-name-teams';
+import { Arena } from './arena.js?v=20261121-name-teams';
+import { normalizeCount, normalizeName } from './settings.js?v=20261121-name-teams';
+import { normalizeStyle } from './styles.js?v=20261121-name-teams';
+import { CrowdNavigation } from './navigation.js?v=20261121-name-teams';
+import { normalizePersonality } from './brain.js?v=20261121-name-teams';
+import { buildTeams } from './teams.js?v=20261121-name-teams';
 
 export const STEP = 1 / 120;
 export class Match {

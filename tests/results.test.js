@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match } from '../app.js?v=20261119-cinema';
-import { firstOutNames, rankLabel, standingsMarkup, eliminationMarkup } from '../results.js?v=20261119-cinema';
-import { setLanguage, eventText } from '../i18n.js?v=20261119-cinema';
+import { Match } from '../app.js?v=20261121-name-teams';
+import { firstOutNames, lastPlaceTeamNames, rankLabel, standingsMarkup, eliminationMarkup, teamStandingsMarkup } from '../results.js?v=20261121-name-teams';
+import { setLanguage, eventText } from '../i18n.js?v=20261121-name-teams';
 
 test('standings and timeline escape names and retain participant numbers for identical names', () => {
   const w = new Match(2, 4, { names: ['<img src=x>', 'Alice', 'Alice', '끝'] });
@@ -26,4 +26,21 @@ test('shared places and elimination callouts translate without changing recorded
   assert.ok(eliminationMarkup(w).includes('1번째 동시 탈락'));
   assert.ok(standingsMarkup(w).includes('공동 2위'));
   assert.deepEqual(w.eliminations, before); setLanguage('en');
+});
+
+test('team standings escape names, identify members and preserve a defeated winning teammate', () => {
+  const w = new Match(12, 4, { names: ['<img src=x>', '<img src=x>', 'Alex', 'alex'] });
+  w.fighters.forEach(f => { f.readyAt = 100; });
+  w.fighters[0].receiveHit(999, 0, 0, 0); w.update();
+  assert.equal(lastPlaceTeamNames(w), '');
+  w.fighters.slice(2).forEach(f => f.receiveHit(999, 0, 0, 0)); w.update();
+  assert.equal(lastPlaceTeamNames(w), 'Alex');
+  assert.equal(firstOutNames(w), '<img src=x>');
+  setLanguage('en'); const english = teamStandingsMarkup(w);
+  assert.ok(!english.includes('<img')); assert.ok(english.includes('&lt;img src=x&gt;'));
+  assert.ok(english.includes('1 / 2 members alive')); assert.ok(english.includes('#01 #02'));
+  assert.equal((english.match(/class="rank-row/g) || []).length, 2);
+  setLanguage('ko'); assert.ok(teamStandingsMarkup(w).includes('2명 중 1명 생존'));
+  assert.ok(teamStandingsMarkup(w).includes('1위'));
+  assert.equal(w.eliminations[0].fighterId, 0); setLanguage('en');
 });

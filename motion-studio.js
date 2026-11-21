@@ -1,8 +1,8 @@
-import { Match, STEP } from './app.js?v=20261119-cinema';
-import { Renderer } from './renderer.js?v=20261119-cinema';
-import { loadPreferences } from './settings.js?v=20261119-cinema';
-import { MotionDirector, fighterScale } from './motion-director.js?v=20261119-cinema';
-import { sampleStudyActor, studyPhase, STUDY_DURATION, STUDY_MARKS } from './motion-study.js?v=20261119-cinema';
+import { Match, STEP } from './app.js?v=20261121-name-teams';
+import { Renderer } from './renderer.js?v=20261121-name-teams';
+import { loadPreferences } from './settings.js?v=20261121-name-teams';
+import { MotionDirector, fighterScale } from './motion-director.js?v=20261121-name-teams';
+import { sampleStudyActor, studyPhase, STUDY_DURATION, STUDY_MARKS } from './motion-study.js?v=20261121-name-teams';
 
 const $ = s => document.querySelector(s), canvas = $('canvas'), renderer = new Renderer(canvas), ctx = renderer.ctx;
 let storage; try { storage = localStorage; } catch { /* Embedded browser. */ }

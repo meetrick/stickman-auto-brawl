@@ -1,5 +1,5 @@
-import { range } from './random.js?v=20261119-cinema';
-import { areEnemies } from './teams.js?v=20261119-cinema';
+import { range } from './random.js?v=20261121-name-teams';
+import { areEnemies } from './teams.js?v=20261121-name-teams';
 
 export const DEFENSE_PROFILES = {
   Ninja: { reaction: .46, guard: .15, speed: 300 },

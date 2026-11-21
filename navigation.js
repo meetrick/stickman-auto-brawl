@@ -1,6 +1,6 @@
-import { clamp } from './random.js?v=20261119-cinema';
-import { styleProfile } from './styles.js?v=20261119-cinema';
-import { areEnemies } from './teams.js?v=20261119-cinema';
+import { clamp } from './random.js?v=20261121-name-teams';
+import { styleProfile } from './styles.js?v=20261121-name-teams';
+import { areEnemies } from './teams.js?v=20261121-name-teams';
 
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 // Only free footwork participates. Throws, recoil, dodges and settled bodies

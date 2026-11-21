@@ -1,5 +1,5 @@
-import { clamp } from './random.js?v=20261119-cinema';
-import { areEnemies } from './teams.js?v=20261119-cinema';
+import { clamp } from './random.js?v=20261121-name-teams';
+import { areEnemies } from './teams.js?v=20261121-name-teams';
 
 // Presentation only: never consumes match RNG or changes the simulation.
 export class SpectatorCamera {

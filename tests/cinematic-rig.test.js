@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match } from '../app.js?v=20261119-cinema';
-import { cinematicSample, rigPose, READY_RIGS } from '../cinematic-rig.js?v=20261119-cinema';
-import { STYLES } from '../styles.js?v=20261119-cinema';
+import { Match } from '../app.js?v=20261121-name-teams';
+import { cinematicSample, rigPose, READY_RIGS } from '../cinematic-rig.js?v=20261121-name-teams';
+import { STYLES } from '../styles.js?v=20261121-name-teams';
 const length = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 
 test('authored rigs preserve separate spine segments and all limb lengths through a complete run', () => {

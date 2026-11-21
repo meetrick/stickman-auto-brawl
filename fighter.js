@@ -1,10 +1,10 @@
-import { clamp, range } from './random.js?v=20261119-cinema';
-import { WEAPONS } from './weapons.js?v=20261119-cinema';
-import { STYLE_NAMES, styleProfile } from './styles.js?v=20261119-cinema';
-import { beginDefense, updateDefense, reactToThreat, defenseContact } from './defense.js?v=20261119-cinema';
-import { PERSONALITIES, chooseOpponent, retreatGoal, planBehavior } from './brain.js?v=20261119-cinema';
-export { PERSONALITIES } from './brain.js?v=20261119-cinema';
-import { areEnemies } from './teams.js?v=20261119-cinema';
+import { clamp, range } from './random.js?v=20261121-name-teams';
+import { WEAPONS } from './weapons.js?v=20261121-name-teams';
+import { STYLE_NAMES, styleProfile } from './styles.js?v=20261121-name-teams';
+import { beginDefense, updateDefense, reactToThreat, defenseContact } from './defense.js?v=20261121-name-teams';
+import { PERSONALITIES, chooseOpponent, retreatGoal, planBehavior } from './brain.js?v=20261121-name-teams';
+export { PERSONALITIES } from './brain.js?v=20261121-name-teams';
+import { areEnemies } from './teams.js?v=20261121-name-teams';
 
 export const MOVES = Object.freeze({
   Punch: { damage: 6, knockback: 65, lift: 0, reach: 65, engage: 70, windup: .10, activeEnd: .17, duration: .28 },

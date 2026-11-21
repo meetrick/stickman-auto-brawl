@@ -1,5 +1,5 @@
-import { cinematicSample, rigPose, contactLeg } from './cinematic-rig.js?v=20261119-cinema';
-import { computePose, projectPose, attackTurn } from './pose.js?v=20261119-cinema';
+import { cinematicSample, rigPose, contactLeg } from './cinematic-rig.js?v=20261121-name-teams';
+import { computePose, projectPose, attackTurn } from './pose.js?v=20261121-name-teams';
 
 export const fighterScale = f => .83 + (f.y - 245) / 335 * .23;
 const projectRig = (f, rig, contacts) => {

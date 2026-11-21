@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match, STEP } from '../app.js?v=20261119-cinema';
-import { Arena } from '../arena.js?v=20261119-cinema';
+import { Match, STEP } from '../app.js?v=20261121-name-teams';
+import { Arena } from '../arena.js?v=20261121-name-teams';
 function scene(type = 'stone') {
   const w = new Match(8, 2, { terrain: false });
   w.arena = new Arena(8, w.bounds, []); w.arena.traps = []; w.arena.bars = [];

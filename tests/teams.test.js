@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match, STEP } from '../app.js?v=20261119-cinema';
-import { MOVES } from '../fighter.js?v=20261119-cinema';
-import { chooseOpponent } from '../brain.js?v=20261119-cinema';
-import { areEnemies } from '../teams.js?v=20261119-cinema';
-import { resolveDominoes } from '../collisions.js?v=20261119-cinema';
+import { Match, STEP } from '../app.js?v=20261121-name-teams';
+import { MOVES } from '../fighter.js?v=20261121-name-teams';
+import { chooseOpponent } from '../brain.js?v=20261121-name-teams';
+import { areEnemies } from '../teams.js?v=20261121-name-teams';
+import { resolveDominoes } from '../collisions.js?v=20261121-name-teams';
 
 function quiet(names = ['민수', '민수', 'Alex', 'alex']) {
   const w = new Match(12, names.length, { names });
@@ -72,7 +72,7 @@ test('team elimination waits for the last member; defeated winners retain their 
 test('a surviving team wins with multiple fighters; all same names finish without fighting', () => {
   const w = quiet(); w.fighters.slice(2).forEach(f => f.receiveHit(999, 0, 0, 0)); w.update();
   assert.equal(w.winner, null); assert.equal(w.winnerTeam.id, 0); assert.equal(w.timedOut, false);
-  const one = quiet(['ONE', 'one']); one.update();
+  const one = quiet(['ONE', 'one', ' ONE ', 'one']); one.update();
   assert.ok(one.finished && one.noOpponents); assert.equal(one.stats.hits, 0); assert.equal(one.eliminations.length, 0);
 });
 test('simultaneous team defeats tie; a timeout does not fabricate a team winner', () => {

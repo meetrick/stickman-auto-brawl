@@ -1,5 +1,5 @@
-import { MOVES } from './fighter.js?v=20261119-cinema';
-import { STYLES } from './styles.js?v=20261119-cinema';
+import { MOVES } from './fighter.js?v=20261121-name-teams';
+import { STYLES } from './styles.js?v=20261121-name-teams';
 
 export const STUDY_DURATION = 12;
 export const STUDY_MARKS = { run: .9, ready: 2.3, jab: 3.4, kick: 4.48, hook: 7.23, reaction: 8.27 };
