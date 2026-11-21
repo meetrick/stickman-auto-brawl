@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match } from '../app.js?v=20261119-cinema';
-import { MotionDirector, fighterScale, visualPose } from '../motion-director.js?v=20261119-cinema';
-import { cinematicSample, rigPose } from '../cinematic-rig.js?v=20261119-cinema';
-import { sampleStudyActor, STUDY_DURATION } from '../motion-study.js?v=20261119-cinema';
+import { Match } from '../app.js?v=20261121-name-teams';
+import { MotionDirector, fighterScale, visualPose } from '../motion-director.js?v=20261121-name-teams';
+import { cinematicSample, rigPose } from '../cinematic-rig.js?v=20261121-name-teams';
+import { sampleStudyActor, STUDY_DURATION } from '../motion-study.js?v=20261121-name-teams';
 const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 
 test('a contacting foot stays fixed in world space through a moving run phase', () => {

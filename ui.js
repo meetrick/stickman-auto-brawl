@@ -1,12 +1,13 @@
-import { Match, STEP } from './app.js?v=20261119-cinema';
-import { Renderer } from './renderer.js?v=20261119-cinema';
-import { COLORS } from './fighter.js?v=20261119-cinema';
-import { MIN_FIGHTERS, MAX_FIGHTERS, SETTINGS_KEY, normalizePreferences, loadPreferences, savePreferences, escapeHTML } from './settings.js?v=20261119-cinema';
-import { t, eventText, watchMomentText, setLanguage, getLanguage } from './i18n.js?v=20261119-cinema';
-import { firstOutNames, standingsMarkup, eliminationMarkup } from './results.js?v=20261119-cinema';
-import { STYLE_NAMES } from './styles.js?v=20261119-cinema';
-import { ImpactFeedback, selectMoment, momentActorId } from './impact.js?v=20261119-cinema';
-import { PERSONALITIES } from './brain.js?v=20261119-cinema';
+import { Match, STEP } from './app.js?v=20261121-name-teams';
+import { Renderer } from './renderer.js?v=20261121-name-teams';
+import { COLORS } from './fighter.js?v=20261121-name-teams';
+import { MIN_FIGHTERS, MAX_FIGHTERS, SETTINGS_KEY, normalizeName, normalizePreferences, loadPreferences, savePreferences, escapeHTML } from './settings.js?v=20261121-name-teams';
+import { t, eventText, watchMomentText, setLanguage, getLanguage } from './i18n.js?v=20261121-name-teams';
+import { firstOutNames, lastPlaceTeamNames, standingsMarkup, eliminationMarkup, teamStandingsMarkup } from './results.js?v=20261121-name-teams';
+import { STYLE_NAMES } from './styles.js?v=20261121-name-teams';
+import { ImpactFeedback, selectMoment, momentActorId } from './impact.js?v=20261121-name-teams';
+import { PERSONALITIES } from './brain.js?v=20261121-name-teams';
+import { buildTeams } from './teams.js?v=20261121-name-teams';
 
 export function boot() {
   const $ = selector => document.querySelector(selector), renderer = new Renderer($('canvas'));
@@ -50,11 +51,15 @@ export function boot() {
     const key = `${match.eliminations.length}:${match.finished}:${getLanguage()}`;
     if (key === lastRankingKey) return;
     lastRankingKey = key;
-    const first = firstOutNames(match);
-    text($('#first-out-names'), first || t('noEliminations'));
+    const first = match.hasTeams ? lastPlaceTeamNames(match) : firstOutNames(match);
+    text($('#first-out-names'), first || t(match.hasTeams ? 'noTeamsOut' : 'noEliminations'));
     text($('#rankings-title'), t(match.finished ? 'finalStandings' : 'liveStandings'));
     text($('#rankings-count'), t('outCount', { count: match.eliminations.length, total: match.fighters.length }));
-    text($('#ranking-rule'), t(match.timedOut ? 'timeoutRule' : 'rankingRule'));
+    text($('#first-out-label'), t(match.hasTeams ? 'firstTeamOut' : 'firstOut'));
+    text($('#ranking-rule'), t(match.hasTeams ? match.timedOut ? 'teamTimeout' : 'teamRule' : match.timedOut ? 'timeoutRule' : 'rankingRule'));
+    text($('#standings-heading'), t(match.hasTeams ? 'individualStandings' : 'standingsHeading'));
+    $('#team-rank-section').hidden = !match.hasTeams;
+    $('#team-standings').innerHTML = match.hasTeams ? teamStandingsMarkup(match) : '';
     $('#standings-list').innerHTML = standingsMarkup(match);
     $('#elimination-log').innerHTML = eliminationMarkup(match);
     if (match.finished && !resultsShown) { $('#rankings-panel').open = true; resultsShown = true; }
@@ -63,12 +68,14 @@ export function boot() {
     updateRankings();
     text($('#clock'), `${Math.floor(match.time / 60).toString().padStart(2, '0')}:${Math.floor(match.time % 60).toString().padStart(2, '0')}`);
     const alive = match.fighters.filter(f => f.alive).length;
-    text($('#alive'), `${alive} / ${match.fighters.length}`); text($('#arena-alive'), t('alive', { count: alive }));
+    text($('#alive'), `${alive} / ${match.fighters.length}`);
+    text($('#arena-alive'), t(match.hasTeams ? 'teamAlive' : 'alive', { count: alive, teams: new Set(match.fighters.filter(f => f.alive).map(f => f.teamId)).size }));
     for (const f of match.fighters) {
       const card = cards.get(f.id); card.node.classList.toggle('out', !f.alive);
       text(card.hp, f.alive ? Math.ceil(f.hp) : t('ko'));
       text(card.traits, `${t(f.personality)} · ${t(!f.alive ? 'intent_dead' : match.finished ? 'survived' : `intent_${f.intent}`)}`); card.traits.title = `${t(`${f.personality}Hint`)} · ${t(f.gait)}`;
-      text(card.weapon, t(f.style)); card.weapon.title = t(`${f.style}Hint`);
+      const team = match.teams[f.teamId];
+      text(card.weapon, `${t(f.style)}${team.fighterIds.length > 1 ? ` · ${t('teamSize', { count: team.fighterIds.length })}` : ''}`); card.weapon.title = t(`${f.style}Hint`);
       text(card.stats, `${t('spd')} ${Math.round(f.speed)} · ${t('atk')} ${f.power.toFixed(2)}`);
       const width = `${f.hp / f.maxHp * 100}%`; if (card.bar.style.width !== width) card.bar.style.width = width;
     }
@@ -86,11 +93,11 @@ export function boot() {
     $('#result').hidden = !match.finished && !paused;
     $('#result').dataset.finished = String(match.finished);
     if (match.finished || paused) {
-      text($('#result-caption'), t(match.finished ? match.winner ? 'lastStanding' : match.timedOut ? 'timeLimit' : 'noWinner' : 'breather'));
-      text($('#result-title'), paused ? t('pauseTitle') : match.winner ? t('winner', { name: match.winner.name }) : t('draw'));
-      text($('#result-hint'), t(paused ? 'resumeHint' : 'newMatchHint'));
-      $('#result-first-out').hidden = !match.finished || !match.eliminations.length;
-      text($('#result-first-out'), t('firstOutResult', { names: firstOutNames(match) }));
+      text($('#result-caption'), t(paused ? 'breather' : match.noOpponents ? 'noOpponents' : match.hasTeams && match.winnerTeam ? 'teamVictory' : match.winner ? 'lastStanding' : match.timedOut ? 'timeLimit' : 'noWinner'));
+      text($('#result-title'), paused ? t('pauseTitle') : match.noOpponents ? t('noOpponentsTitle') : match.hasTeams && match.winnerTeam ? t('teamWinner', { name: match.winnerTeam.name }) : match.winner ? t('winner', { name: match.winner.name }) : t('draw'));
+      text($('#result-hint'), t(paused ? 'resumeHint' : match.noOpponents ? 'oneTeamHint' : 'newMatchHint'));
+      $('#result-first-out').hidden = !match.finished || !(match.hasTeams ? match.teamEliminations : match.eliminations).length;
+      text($('#result-first-out'), t(match.hasTeams ? 'lastTeamResult' : 'firstOutResult', { names: match.hasTeams ? lastPlaceTeamNames(match) : firstOutNames(match) }));
       $('#result-rankings').hidden = !match.finished;
     }
     const moment = selectMoment(match.events, match.time);
@@ -112,7 +119,7 @@ export function boot() {
       select.setAttribute('aria-label', t(personality ? 'personalityLabel' : 'styleLabel', { number: Number(select.dataset.index) + 1 }));
       for (const option of select.options) option.textContent = t(personality && option.value === 'Random' ? 'RandomPersonality' : option.value);
     }
-    lastEvent = null; renderer.dirty = true; updateCameraLabel(); updateUI();
+    updateTeamPreview(); lastEvent = null; renderer.dirty = true; updateCameraLabel(); updateUI();
   }
   function changeLanguage(language) {
     setLanguage(language); preferences.language = getLanguage(); persist(); translatePage();
@@ -144,7 +151,19 @@ export function boot() {
       }
       personality.value = draftPersonalities[i]; row.append(personality);
     }
+    updateTeamPreview();
   }
+  function updateTeamPreview() {
+    const inputs = [...document.querySelectorAll('#name-fields input')];
+    const fighters = inputs.map((input, id) => ({ id, name: normalizeName(input.value, id), color: COLORS[id % COLORS.length] }));
+    const teams = buildTeams(fighters), grouped = teams.some(team => team.fighterIds.length > 1);
+    text($('#team-preview'), t(teams.length === 1 ? 'oneTeamHint' : grouped ? 'teamPreview' : 'soloPreview', {
+      count: teams.length, names: teams.map(team => `${team.name} ×${team.fighterIds.length}`).join(' · '),
+    }));
+    $('#team-preview').classList.toggle('single-team', teams.length === 1);
+    for (const f of fighters) inputs[f.id].closest('.name-row').style.setProperty('--fighter', f.color);
+  }
+  $('#name-fields').addEventListener('input', event => { if (event.target.matches('input')) updateTeamPreview(); });
   function openSetup() {
     tools.open = false; draftNames = [...preferences.names]; draftStyles = [...preferences.styles]; draftPersonalities = [...preferences.personalities]; $('#fighter-count').value = String(preferences.count);
     renderNameFields(); dialog.showModal(); accumulator = 0; last = 0;

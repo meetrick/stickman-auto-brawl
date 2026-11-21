@@ -1,9 +1,9 @@
-import { SpectatorCamera } from './camera.js?v=20261119-cinema';
-import { clamp } from './random.js?v=20261119-cinema';
-import { barPoint } from './arena.js?v=20261119-cinema';
-import { WEAPONS } from './weapons.js?v=20261119-cinema';
-import { t, eventText } from './i18n.js?v=20261119-cinema';
-import { MotionDirector, visualPose } from './motion-director.js?v=20261119-cinema';
+import { SpectatorCamera } from './camera.js?v=20261121-name-teams';
+import { clamp } from './random.js?v=20261121-name-teams';
+import { barPoint } from './arena.js?v=20261121-name-teams';
+import { WEAPONS } from './weapons.js?v=20261121-name-teams';
+import { t, eventText } from './i18n.js?v=20261121-name-teams';
+import { MotionDirector, visualPose } from './motion-director.js?v=20261121-name-teams';
 const INK = '#292b27';
 export class Renderer {
   constructor(canvas) {

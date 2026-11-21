@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Fighter, MOVES } from '../fighter.js?v=20261119-cinema';
-import { computePose, projectPose } from '../pose.js?v=20261119-cinema';
-import { STYLE_NAMES, STYLES } from '../styles.js?v=20261119-cinema';
-import { seededRandom } from '../random.js?v=20261119-cinema';
+import { Fighter, MOVES } from '../fighter.js?v=20261121-name-teams';
+import { computePose, projectPose } from '../pose.js?v=20261121-name-teams';
+import { STYLE_NAMES, STYLES } from '../styles.js?v=20261121-name-teams';
+import { seededRandom } from '../random.js?v=20261121-name-teams';
 
 function pose(style, name = STYLES[style].preferred, variant = 0) {
   const f = new Fighter(0, 0, 0, seededRandom(1)); f.style = style;

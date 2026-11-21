@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Match } from '../app.js?v=20261119-cinema';
-import { normalizePreferences, savePreferences, loadPreferences } from '../settings.js?v=20261119-cinema';
-import { PERSONALITIES } from '../brain.js?v=20261119-cinema';
-import { t, MESSAGES } from '../i18n.js?v=20261119-cinema';
+import { Match } from '../app.js?v=20261121-name-teams';
+import { normalizePreferences, savePreferences, loadPreferences } from '../settings.js?v=20261121-name-teams';
+import { PERSONALITIES } from '../brain.js?v=20261121-name-teams';
+import { t, MESSAGES } from '../i18n.js?v=20261121-name-teams';
 
 test('legacy preferences default personalities to Random without losing names or martial arts', () => {
   const p = normalizePreferences({ count: 4, names: ['봄'], styles: ['Taekwondo'] });

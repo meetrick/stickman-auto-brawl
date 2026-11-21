@@ -63,6 +63,9 @@ canvas { display: block; width: 100%; aspect-ratio: 1200 / 680; }
 .rankings-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding-bottom: 16px; }
 .rankings-columns section { min-width: 0; }
 .rankings-columns h3 { font-size: 12px; font-weight: 600; margin: 0 0 10px; }
+#team-rank-section { margin-bottom: 24px; }
+#team-rank-heading { font-size: 12px; margin: 0 0 10px; }
+.team-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; }
 .rank-list, .elimination-log { list-style: none; padding: 0; margin: 0; }
 .rank-row { display: grid; grid-template-columns: 65px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 12px 8px; border-bottom: 1px solid var(--line); min-height: 62px; }
 .rank-place { font: 600 12px monospace; color: var(--green); }
@@ -168,7 +171,6 @@ footer { display: flex; justify-content: space-between; gap: 20px; border-top: 1
   .intro { padding: 16px 0 17px; }
   .eyebrow { display: none; }
   h1 { font-size: 25px; letter-spacing: -.9px; line-height: 1.2; }
-  h1 br { display: initial; }
   h1 em { margin-left: 0; }
   .intro-aside { display: none; }
   .workspace, .below { display: block; }
@@ -244,6 +246,8 @@ footer { display: flex; justify-content: space-between; gap: 20px; border-top: 1
 .setup-body select:focus, .setup-body input:focus { outline: 2px solid var(--green); outline-offset: 1px; }
 .setup-body h3 { font-size: 13px; margin: 22px 0 6px; }
 .setup-help { margin-bottom: 12px; }
+.team-preview { font-size: 12px; line-height: 1.6; padding: 10px 12px; background: #e0e8d5; border-radius: 6px; overflow-wrap: anywhere; }
+.team-preview.single-team { background: #f1e1c9; }
 .name-row { display: grid; grid-template-columns: 32px 1fr; align-items: center; gap: 10px; margin-bottom: 10px; }
 .name-row > span { font: 11px monospace; color: var(--fighter); }
 .name-row select { grid-column: 2; min-height: 44px; font-size: 16px; background: #eeeee2; }

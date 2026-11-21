@@ -1,4 +1,5 @@
-import { range } from './random.js?v=20261119-cinema';
+import { range } from './random.js?v=20261121-name-teams';
+import { areEnemies } from './teams.js?v=20261121-name-teams';
 
 export const DEFENSE_PROFILES = {
   Ninja: { reaction: .46, guard: .15, speed: 300 },
@@ -9,6 +10,7 @@ export const DEFENSE_PROFILES = {
 };
 
 export function beginDefense(f, kind, threat, world) {
+  if (!areEnemies(f, threat)) return false;
   if (!['guard', 'dodge'].includes(kind) || !f.standing || f.attack || f.defense || f.landing > 0 || f.defenseCooldown > 0) return false;
   const cost = kind === 'guard' ? .12 : .22;
   if (f.stamina < cost + .08 || !threat?.alive) return false;
@@ -48,7 +50,7 @@ export function reactToThreat(f, world) {
   if (f.defenseCooldown > 0 || f.stamina < .30) return false;
   const threat = world.fighters.find(other => {
     const a = other.attack;
-    if (other === f || !other.alive || !a || a.resolved || a.targetId !== f.id || a.elapsed < .025) return false;
+    if (!areEnemies(f, other) || !other.alive || !a || a.resolved || a.targetId !== f.id || a.elapsed < .025) return false;
     const move = other.getMove(a.name), remaining = move.windup - a.elapsed;
     return remaining >= .035 && remaining <= .18 && Math.hypot(other.x - f.x, other.y - f.y) < move.reach + 60
       && !f.reactedAttacks.has(`${other.id}:${a.serial}`);

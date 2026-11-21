@@ -1,4 +1,4 @@
-import { styleProfile } from './styles.js?v=20261119-cinema';
+import { styleProfile } from './styles.js?v=20261121-name-teams';
 
 // Forward-kinematic full-body channels. Angles are radians from vertical;
 // elbows/knees are relative bends. IK only corrects a contacting foot.

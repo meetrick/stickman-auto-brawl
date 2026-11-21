@@ -1,5 +1,6 @@
-import { clamp } from './random.js?v=20261119-cinema';
-import { styleProfile } from './styles.js?v=20261119-cinema';
+import { clamp } from './random.js?v=20261121-name-teams';
+import { styleProfile } from './styles.js?v=20261121-name-teams';
+import { areEnemies } from './teams.js?v=20261121-name-teams';
 
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 // Only free footwork participates. Throws, recoil, dodges and settled bodies
@@ -20,7 +21,8 @@ export class CrowdNavigation {
     const offset = (world.seed + Math.floor(world.time * 5)) % alive.length;
     for (let n = 0; n < alive.length; n++) {
       const f = alive[(n + offset) % alive.length];
-      const enemies = alive.filter(g => g !== f);
+      const enemies = alive.filter(g => areEnemies(f, g));
+      if (!enemies.length) continue;
       const nearest = enemies.reduce((a, g) => distance(f, g) < distance(f, a) ? g : a);
       const old = previous.get(f.id);
       const committed = enemies.find(g => g.id === f.attack?.targetId
