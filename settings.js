@@ -9,7 +9,7 @@ export function normalizeCount(value) {
   return Number.isFinite(count) ? Math.max(MIN_FIGHTERS, Math.min(MAX_FIGHTERS, Math.round(count))) : 8;
 }
 export function normalizeName(value, index) {
-  const name = typeof value === 'string' ? Array.from(value.replace(/[\u0000-\u001f\u007f]/g, '').trim()).slice(0, MAX_NAME_LENGTH).join('') : '';
+  const name = typeof value === 'string' ? Array.from(value.normalize('NFC').replace(/[\u0000-\u001f\u007f]/g, '').trim()).slice(0, MAX_NAME_LENGTH).join('') : '';
   return name || NAMES[index] || `FIGHTER ${index + 1}`;
 }
 export function normalizePreferences(value = {}) {

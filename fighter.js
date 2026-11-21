@@ -4,6 +4,7 @@ import { STYLE_NAMES, styleProfile } from './styles.js?v=20261119-cinema';
 import { beginDefense, updateDefense, reactToThreat, defenseContact } from './defense.js?v=20261119-cinema';
 import { PERSONALITIES, chooseOpponent, retreatGoal, planBehavior } from './brain.js?v=20261119-cinema';
 export { PERSONALITIES } from './brain.js?v=20261119-cinema';
+import { areEnemies } from './teams.js?v=20261119-cinema';
 
 export const MOVES = Object.freeze({
   Punch: { damage: 6, knockback: 65, lift: 0, reach: 65, engage: 70, windup: .10, activeEnd: .17, duration: .28 },
@@ -21,7 +22,7 @@ const MOVE_NAMES = Object.keys(MOVES);
 
 export class Fighter {
   constructor(id, x, y, rng = Math.random) {
-    Object.assign(this, { id, x, y, z: 0, vx: 0, vy: 0, vz: 0, facing: 1,
+    Object.assign(this, { id, teamId: id, x, y, z: 0, vx: 0, vy: 0, vz: 0, facing: 1,
       state: 'idle', stun: 0, attack: null, cooldown: range(rng, .1, .8),
       flash: 0, age: 0, attackVariants: {}, stridePhase: rng() * Math.PI * 2, tumble: 0, angularVelocity: 0,
       stamina: 1, intent: 'chase', heldBy: null, holdingId: null, signatureCooldown: 0,
@@ -46,6 +47,7 @@ export class Fighter {
     return this.attack?.name === name && this.attack.signature ? { ...base, ...(this.attack.finisher ? profile.finisher : profile.signature).timing } : base;
   }
   startAttack(name, target) {
+    if (!areEnemies(this, target)) return false;
     if (!this.standing || this.defense || this.landing > 0 || this.attack || this.cooldown > 0 || target.heldBy != null || (name === 'JumpKick' && this.jumpCooldown > 0) || (name === 'WeaponStrike' && this.weapon === 'None')) return false;
     const dx = target.x - this.x, dy = target.y - this.y, length = Math.hypot(dx, dy) || 1;
     this.facing = dx >= 0 ? 1 : -1;
@@ -98,6 +100,7 @@ export class Fighter {
     this.previous = { x: this.x, y: this.y, z: 0 };
   }
   hit(target, world, name) {
+    if (!areEnemies(this, target)) return false;
     if (name === 'WeaponStrike' && this.weapon === 'None') return false;
     if (world.arena && !world.arena.attackClear(this, target)) return false;
     const move = this.getMove(name), dx = target.x - this.x, dy = target.y - this.y, length = Math.hypot(dx, dy) || 1;
@@ -138,7 +141,7 @@ export class Fighter {
   think(dt, world) {
     if (world.time < (this.readyAt || 0) || !this.standing || this.landing > 0 || this.attack || this.defense) return;
     if (reactToThreat(this, world)) return;
-    const enemies = world.fighters.filter(f => f !== this && f.alive && f.heldBy == null);
+    const enemies = world.fighters.filter(f => areEnemies(this, f) && f.alive && f.heldBy == null);
     const nearest = enemies.sort((a, b) => Math.hypot(a.x - this.x, a.y - this.y) - Math.hypot(b.x - this.x, b.y - this.y))[0];
     const target = chooseOpponent(this, enemies, world, world.navigation?.targetFor(this, enemies) || nearest);
     if (!target) return;
@@ -233,7 +236,7 @@ export class Fighter {
       const target = world.fighters.find(f => f.id === a.targetId);
       if (!a.attempted && a.elapsed >= move.windup) {
         a.attempted = true;
-        if (target?.standing && Math.hypot(target.x - this.x, target.y - this.y) < move.reach + 12 && (!world.arena || world.arena.attackClear(this, target))) {
+        if (target?.standing && areEnemies(this, target) && Math.hypot(target.x - this.x, target.y - this.y) < move.reach + 12 && (!world.arena || world.arena.attackClear(this, target))) {
           this.holdingId = target.id; target.heldBy = this.id; target.heldStyle = this.style; target.heldSignature = a.signature; target.attack = null; target.collateralActive = false;
           target.defense = null; target.counterTargetId = null;
           world.emit('grab', target, { text: 'GRABBED!', source: this.id });
@@ -250,7 +253,7 @@ export class Fighter {
         }
       } else if (this.holdingId != null) this.holdingId = null;
     } else if (!a.resolved && a.elapsed >= move.windup && a.elapsed < (move.activeEnd || move.duration - .05)) {
-      const candidates = world.fighters.filter(f => f !== this && f.alive && f.heldBy == null
+      const candidates = world.fighters.filter(f => areEnemies(this, f) && f.alive && f.heldBy == null
         && !a.hitIds.includes(f.id)
         && Math.hypot(f.x - this.x, f.y - this.y) <= move.reach + 12 && Math.abs(f.z - this.z) < 85
         && (a.name !== 'WeaponStrike' || Math.abs((f.x - this.x) * a.dy - (f.y - this.y) * a.dx) < move.arcWidth)

@@ -1,4 +1,5 @@
 import { clamp } from './random.js?v=20261119-cinema';
+import { sameTeam } from './teams.js?v=20261119-cinema';
 
 export const PERSONALITIES = ['Aggressive', 'Cowardly', 'Brawler', 'Trickster', 'Opportunist', 'Counterfighter'];
 export const normalizePersonality = value => PERSONALITIES.includes(value) ? value : 'Random';
@@ -9,6 +10,14 @@ export function chooseOpponent(f, enemies, world, fallback) {
   const committed = enemies.find(g => g.id === f.counterTargetId && world.time < f.counterUntil
     || g.id === f.engagementTargetId && f.followUp && world.time < f.followUpUntil);
   if (committed) return committed;
+  // Nearby help is tactical, not a stat boost; real counters/combos stay committed.
+  if (world.hasTeams && (f.personality !== 'Cowardly' || f.hp / f.maxHp > .55)) {
+    const allies = world.fighters.filter(g => g !== f && g.alive && sameTeam(f, g));
+    const threats = enemies.filter(g => distance(f, g) < 260 && allies.some(ally =>
+      ally.heldBy === g.id || g.attack?.targetId === ally.id
+      || ally.lastAttackerId === g.id && world.time < ally.retaliateUntil && distance(g, ally) < 140));
+    if (threats.length) return threats.reduce((a, b) => distance(f, a) <= distance(f, b) ? a : b);
+  }
   const nearest = enemies.reduce((a, b) => distance(f, a) <= distance(f, b) ? a : b);
   if (['Aggressive', 'Cowardly'].includes(f.personality)) return nearest;
   if (f.personality === 'Brawler') {

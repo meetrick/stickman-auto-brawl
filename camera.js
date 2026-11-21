@@ -1,4 +1,5 @@
 import { clamp } from './random.js?v=20261119-cinema';
+import { areEnemies } from './teams.js?v=20261119-cinema';
 
 // Presentation only: never consumes match RNG or changes the simulation.
 export class SpectatorCamera {
@@ -23,8 +24,8 @@ export class SpectatorCamera {
     let scale = Math.min(width / 1200, height / 680), x = 600, y = 340;
     if (closeUp && actor) {
       scale = Math.min(height / 480, Math.max(width / 640, Math.min(height / 620, width / 460)));
-      const buddy = alive.find(f => f !== actor && f.id === this.opponentId)
-        || alive.filter(f => f !== actor).sort((a, b) => Math.hypot(a.x - actor.x, a.y - actor.y) - Math.hypot(b.x - actor.x, b.y - actor.y))[0] || actor;
+      const buddy = alive.find(f => areEnemies(actor, f) && f.id === this.opponentId)
+        || alive.filter(f => areEnemies(actor, f)).sort((a, b) => Math.hypot(a.x - actor.x, a.y - actor.y) - Math.hypot(b.x - actor.x, b.y - actor.y))[0] || actor;
       const halfW = width / scale / 2, halfH = height / scale / 2;
       x = halfW >= 600 ? 600 : clamp((actor.x + buddy.x) / 2, halfW, 1200 - halfW);
       const targetY = (actor.y - actor.z + buddy.y - buddy.z) / 2 - 55;
